@@ -119,4 +119,20 @@ class blade:
     y_comb: float
     x_thicc: float
     y_thicc: float
+    
+    x_pressure: float
+    y_pressure: float
+    ps_p1x: float
+    ps_p1y: float
+    k_max_ps: float
+    x_suction: list
+    y_suction: list
+    x_spline_pts: list
+    y_spline_pts: list
+    k_max_ss: list
+    norm_x: list
+    norm_y: list
+    suction_curvature: list
 
+    x_o: list
+    y_o: list
