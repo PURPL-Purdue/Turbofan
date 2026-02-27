@@ -6,6 +6,9 @@
     {
       "path": "../Archive",
     },
+    {
+      "path": "../../../../../../../../../../../NPSS",
+    },
   ],
   "settings": {},
   "launch": {
@@ -15,7 +18,7 @@
         "name": "Python: Current File",
         "type": "node",
         "request": "launch",
-        "program": "${workspaceFolder}/Python/Turbofan_Main.py",
+        // "program": "${workspaceFolder}/Python/Turbofan_Main.py",
         // "program": "C:/Users/zheng/OneDrive/Documentos/Purdue/Clubs/PURPL/Turbofan/GitHub/Turbofan/Scripts/Python/Turbofan_Main.py",
         "console": "integratedTerminal",
       },

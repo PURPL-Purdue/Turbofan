@@ -1,20 +1,23 @@
+
+Avidh was here! 
+
 ======== Cycle Analysis ========
 Thrust:
-    Specific Thrust                  | 1916.74191 N
-    Total Thrust                     | 2500.00000 lbf
-    Core Thrust                      | 585.39167 lbf
-    Bypass Thrust                    | 1914.60833 lbf
+    Specific Thrust                  |      nan N
+    Total Thrust                     |      nan lbf
+    Core Thrust                      |      nan lbf
+    Bypass Thrust                    |      nan lbf
 
 Efficiencies:
-    Thrust Specific Fuel Consumption |  0.00000 N
-    Polytropic Efficiency            |  0.00000 %
-    Isentropic Efficiency            | 83.92019 %
-    Total Efficiency                 |  0.00000 %
+    Thrust Specific Fuel Consumption |      nan N
+    Polytropic Efficiency            |      nan %
+    Isentropic Efficiency            |      nan %
+    Total Efficiency                 |      nan %
 
 Misc:
-    Core Exit Velocity               | 445.10090 m/s
+    Core Exit Velocity               |      nan m/s
     Bypass Exit Velocity             | 293.58480 m/s
-    Core Mass Flow Rate              |  5.80180 kg
+    Core Mass Flow Rate              |      nan kg
 
 
 ======== Station Thermos ========
@@ -22,57 +25,25 @@ Temperatures:
     T01      | 298.00000 K
     T015     | 298.00000 K
     T02      | 348.38680 K
-    T025     | 780.71054 K
-    T03      | 1008.69223 K
+    T025     | 619.58019 K
+    T03      | 1101.87761 K
     T04      | 1300.00000 K
-    T045     | 1108.16301 K
-    T05      | 704.33416 K
-    T06      | 704.33416 K
-    T07      | 704.33416 K
+    T045     | 893.08903 K
+    T05      | 541.42828 K
+    T06      | 541.42828 K
+    T07      | 541.42828 K
     T08      | 298.00000 K
 Pressures:
     P01      | 101.30000 kPa
     P015     | 101.30000 kPa
     P02      | 162.08000 kPa
-    P025     | 1620.80000 kPa
-    P03      | 3241.60000 kPa
-    P04      | 3079.52000 kPa
-    P045     | 1471.16941 kPa
-    P05      | 172.91660 kPa
-    P06      | 172.91660 kPa
-    P07      | 172.91660 kPa
+    P025     | 810.40000 kPa
+    P03      | 4052.00000 kPa
+    P04      | 3849.40000 kPa
+    P045     | 660.31186 kPa
+    P05      | 61.51443 kPa
+    P06      | 61.51443 kPa
+    P07      | 61.51443 kPa
     P08      | 101.30000 kPa
 
-======== Compressor Information ========
-Ratios:
-    Total Pressure Ratio (design):        10.00000
-    Total Pressure Ratio (actual):        10.82334
-    Total Temperature Ratio (design):      1.94357
-    Total Temperature Ratio (actual):      1.98846
-Values:
-    Temperature Rise (total):            328.72749 K
-    Temperature Rise (per stage):         34.43667 K
-    Pressure Rise (total):              1592.16772 kPa
-    Inlet Total Temperature (total):     348.38680 K
-    Inlet Total Pressure (total):        162.08000 kPa
-    Exit Total Temperature (total):      692.75348 K
-    Exit Total Pressure (total):        1754.24772 kPa
-Aerodynamics:
-    Rotor Diffusion Factor:                0.47992
-    Stator Diffusion Factor:               0.44517
-    Stage Degree of Reaction:              0.52511
-    De Haller Ratio Used:                  0.72000
-    Rotor Inlet Mach Number:               0.75365
-    Stator Inlet Mach Number:              0.70039
-    Compressor Inlet Mach Number:          0.51962
-    Compressor Outlet Mach Number:         0.36793
-Triangles:
-    Rotor Turning:                        19.36471 deg
-    Stator Turning:                       21.27249 deg
-Misc:
-    Number of Stages (calculated):         9.54586
-    Number of Stages (rounded up):        10.00000
-    Blade Chord Length:                    0.01595 m
-    RPM:                               22528.92481 rpm
-    Mass Flow:                             5.80180 kg/s
-    Inlet Tip Radius:                    148.42565 mm (5.84353 in)
+wow this is an awesome message

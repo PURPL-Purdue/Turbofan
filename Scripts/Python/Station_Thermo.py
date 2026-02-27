@@ -50,15 +50,15 @@ def thermoCalcs(params):
     # ======== Station 4.5: HP Turbine Outlet/LP Turbine Inlet ========
     Cp_tHP = (Rp*gamma.tHP)/(gamma.tHP-1)     # Specific heat of turbine
 
-    # T0_45 = ((1+fr)*T0_4*Cp_tHP - Cp_cHP*(T0_3-T0_25)) / ((1+fr)*Cp_tHP)
-    T0_45 = 1/(1+fr) * Cp_cHP/Cp_tHP * (T0_25 - T0_3) + T0_4
+    T0_45 = ((1+fr)*T0_4*Cp_tHP - Cp_cHP*(T0_3-T0_25)) / ((1+fr)*Cp_tHP)
+    # T0_45 = 1/(1+fr) * Cp_cHP/Cp_tHP * (T0_25 - T0_3) + T0_4
     P0_45 = P0_4*(1 - 1/eta.tHP*(1 - T0_45/T0_4))**(gamma.tHP/(gamma.tHP-1))
 
     # ======== Station 5: LP Turbine Outlet/Nozzle Inlet ========
     Cp_tLP = (Rp*gamma.tLP)/(gamma.tLP-1)     # Specific heat of turbine
 
-    # T0_5 = ((1+fr)*T0_45*Cp_tLP - Cp_cLP*(T0_25-T0_2) - bypass*Cp_f*(T0_2-T0_15)) / ((1+fr)*Cp_tLP)
-    T0_5 = (Cp_cLP*(T0_25-T0_3) + bypass*Cp_f*(T0_15-T0_2))/((1+fr)*Cp_tLP) + T0_45
+    T0_5 = ((1+fr)*T0_45*Cp_tLP - Cp_cLP*(T0_25-T0_2) - bypass*Cp_f*(T0_2-T0_15)) / ((1+fr)*Cp_tLP)
+    # T0_5 = (Cp_cLP*(T0_25-T0_3) + bypass*Cp_f*(T0_15-T0_2))/((1+fr)*Cp_tLP) + T0_45
     P0_5 = P0_45*(1 - 1/eta.tLP*(1 - T0_5/T0_45))**(gamma.tLP/(gamma.tLP-1))
     
     # ======== Station 6: Afterburner (there is none lmao) ========

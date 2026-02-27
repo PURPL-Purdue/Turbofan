@@ -111,6 +111,12 @@ class parameters:
     pitch: float
     t_max: float
     t_min: float
+    R: float
+    blockage_IN: float
+    blockage_OUT: float
+    zweifel: float
+    chord: float
+    calc_ttc: float
 
 @dataclass
 class blade:

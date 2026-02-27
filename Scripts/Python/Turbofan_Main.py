@@ -40,8 +40,8 @@ Pr = REF_structs.ByComponent(
                 None,       # Diffuser
                 1.6,        # Fan
                 None,       # Fan Nozzle
-                10,         # LP Compressor
-                2,          # HP Compressor
+                5,          # LP Compressor
+                5,          # HP Compressor
                 0.95,          # Burner
                 None,       # HP Turbine
                 None,       # LP Turbine
@@ -59,7 +59,7 @@ cycle_params = {
     "Ra"     : 287,             # TODO
     "Rp"     : 287,             # TODO
     "QR"     : 45000000,        # TODO
-    "bypass" : 5,               # nondimensional
+    "bypass" : 2.89,               # nondimensional
     "combustion_temp": 1300,    # TODO
 }
 thermo, Cps, thrust, eta_calc, m_dot_core = Station_Thermo.thermoCalcs(cycle_params)
@@ -81,7 +81,7 @@ compressor_params = {
     "m_dot_core"  : m_dot_core
 }
 
-compressor_info = Component_Sizing.Compressor_Sizing(compressor_params)
+# compressor_info = Component_Sizing.Compressor_Sizing(compressor_params)
 # turbine_info = Component_Sizing.Turbine_Sizing(turbine_params)
 
 plt.show()

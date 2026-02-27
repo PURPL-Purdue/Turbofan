@@ -1,6 +1,6 @@
 function plot_spanwise_distributions(num_stages, num_stations, chord_m, r_mean_1, r_hub_vec, r_tip_vec, FF)
     figure(2); clf;
-    tiledlayout(1,3, TileSpacing='tight', Padding='tight')
+    tiledlayout(3,1, TileSpacing='tight', Padding='tight')
 
     %% Degree of Reaction
     nexttile
