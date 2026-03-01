@@ -1,17 +1,52 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
+
+####################################################
+#                      Cycle                       #
+####################################################
+@dataclass
+class Cycle_IN:
+    eta    : ByComponent = None
+    gamma  : ByComponent = None
+    Pr     : ByComponent = None
+    T_0    : float = None
+    P_0    : float = None
+    M_f    : float = None
+    Ra     : float = None
+    Rp     : float = None
+    QR     : float = None
+    bypass : float = None
+    combustion_temp: float = None
+
+@dataclass
+class Cycle_OUT:
+    T0P0            : StationThermo = None
+    Cps             : ByComponent = None
+    ST              : float = None
+    TSFC            : float = None
+    total_thrust    : float = None
+    core_thrust     : float = None
+    bypass_thrust   : float = None
+    eta_p           : float = None
+    eta_th          : float = None
+    eta_0           : float = None
+    m_dot_core      : float = None
+    m_dot_bypass    : float = None
+    m_dot_total     : float = None
+    u_ec            : float = None
+    u_ef            : float = None
 
 @dataclass
 class ByComponent:
-    a:   float      # Ambient
-    d:   float      # Diffuser
-    f:   float      # Fan
-    fn:  float      # Fan Nozzle
-    cLP: float      # LP Compressor
-    cHP: float      # HP Compressor
-    b:   float      # Burner
-    tHP: float      # HP Turbine
-    tLP: float      # LP Turbine
-    n:   float      # Nozzle
+    a:   float = None     # Ambient
+    d:   float = None      # Diffuser
+    f:   float = None      # Fan
+    fn:  float = None      # Fan Nozzle
+    cLP: float = None      # LP Compressor
+    cHP: float = None      # HP Compressor
+    b:   float = None      # Burner
+    tHP: float = None      # HP Turbine
+    tLP: float = None      # LP Turbine
+    n:   float = None      # Nozzle
 
 @dataclass
 class StationTnP:
@@ -33,7 +68,57 @@ class StationThermo:
     S8:  StationTnP
 
 @dataclass
-class fullVelTriInfo:
+class Cycle:
+    IN: Cycle_IN = field(default=Cycle_IN)
+    OUT: Cycle_OUT = field(default=Cycle_OUT)
+
+####################################################
+#                    Compressor                    #
+####################################################
+
+@dataclass
+class Compressor_IN:
+    gamma           : float
+    Cp_cLP          : float
+    T0_1            : float
+    P0_1            : float
+    Pr              : float
+    e_c             : float
+    httrr           : float
+    deHaller        : float
+    min_Re          : float
+    mu_kin          : float
+    alpha_1m        : float
+    Mz_1m           : float
+    M_tip_inlet_max : float
+    m_dot_core      : float
+
+@dataclass
+class Compressor_OUT:
+    RVT                 : FullVelTriInfo = None
+    FF                  : CompressorField = None
+    P0_stages           : list = None
+    T0_stages           : list = None
+    r_hub_vec           : list = None
+    r_tip_vec           : list = None
+    stage_info          : dict = None
+    num_stages_actual   : float = None
+    num_stages          : float = None
+    RPM                 : float = None
+    chord_m             : float = None
+    Pr_total            : float = None
+    Pr_total_actual     : float = None
+    Tr_total            : float = None
+    Tr_total_actual     : float = None
+    P0_rise_total       : float = None
+    temp_rise_total     : float = None
+    temp_rise_per_stage : float = None
+    U_tip_inlet         : float = None
+    r_mean_1            : float = None
+
+
+@dataclass
+class FullVelTriInfo:
     C_1m: float
     C_2m: float
     C_3m: float
@@ -85,6 +170,95 @@ class CompressorField:
     num_stations:    list
     num_streamlines: list
 
+@dataclass
+class Compressor_Gen:
+    IN: Compressor_IN = field(default=Compressor_IN)
+    OUT: Compressor_OUT = field(default=Compressor_OUT)
+
+@dataclass
+class Compressor:
+    LP:  Compressor_Gen = field(default=Compressor_Gen)
+    HP: Compressor_Gen = field(default=Compressor_Gen)
+
+####################################################
+#                     Turbine                      #
+####################################################
+
+@dataclass
+class Turbine_IN:
+    m_dot_t         : float
+    m_dot_c         : float
+    RPM             : float
+
+    T0_2comp        : float
+    T0_3comp        : float
+    T0_4m           : float
+    P0_4m           : float
+
+    r_mean_c        : float
+
+    m_dot_cool      : float
+    T0_cool         : float
+    P0_cool         : float
+
+    M_a             : float
+    P0_0m           : float
+    T0_0m           : float
+
+    Cp_c            : float
+    Cp_t            : float
+    gamma_c         : float
+    gamma_t         : float
+
+    eta_mech        : float
+    ep              : float
+
+    m_dot_f         : float
+    Cp_f            : float
+    T0_15           : float
+
+    alpha_1m        : float
+    alpha_2m        : float
+    Mc_2m           : float
+    Mw_3Rm          : float
+
+    Mc_2m_default   : float
+    Mw_3Rm_default  : float
+
+@dataclass
+class Turbine_OUT:
+    multistage_velocity_triangles:  list
+    multistage_info:                list
+    total_power_gen:                float
+    req_power:                      float
+    req_power_comp:                 float
+    req_power_fan:                  float
+    excess_power_margin:            float
+
+@dataclass
+class Turbine_Gen:
+    IN:  Turbine_IN = field(default=(Turbine_IN))
+    OUT: Turbine_OUT = field(default=(Turbine_OUT))
+
+@dataclass
+class Turbine:
+    HP: Turbine_Gen = field(default=Turbine_Gen)
+    LP: Turbine_Gen = field(default=Turbine_Gen)
+
+@dataclass
+class Turbine_Stage_Info:
+    degR_m: float
+    power : float
+    T0_1m : float
+    T0_2m : float
+    T0_3m : float
+    P0_1m : float
+    P0_2m : float
+    P0_3m : float
+
+####################################################
+#                    Pritchard                     #
+####################################################
 @dataclass
 class pts:
     betas: list
@@ -142,3 +316,15 @@ class blade:
 
     x_o: list
     y_o: list
+    x_thicc: list
+    y_thicc: list
+
+####################################################
+#                     Turbofan                     #
+####################################################
+
+@dataclass
+class TF:
+    cycle:      Cycle = field(default=Cycle)
+    compressor: Compressor = field(default=Compressor)
+    turbine:    Turbine = field(default=Turbine)

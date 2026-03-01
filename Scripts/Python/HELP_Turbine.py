@@ -2,21 +2,23 @@ import numpy as np
 import REF_AEQ
 import REF_structs
 
-def Turbine_Stage_Pitchline(initial, Mc_2m, Mw_3Rm, alpha_1m, schrodinkler, T0_1m, P0_1m, r_mean, ang_vel, gamma_t, R_t, Cp_t, m_dot_t):
+def Turbine_Stage_Pitchline(initial, Mc_2m, Mw_3Rm, alpha_1m, schrodinkler, T0_1m, P0_1m, r_mean, ang_vel, gamma_t, R_t, Cp_t, m_dot_t, current_power, target_power):
     # ======== INPUTS ======== 
-    # initial,      | Whether or not this function call is for the first turbine stage
-    # Mc_2m,        | Target stator exit Mach number
-    # Mw_3Rm,       | Target rotor exit relative Mach number
-    # alpha_1m,     | Stator inlet angle
-    # schrodinkler, | LE SCHRODINKER: If first turbine stage, specify stator nozzle exit angle. If NOT first turbine stage, specify axial velocity z_3m of previous stage
-    # T0_1m,        | Stator inlet total temperature
-    # P0_1m,        | Stator inlet total pressure
-    # r_mean,       | Meanline radius
-    # ang_vel,      | Angular Velocity
-    # gamma_t,      | Specific heat ratio
-    # R_t,          | Gas constant R
-    # Cp_t,         | Specific heat at constant pressure for the turbine
+    # initial       | Whether or not this function call is for the first turbine stage
+    # Mc_2m         | Target stator exit Mach number
+    # Mw_3Rm        | Target rotor exit relative Mach number
+    # alpha_1m      | Stator inlet angle
+    # schrodinkler  | LE SCHRODINKLER: If first turbine stage, specify stator nozzle exit angle. If NOT first turbine stage, specify axial velocity z_3m of previous stage
+    # T0_1m         | Stator inlet total temperature
+    # P0_1m         | Stator inlet total pressure
+    # r_mean        | Meanline radius
+    # ang_vel       | Angular Velocity
+    # gamma_t       | Specific heat ratio
+    # R_t           | Gas constant R
+    # Cp_t          | Specific heat at constant pressure for the turbine
     # m_dot_t       | Turbine mass flow rate
+    # current_power | Power generation currently before adding on the present stage
+    # target_power  | Power generation target
     
     # ======== Pitchline Calcs (turbine-specific station numbers) ========
     T0_2m = T0_1m   # No total temp drop over stator
@@ -69,11 +71,13 @@ def Turbine_Stage_Pitchline(initial, Mc_2m, Mw_3Rm, alpha_1m, schrodinkler, T0_1
     Ctheta_3m = U_2m + Wtheta_3m
 
     # Calculating miscellaneous velocities and angles
+    # Pythagoreas
     W_2m = np.sqrt(z_2m**2 + Wtheta_2m**2)
     W_3m = np.sqrt(z_3m**2 + Wtheta_3m**2)
     C_3m = np.sqrt(z_3m**2 + Ctheta_3m**2)
     W_1m = np.sqrt(z_1m**2 + Wtheta_1m**2)
     
+    # Trig
     beta_1m = np.acos(z_1m/W_1m)
     beta_2m = np.acos(z_2m/W_2m)
     beta_3m = -np.acos(z_3m/W_3m)
@@ -119,12 +123,16 @@ def Turbine_Stage_Pitchline(initial, Mc_2m, Mw_3Rm, alpha_1m, schrodinkler, T0_1
     
     # Power
     w_spec = U_2m*(Ctheta_2m-Ctheta_3m)     # Euler's
-    Powah = w_spec * m_dot_t                # Calculating stage power generation
+    power = w_spec * m_dot_t                # Calculating stage power generation
+
+    last = False
+    if power + current_power > target_power:
+        last = True
 
     degR_m = 1 - (Ctheta_2m + Ctheta_3m)/(2*U_2m)     # Stage degree of reaction
 
     # ======== OUTPUT ========
-    velocityTriangle = REF_structs.fullVelTriInfo(
+    velocityTriangle = REF_structs.FullVelTriInfo(
         C_1m, C_2m, C_3m,
         W_1m, W_2m, W_3m,
         U_1m, U_2m, U_3m,
@@ -141,15 +149,15 @@ def Turbine_Stage_Pitchline(initial, Mc_2m, Mw_3Rm, alpha_1m, schrodinkler, T0_1
         beta_1m,  beta_2m,  beta_3m
         )
     
-    turbineStageInfo = {
-        "degR_m" : degR_m,
-        "Powah"  : Powah,
-        "T0_1m"  : T0_1m,
-        "T0_2m"  : T0_2m,
-        "T0_3m"  : T0_3m,
-        "P0_1m"  : P0_1m,
-        "P0_2m"  : P0_2m,
-        "P0_3m"  : P0_3m
-    }
+    turbineStageInfo = REF_structs.Turbine_Stage_Info(
+        degR_m,
+        power,
+        T0_1m,
+        T0_2m,
+        T0_3m,
+        P0_1m,
+        P0_2m,
+        P0_3m
+    )
 
-    return [velocityTriangle, turbineStageInfo]
+    return [velocityTriangle, turbineStageInfo, last]
