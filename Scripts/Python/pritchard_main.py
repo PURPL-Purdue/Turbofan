@@ -60,7 +60,7 @@ def pritchard_main(params):
             failcode = "ttc didn't converge"
             break
     
-    REF.blade.x_thicc = REF.blade["x_pressure"[pos_ps - 1]], blade["x_suction"[pos_ss -1]]]  #are these two variables lists Im assuming?
+    REF.blade.x_thicc = REF.blade["x_pressure"[pos_ps - 1]], blade["x_suction"[pos_ss -1]]  #are these two variables lists Im assuming?
     REF.blade.y_thicc = [blade["y_pressure"[pos_ps - 1]], blade["y_suction"[pos_ss-1]]]
 
     #Extra params
@@ -94,6 +94,7 @@ def pritchard_main(params):
 #Helper Functions
     
 #Calculates max blade thickness and its location
+#Would like someone to look over these functions specifically
 def max_t(blade):
     rows = 1
     cols = len(REF.blade.x_pressure)
@@ -104,28 +105,27 @@ def max_t(blade):
     for i in len(REF.blade.x_pressure):
         thiccnesses[i] = min(np.linalg.norm(suction_array - pressure_array))
     [t_max, pos_ss] = max(thiccnesses)
+    pos_ps = np.argmin(np.linalg.norm(suction_array - pressure_array))
+    return(t_max, pos_ss, pos_ps)
 
+def min_t(blade):
+    rows = 1
+    cols = len(REF.blade.x_pressure)
+    suction_array = np.array([REF.blade.x_suction[i], REF.blade.y_suction[i]])
+    pressure_array = np.array([REF.blade.x_pressure, REF.blade.y_pressure])
+    thiccnesses = [[0 for _ in range(cols)] for _ in range(rows)]
+    for i in len(REF.blade.x_pressure):
+        thiccnesses[i] = min(np.linalg.norm(suction_array - pressure_array))
+    [t_min, pos_ss] = min(thiccnesses)
+    pos_ps = np.argmin(np.linalg.norm(suction_array - pressure_array))
+    return(t_min, pos_ss, pos_ps)
 
-#rest of unconverted code
-"""
-    thiccnesses = zeros(1, length(blade.x_pressure))
-    for i = 1:length(blade.x_pressure)
-        thiccnesses(i) = min(vecnorm([blade.x_suction(i); blade.y_suction(i)] - [blade.x_pressure; blade.y_pressure]));
-    end
-    [t_max, pos_ss] = max(thiccnesses);
-    [~, pos_ps] = min(vecnorm([blade.x_suction(pos_ss); blade.y_suction(pos_ss)] - [blade.x_pressure; blade.y_pressure]));
-end
+#Combines XY matricies into one big XY matrix
+#Just need to finish this function, would like to look over whole code before officially being done
+"""""
+def combiner(blade):
+    x_comb = 
 
-function [t_min, pos_ss, pos_ps] = min_t(blade)
-    thiccnesses = zeros(1, length(blade.x_pressure));
-    for i = 1:length(blade.x_pressure)
-        thiccnesses(i) = min(vecnorm([blade.x_suction(i); blade.y_suction(i)] - [blade.x_pressure; blade.y_pressure]));
-    end
-    [t_min, pos_ss] = min(thiccnesses);
-    [~, pos_ps] = min(vecnorm([blade.x_suction(pos_ss); blade.y_suction(pos_ss)] - [blade.x_pressure; blade.y_pressure]));
-end
-
-% Combines XY matricies into one big XY matrix
 function [x_comb, y_comb] = combiner(blade)
     x_comb = [blade.LEx, blade.x_pressure, blade.TEx, blade.x_suction];
     y_comb = [blade.LEy, blade.y_pressure, blade.TEy, blade.y_suction];

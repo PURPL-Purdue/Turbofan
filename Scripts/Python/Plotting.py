@@ -5,15 +5,12 @@ import numpy as np
 
 def plot(TF):
     
-    plt.figure(1)
     T0 = [a.T0 for a in vars(TF.cycle.OUT.T0P0).values()]
     P0 = [a.P0 for a in vars(TF.cycle.OUT.T0P0).values()]
     cycle(T0, P0)
 
-    plt.figure(2)
     turbine_velocity_triangles(TF.turbine.LP.OUT.multistage_velocity_triangles)
 
-    plt.figure(3)
     compressor_annulus_spans(
         TF.compressor.LP.OUT.num_stages,
         TF.compressor.LP.OUT.num_stages*2+1,
@@ -24,11 +21,27 @@ def plot(TF):
         TF.compressor.LP.OUT.FF
     )
 
-    plt.show()
+    compressor_info(
+        TF.compressor.LP.OUT.num_stages,
+        TF.compressor.LP.OUT.num_stages*2+1,
+        TF.compressor.LP.OUT.chord_m,
+        TF.compressor.LP.OUT.r_mean_1,
+        TF.compressor.LP.OUT.r_hub_vec,
+        TF.compressor.LP.OUT.r_tip_vec,
+        TF.compressor.LP.OUT.FF,
+        TF.compressor.LP.OUT.Pr_stages,
+        TF.compressor.LP.OUT.T0_stages,
+        TF.compressor.LP.OUT.P0_stages,
+        TF.compressor.LP.OUT.RVT
+    )
+
+    plt.show(block=False)
+    input("Press enter to close all plots")
+    plt.close('all')
 
 def cycle(T0, P0):
     # Setting up the plot
-    fig, axLeft = plt.subplots()
+    fig, axLeft = plt.subplots(num="Cycle P0 and T0 Chart")
     plt.title("Station Total Temperatures and Pressures")
     plt.subplots_adjust(left=0.15, bottom=0.1, right=0.85, top=0.9, wspace=0, hspace=0)
 
@@ -48,7 +61,7 @@ def cycle(T0, P0):
     plt.legend(loc="upper right")
 
 def compressor_annulus_spans(num_stages, num_stations, chord_m, r_mean_1, r_hub_vec, r_tip_vec, FF):
-    fig, axes = plt.subplots(3,1)
+    fig, axes = plt.subplots(3,1, num="Compressor Annulus")
     axes[0].set_title("Degree of Reaction")
     axes[0].set_ylabel("r (m)")
     axes[0].set_ylabel("z (m)")
@@ -78,8 +91,8 @@ def compressor_annulus_spans(num_stages, num_stations, chord_m, r_mean_1, r_hub_
     axes[0].axis('equal')
     axes[0].grid('minor')
 
-def compressor_info(num_stages, num_stations, chord_m, r_mean_1, r_hub_vec, r_tip_vec, FF, Pr_stages, T0_stages, P0_stages):
-    fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2,2)
+def compressor_info(num_stages, num_stations, chord_m, r_mean_1, r_hub_vec, r_tip_vec, FF, Pr_stages, T0_stages, P0_stages, RVT):
+    fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2,2, num="Compressor Info")
     x_axis = list(range(1,num_stages+1))
 
     ax1.plot(x_axis, Pr_stages)
@@ -103,6 +116,19 @@ def compressor_info(num_stages, num_stations, chord_m, r_mean_1, r_hub_vec, r_ti
     ax3.plot(x_axis, P0_stages)
     ax3_right = ax3.twinx()
     ax3_right.plot(x_axis, T0_stages)
+
+    plt.sca(ax4)
+    velocity_triangle(
+        RVT.C_1m,
+        RVT.W_1m,
+        RVT.U_1m,
+        RVT.alpha_1m,
+        RVT.beta_1m,
+        RVT.z_1m,
+        1
+    )
+
+
 
 def annulus_base(num_stages, num_stations, chord_m, r_mean_1, r_hub_vec, r_tip_vec, FF, axes):
     x_axis = list(range(1,num_stages+2));
@@ -129,9 +155,10 @@ def span(radii, data, num_streamlines, num_stations, x_axis_long, axis):
     cbar = plt.colorbar(map, ax=axis)
 
 def turbine_velocity_triangles(triangles):
+    plt.figure("Turbine Velocity Triangles")
     plt.title("Turbine Velocity Triangles")
     plt.xlabel("Station Numbers")
-    plt.ylim([-1,2])
+    plt.ylim([-2,2])
     plt.quiver(1, 0, triangles[0].C_1m*np.cos(triangles[0].alpha_1m), triangles[0].C_1m*np.sin(triangles[0].alpha_1m), angles='xy', scale_units='xy', scale=triangles[0].z_1m*1.1, color='red')
     offset = 2
 
