@@ -4,17 +4,17 @@ import REF_AEQ as AEQ
 import Plotting as plot
 
 def thermoCalcs(params):
-    eta    = params["eta"]                      # Isetronpic efficiencies
-    gamma  = params["gamma"]                    # Specific heat ratios
-    Pr     = params["Pr"]                       # Design pressure ratios
-    T_0    = params["T_0"]                      # Ambient temp
-    P_0    = params["P_0"]                      # Ambient pressure
-    M_f    = params["M_f"]                      # Flight mach number
-    Ra     = params["Ra"]                       # Gas constant of air
-    Rp     = params["Rp"]                       # Gas constant of combustion products
-    QR     = params["QR"]                       # Heat of reaction for combustion
-    bypass = params["bypass"]                   # Bypass ratio
-    combustion_temp = params["combustion_temp"] # Combustion temperature
+    eta    = params.eta                      # Isetronpic efficiencies
+    gamma  = params.gamma                    # Specific heat ratios
+    Pr     = params.Pr                       # Design pressure ratios
+    T_0    = params.T_0                      # Ambient temp
+    P_0    = params.P_0                      # Ambient pressure
+    M_f    = params.M_f                      # Flight mach number
+    Ra     = params.Ra                       # Gas constant of air
+    Rp     = params.Rp                       # Gas constant of combustion products
+    QR     = params.QR                       # Heat of reaction for combustion
+    bypass = params.bypass                   # Bypass ratio
+    combustion_temp = params.combustion_temp # Combustion temperature
 
     # lmao who cares about station 1 am i right (???)
     # ======== Station 1.5: Diffuser Outlet /Fan Inlet ========
@@ -104,74 +104,38 @@ def thermoCalcs(params):
                         )
     
     Cps = REF_structs.ByComponent(
-        None,
-        None,
-        Cp_f,
-        None,
-        Cp_cLP,
-        Cp_cHP,
-        Cp_b,
-        Cp_tHP,
-        Cp_tLP,
-        None
+        f= Cp_f,
+        cLP = Cp_cLP,
+        cHP = Cp_cHP,
+        b= Cp_b,
+        tHP = Cp_tHP,
+        tLP = Cp_tLP
     )
 
     thrust_target = 2500*4.44822
-
     m_dot_core = thrust_target/ST
+    m_dot_bypass = m_dot_core*bypass
+    m_dot_total = m_dot_core + m_dot_bypass
+    total_thrust = m_dot_core*ST / 4.44822
+    core_thrust = m_dot_core * ST_core / 4.44822
+    bypass_thrust = m_dot_core * ST_bypass / 4.44822
 
-    # print(fr)
-
-    Total_Thrust = m_dot_core*ST / 4.44822
-    Core_Thrust = m_dot_core * ST_core / 4.44822
-    Bypass_Thrust = m_dot_core * ST_bypass / 4.44822
-
-    with open("results.txt", "w") as txt:
-        txt.write("======== Cycle Analysis ========\n")
-        txt.write("Thrust:\n")
-        txt.write("    Specific Thrust                  | {:8.5f} N\n".format(ST))
-        txt.write("    Total Thrust                     | {:8.5f} lbf\n".format(Total_Thrust))
-        txt.write("    Core Thrust                      | {:8.5f} lbf\n".format(Core_Thrust))
-        txt.write("    Bypass Thrust                    | {:8.5f} lbf\n\n".format(Bypass_Thrust))
-        txt.write("Efficiencies:\n")
-        txt.write("    Thrust Specific Fuel Consumption | {:8.5f} N\n".format(TSFC))
-        txt.write("    Polytropic Efficiency            | {:8.5f} %\n".format(eta_p*100))
-        txt.write("    Isentropic Efficiency            | {:8.5f} %\n".format(eta_th*100))
-        txt.write("    Total Efficiency                 | {:8.5f} %\n\n".format(eta_0*100))
-        txt.write("Misc:\n")
-        txt.write("    Core Exit Velocity               | {:8.5f} m/s\n".format(u_ec))
-        txt.write("    Bypass Exit Velocity             | {:8.5f} m/s\n".format(u_ef))
-        txt.write("    Core Mass Flow Rate              | {:8.5f} kg\n".format(m_dot_core))
-        txt.write("\n\n======== Station Thermos ========\n")
-        txt.write("Temperatures:\n")
-        txt.write("    T01      | {:8.5f} K\n".format(T_0))
-        txt.write("    T015     | {:8.5f} K\n".format(T0_15))
-        txt.write("    T02      | {:8.5f} K\n".format(T0_2))
-        txt.write("    T025     | {:8.5f} K\n".format(T0_25))
-        txt.write("    T03      | {:8.5f} K\n".format(T0_3))
-        txt.write("    T04      | {:8.5f} K\n".format(T0_4))
-        txt.write("    T045     | {:8.5f} K\n".format(T0_45))
-        txt.write("    T05      | {:8.5f} K\n".format(T0_5))
-        txt.write("    T06      | {:8.5f} K\n".format(T0_6))
-        txt.write("    T07      | {:8.5f} K\n".format(T0_7))
-        txt.write("    T08      | {:8.5f} K\n".format(T_8))
-        txt.write("Pressures:\n")
-        txt.write("    P01      | {:8.5f} kPa\n".format(P_0/1000))
-        txt.write("    P015     | {:8.5f} kPa\n".format(P0_15/1000))
-        txt.write("    P02      | {:8.5f} kPa\n".format(P0_2/1000))
-        txt.write("    P025     | {:8.5f} kPa\n".format(P0_25/1000))
-        txt.write("    P03      | {:8.5f} kPa\n".format(P0_3/1000))
-        txt.write("    P04      | {:8.5f} kPa\n".format(P0_4/1000))
-        txt.write("    P045     | {:8.5f} kPa\n".format(P0_45/1000))
-        txt.write("    P05      | {:8.5f} kPa\n".format(P0_5/1000))
-        txt.write("    P06      | {:8.5f} kPa\n".format(P0_6/1000))
-        txt.write("    P07      | {:8.5f} kPa\n".format(P0_7/1000))
-        txt.write("    P08      | {:8.5f} kPa\n".format(P_8/1000))
-
-
-
-    T0 = [a.T0 for a in vars(T0P0).values()]
-    P0 = [a.P0 for a in vars(T0P0).values()]
-    plot.cycle(T0, P0)
-
-    return[T0P0, Cps, [ST, TSFC], [eta_p, eta_th, eta_0], m_dot_core]
+    cycle_OUT = REF_structs.Cycle_OUT(
+        T0P0,
+        Cps,
+        ST,
+        TSFC,
+        total_thrust,
+        core_thrust,
+        bypass_thrust,
+        eta_p,
+        eta_th,
+        eta_0,
+        m_dot_core,
+        m_dot_bypass,
+        m_dot_total,
+        u_ec,
+        u_ef
+    )
+    
+    return cycle_OUT

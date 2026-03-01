@@ -1,6 +1,0 @@
-======== Thrust and Efficiencies ========
-    ST | 894.033 N
-  TSFC |   0.000 N
- eta_p |  49.630 %
-eta_th |  35.989 %
- eta_0 |  17.861 %
