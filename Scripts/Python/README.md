@@ -3,7 +3,8 @@ The PURPL Turbofan project aims to design, manufacture, and test a 2500-lbf turb
 
 ## Code Structure and Introduction
 This following section contains a brief overview of how the code for the turbofan project is structured. I do not claim this to be the best way to structure code, so if you, the reader, has any suggestions for how to better format, structure, write, and comment code, please let me know!
-\- Marvel Zheng
+
+\- Marvel
 
 Note: This was written on 3/1/26 and I'm guessing by now there's new stuff in the repo that I haven't mentioned here. If this README is egregiously out of date, please let me know and I can update it.
 
@@ -19,10 +20,13 @@ Within Turbofan_Main, we do three main things:
 3) Call functions from Station_Thermo, Component_Sizing, Print_Results, and Plotting
 
 **The TF Object**
+
 The TF object is a data structure that contains all the relevant data for the entire engine generated during the cycle analysis and component sizing. Each time we run functions such as the cycle analysis or a component sizing script, the TF object gets updated with new values. The TF object itself is composed of many other objects as attributes, which themselves may have more object attributes. These can be referenced using periods. For example, the inlet mean radius of the low pressure compressor is referenced with "TF.compressor.LP.OUT.r_mean_1"
 
 **Input Data Structures and Function IO**
+
 The input data structures are dataclasses that hold in all the information that we send to our sizing functions. These input structures all have names that end with .IN, such as TF.compressor.LP.IN and TF.turbine.HP.IN. Every time we call a sizing or cycle function, the only input we give it is the corresponding .IN data structure. This keep Turbofan_Main tidy, and has the added benefit of making all of our inputs and design decisions easily readable. Likewise, each sizing or cycle function only returns one object, which then gets added to the TF object as a .OUT.
 
 **Sizing Results**
+
 Finally, Print_Results and Plotting each take in the entire TF object and outputs numerical values and graphs, respectively, to help the user understand what the engine is doing.
