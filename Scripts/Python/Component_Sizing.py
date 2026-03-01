@@ -93,6 +93,8 @@ def Axial_Compressor_Sizing(params):
         W_1m = z_1m / np.cos(beta_1m)
         Mw_1m = W_1m/a_1m
 
+        print(beta_1m)
+
         # Station 2 stuff
         U_2m = U_1m        # Initial Approximation, true if we adjust both hub and shroud
         z_2m = z_1m        # Design chioce
@@ -241,6 +243,7 @@ def Axial_Compressor_Sizing(params):
         T0_stages,
         r_hub_vec,
         r_tip_vec,
+        Pr_stages,
         StageInfo,
         num_stages_actual,
         num_stages,
@@ -256,9 +259,6 @@ def Axial_Compressor_Sizing(params):
         U_tip_inlet,
         r_mean_1
     )
-
-    # plot.compressor_annulus_spans(num_stages, num_stations, chord_m, r_mean_1, r_hub_vec, r_tip_vec, FF)
-    # plot.compressor_info(num_stages, num_stations, chord_m, r_mean_1, r_hub_vec, r_tip_vec, FF, Pr_stages, T0_stages, P0_stages)
 
     return AC_OUT
 
