@@ -250,7 +250,7 @@ FF = Compressor_Free_Vortex(rps, r_hub_vec, r_tip_vec, ang_vel, degR_m, rho_m_ve
 %% Plotting
 % Pressure Ratios (per stage)
 figure(1);clf;
-tiledlayout(2,2, TileSpacing='tight', Padding='tight')
+tiledlayout(1,4, TileSpacing='tight', Padding='tight')
 nexttile
 hold on
 title("Pressure Ratios (per stage)")

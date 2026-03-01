@@ -1,49 +1,153 @@
+####################################################
+#                  Cycle Analysis                  #
+####################################################
 
-Avidh was here! 
-
-======== Cycle Analysis ========
+======== General Parameters ========
 Thrust:
-    Specific Thrust                  |      nan N
-    Total Thrust                     |      nan lbf
-    Core Thrust                      |      nan lbf
-    Bypass Thrust                    |      nan lbf
-
+    Specific Thrust                  | 1222.216 N
+    Total Thrust                     | 2500.000 lbf
+    Core Thrust                      |  645.377 lbf
+    Bypass Thrust                    | 1854.623 lbf
+    Bypass Thrust Percentage         |   74.185 %
 Efficiencies:
-    Thrust Specific Fuel Consumption |      nan N
-    Polytropic Efficiency            |      nan %
-    Isentropic Efficiency            |      nan %
-    Total Efficiency                 |      nan %
-
+    Thrust Specific Fuel Consumption |  0.00001 N
+    Polytropic Efficiency            |  0.00000 %
+    Isentropic Efficiency            | 34.87159 %
+    Total Efficiency                 |  0.00000 %
+Pressure Ratios:
+    Fan Pressure Ratio               |     1.70
+    LPC Pressure Ratio               |     2.60
+    HPC Pressure Ratio               |     5.00
+    Total Pressure Ratio             |    22.10
 Misc:
-    Core Exit Velocity               |      nan m/s
-    Bypass Exit Velocity             | 293.58480 m/s
-    Core Mass Flow Rate              |      nan kg
+    Core Exit Velocity               |  311.714 m/s
+    Bypass Exit Velocity             |  313.737 m/s
+    Core Mass Flow Rate              |    9.099 kg/s
+    Bypass Mass Flow Rate            |   26.295 kg/s
+    Total Mass Flow Rate             |   35.394 kg/s
 
-
-======== Station Thermos ========
+======== Station Pressures and Temperatures ========
 Temperatures:
-    T01      | 298.00000 K
+    T0a      | 298.00000 K
     T015     | 298.00000 K
-    T02      | 348.38680 K
-    T025     | 619.58019 K
-    T03      | 1101.87761 K
+    T02      | 355.39272 K
+    T025     | 504.13857 K
+    T03      | 896.57321 K
     T04      | 1300.00000 K
-    T045     | 893.08903 K
-    T05      | 541.42828 K
-    T06      | 541.42828 K
-    T07      | 541.42828 K
+    T045     | 971.03772 K
+    T05      | 707.31205 K
+    T06      | 707.31205 K
+    T07      | 707.31205 K
     T08      | 298.00000 K
 Pressures:
-    P01      | 101.30000 kPa
+    P0a      | 101.30000 kPa
     P015     | 101.30000 kPa
-    P02      | 162.08000 kPa
-    P025     | 810.40000 kPa
-    P03      | 4052.00000 kPa
-    P04      | 3849.40000 kPa
-    P045     | 660.31186 kPa
-    P05      | 61.51443 kPa
-    P06      | 61.51443 kPa
-    P07      | 61.51443 kPa
+    P02      | 172.21000 kPa
+    P025     | 447.74600 kPa
+    P03      | 2238.73000 kPa
+    P04      | 2238.73000 kPa
+    P045     | 573.58642 kPa
+    P05      | 130.34571 kPa
+    P06      | 130.34571 kPa
+    P07      | 130.34571 kPa
     P08      | 101.30000 kPa
 
-wow this is an awesome message
+
+####################################################
+#                Compressor Sizing                 #
+####################################################
+
+======== Compressor Information ========
+Ratios:
+    Total Pressure Ratio (design):         2.60000
+    Total Pressure Ratio (actual):         2.58032
+    Total Temperature Ratio (design):      1.31753
+    Total Temperature Ratio (actual):      1.31465
+Values:
+    Temperature Rise (total):            112.84884 K
+    Temperature Rise (per stage):         37.27447 K
+    Pressure Rise (total):               272.14759 kPa
+    Inlet Total Temperature (total):     355.39272 K
+    Inlet Total Pressure (total):        172.21000 kPa
+    Exit Total Temperature (total):      467.21613 K
+    Exit Total Pressure (total):         444.35759 kPa
+Aerodynamics:
+    Rotor Diffusion Factor:                0.59576
+    Stator Diffusion Factor:               0.54618
+    Stage Degree of Reaction:              0.34320
+    De Haller Ratio Used:                  0.72000
+    Rotor Inlet Mach Number:               0.62761
+    Stator Inlet Mach Number:              0.78096
+    Compressor Inlet Mach Number:          0.51962
+    Compressor Outlet Mach Number:         0.45000
+Triangles:
+    Rotor Turning:                        38.96848 deg
+    Stator Turning:                       25.55696 deg
+Misc:
+    Number of Stages (calculated):         3.02751
+    Number of Stages (rounded up):         3.00000
+    Blade Chord Length:                    0.01896 m
+    RPM:                               15034.05953 rpm
+    Inlet Tip Radius:                    181.22330 mm (7.13478 in)
+    Inlet Tip Velocity:                  285.17334 m/s
+
+
+####################################################
+#                 Turbine Sizing                   #
+####################################################
+Overview:
+    Number of Stages:                            4
+    Power Required by Compressor:          2.04049 MW
+    Power Required by Fan:                 1.35948 MW
+    Total Power Required:                  3.41023 MW
+    Total Power Generated:                 4.09512 MW
+    Excess Power Margin:                  20.08353 %
+Info per Stage:
+    Stage 1
+        Power Generated:               1.37868 MW
+        Mean Degree of Reaction:       0.00000
+        --------------------------------------------------------------------------------
+        C_1m: 305.34 (0.514) | C_2m: 610.67 (1.100) | C_3m: 311.47 (0.565) | m/s (Mach)
+        W_1m: 398.88 (0.671) | W_2m: 409.05 (0.737) | W_3m: 440.99 (0.800) | m/s (Mach)
+        U_1m:         256.66 | U_2m:         256.66 | U_3m:         256.66 | m/s
+        alpha_1m:       0.00 | alpha_2m:      60.00 | alpha_3m:     -11.39 | degrees
+        beta_1m:       40.05 | beta_2m:       41.72 | beta_3m:      -46.18 | degrees
+        --------------------------------------------------------------------------------
+        T0_1m:       971.038 | T0_2m:       971.038 | T0_3m:       843.047 | K
+        P0_1m:       573.586 | P0_2m:       568.184 | P0_3m:       309.782 | kPa
+    Stage 2
+        Power Generated:               1.08375 MW
+        Mean Degree of Reaction:       0.00000
+        --------------------------------------------------------------------------------
+        C_1m: 311.47 (0.565) | C_2m: 508.31 (0.964) | C_3m: 310.74 (0.603) | m/s (Mach)
+        W_1m: 440.99 (0.800) | W_2m: 340.07 (0.645) | W_3m: 438.24 (0.850) | m/s (Mach)
+        U_1m:         256.66 | U_2m:         256.66 | U_3m:         256.66 | m/s
+        alpha_1m:     -11.39 | alpha_2m:      53.08 | alpha_3m:     -10.70 | degrees
+        beta_1m:       46.18 | beta_2m:       26.12 | beta_3m:      -45.83 | degrees
+        --------------------------------------------------------------------------------
+        T0_1m:       843.047 | T0_2m:       843.047 | T0_3m:       742.436 | K
+        P0_1m:       309.782 | P0_2m:       306.329 | P0_3m:       177.964 | kPa
+    Stage 3
+        Power Generated:               0.90136 MW
+        Mean Degree of Reaction:       0.00000
+        --------------------------------------------------------------------------------
+        C_1m: 310.74 (0.603) | C_2m: 477.02 (0.964) | C_3m: 305.96 (0.632) | m/s (Mach)
+        W_1m: 438.24 (0.850) | W_2m: 324.49 (0.656) | W_3m: 411.69 (0.850) | m/s (Mach)
+        U_1m:         256.66 | U_2m:         256.66 | U_3m:         256.66 | m/s
+        alpha_1m:     -10.70 | alpha_2m:      50.20 | alpha_3m:      -3.65 | degrees
+        beta_1m:       45.83 | beta_2m:       19.78 | beta_3m:      -42.13 | degrees
+        --------------------------------------------------------------------------------
+        T0_1m:       742.436 | T0_2m:       742.436 | T0_3m:       658.758 | K
+        P0_1m:       177.964 | P0_2m:       175.744 | P0_3m:       105.253 | kPa
+    Stage 4
+        Power Generated:               0.73133 MW
+        Mean Degree of Reaction:       0.00000
+        --------------------------------------------------------------------------------
+        C_1m: 305.96 (0.632) | C_2m: 449.33 (0.964) | C_3m: 305.78 (0.669) | m/s (Mach)
+        W_1m: 411.69 (0.850) | W_2m: 313.94 (0.674) | W_3m: 388.48 (0.850) | m/s (Mach)
+        U_1m:         256.66 | U_2m:         256.66 | U_3m:         256.66 | m/s
+        alpha_1m:      -3.65 | alpha_2m:      47.19 | alpha_3m:       3.09 | degrees
+        beta_1m:       42.13 | beta_2m:       13.44 | beta_3m:      -38.19 | degrees
+        --------------------------------------------------------------------------------
+        T0_1m:       658.758 | T0_2m:       658.758 | T0_3m:       590.864 | K
+        P0_1m:       105.253 | P0_2m:       103.831 | P0_3m:        64.962 | kPa

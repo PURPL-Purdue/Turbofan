@@ -1,6 +1,30 @@
 import matplotlib.pyplot as plt
 import matplotlib.colors as colors
 import matplotlib.cm as cm
+import numpy as np
+
+def plot(TF):
+    
+    plt.figure(1)
+    T0 = [a.T0 for a in vars(TF.cycle.OUT.T0P0).values()]
+    P0 = [a.P0 for a in vars(TF.cycle.OUT.T0P0).values()]
+    cycle(T0, P0)
+
+    plt.figure(2)
+    turbine_velocity_triangles(TF.turbine.LP.OUT.multistage_velocity_triangles)
+
+    plt.figure(3)
+    compressor_annulus_spans(
+        TF.compressor.LP.OUT.num_stages,
+        TF.compressor.LP.OUT.num_stages*2+1,
+        TF.compressor.LP.OUT.chord_m,
+        TF.compressor.LP.OUT.r_mean_1,
+        TF.compressor.LP.OUT.r_hub_vec,
+        TF.compressor.LP.OUT.r_tip_vec,
+        TF.compressor.LP.OUT.FF
+    )
+
+    plt.show()
 
 def cycle(T0, P0):
     # Setting up the plot
@@ -80,12 +104,6 @@ def compressor_info(num_stages, num_stations, chord_m, r_mean_1, r_hub_vec, r_ti
     ax3_right = ax3.twinx()
     ax3_right.plot(x_axis, T0_stages)
 
-
-
-
-
-
-
 def annulus_base(num_stages, num_stations, chord_m, r_mean_1, r_hub_vec, r_tip_vec, FF, axes):
     x_axis = list(range(1,num_stages+2));
     x_axis = [(i-1)*2*chord_m for i in x_axis]
@@ -110,6 +128,24 @@ def span(radii, data, num_streamlines, num_stations, x_axis_long, axis):
         axis.scatter([x_axis_long[i] for _ in range(num_streamlines)], radii[i], s=None, c=data[i], cmap='turbo', norm=norm)
     cbar = plt.colorbar(map, ax=axis)
 
+def turbine_velocity_triangles(triangles):
+    plt.title("Turbine Velocity Triangles")
+    plt.xlabel("Station Numbers")
+    plt.ylim([-1,2])
+    plt.quiver(1, 0, triangles[0].C_1m*np.cos(triangles[0].alpha_1m), triangles[0].C_1m*np.sin(triangles[0].alpha_1m), angles='xy', scale_units='xy', scale=triangles[0].z_1m*1.1, color='red')
+    offset = 2
+
+    for tri in triangles:
+        velocity_triangle(tri.C_2m, tri.W_2m, tri.U_2m, tri.alpha_2m, tri.beta_2m, tri.z_2m, offset)
+        offset = offset + 1
+        velocity_triangle(tri.C_3m, tri.W_3m, tri.U_3m, tri.alpha_3m, tri.beta_3m, tri.z_3m, offset)
+        offset = offset + 1
+
 def tree(trunk, branches, root_x, root_y, scale, style, axis):
     for i in range(len(trunk)):
         axis.quiver(root_x, root_y + trunk(i), branches(i), 0, scale, style)
+
+def velocity_triangle(C, W, U, alpha, beta, z, z_offset):
+    plt.quiver(z_offset, 0, C*np.cos(alpha), C*np.sin(alpha), angles='xy', scale_units='xy', scale=z*1.1, color='red')
+    plt.quiver(z_offset, 0, W*np.cos(beta),  W*np.sin(beta), angles='xy', scale_units='xy', scale=z*1.1, color='cyan')
+    plt.quiver(z_offset+(1/1.1), W*np.sin(beta)/(z*1.1), 0, U, angles='xy', scale_units='xy', scale=z*1.1, color='teal')
