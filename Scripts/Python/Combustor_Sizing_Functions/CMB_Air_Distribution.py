@@ -2,7 +2,7 @@ from dataclasses import dataclass
 import numpy as np
 import math as m
 import matplotlib.pyplot as plt
-import HELP_Air_Distribution as helper
+import Scripts.Python.Combustor_Sizing_Functions.HELP_Combustor as helper
 
 
 '''
