@@ -95,6 +95,13 @@ def write(TF):
         txt.write("    RPM:                              {:12.5f} rpm\n".format(comp_LP.OUT.RPM))
         txt.write("    Inlet Tip Radius:                 {:12.5f} mm ({:.5f} in)\n".format(comp_LP.OUT.FF.r_tip_vec_full[0]*1000, comp_LP.OUT.FF.r_tip_vec_full[0]*1000/25.4))
         txt.write("    Inlet Tip Velocity:               {:12.5f} m/s\n".format(comp_LP.OUT.U_tip_inlet))
+        RVT = comp_LP.OUT.RVT
+        txt.write("Velocity Triangle:\n")
+        txt.write("    C_1m: {:6.2f} ({:.3f}) | C_2m: {:6.2f} ({:.3f}) | C_3m: {:6.2f} ({:.3f}) | m/s (Mach)\n".format(RVT.C_1m, RVT.Mc_1m, RVT.C_2m, RVT.Mc_2m, RVT.C_3m, RVT.Mc_3m))
+        txt.write("    W_1m: {:6.2f} ({:.3f}) | W_2m: {:6.2f} ({:.3f}) | W_3m: {:6.2f} ({:.3f}) | m/s (Mach)\n".format(RVT.W_1m, RVT.Mw_1m, RVT.W_2m, RVT.Mw_2m, RVT.W_3m, RVT.Mw_3m))
+        txt.write("    U_1m: {:14.2f} | U_2m: {:14.2f} | U_3m: {:14.2f} | m/s\n".format(RVT.U_1m, RVT.U_2m, RVT.U_3m))
+        txt.write("    alpha_1m: {:10.2f} | alpha_2m: {:10.2f} | alpha_3m: {:10.2f} | degrees\n".format(np.degrees(RVT.alpha_1m), np.degrees(RVT.alpha_2m), np.degrees(RVT.alpha_3m)))
+        txt.write("    beta_1m: {:11.2f} | beta_2m: {:11.2f} | beta_3m: {:11.2f} | degrees\n".format(np.degrees(RVT.beta_1m), np.degrees(RVT.beta_2m), np.degrees(RVT.beta_3m)))
 
         txt.write("\n\n")
         txt.write("####################################################\n")

@@ -141,16 +141,12 @@ def D_factor(W1, W2, Ctheta_1, Ctheta_2, sigma):
         D = 1- W2/W1 + abs(Ctheta_1 - Ctheta_2)/(2*sigma*W1)
         return D
 
-def annulus_adjust(T0, P0, R, cp, gamma, m_dot, C, z, r_mean):
-        T = T0 - C**2/(2*cp) # | spanwise constant (design choice i think)
-        
-        a = np.sqrt((gamma-1)*cp*T)
-        Mc = C/a
-        
-        P = P0 *REF_AEQ.P_P0(gamma, Mc) # | spanwise constant (design choice i think)
+def annulus_adjust(T0, P0, R, gamma, m_dot, z, Mc, r_mean):
+        T = T0 * REF_AEQ.T_T0(gamma, Mc) # | spanwise constant (design choice i think)
+        P = P0 * REF_AEQ.P_P0(gamma, Mc) # | spanwise constant (design choice i think)
         rho_m = P/(R*T)
 
-        A = m_dot/rho_m/z
+        A = m_dot/(rho_m*z)
         h = A / (4 * np.pi * r_mean)
 
         r_hub = r_mean - h

@@ -1,6 +1,7 @@
 import numpy as np
 import REF_AEQ
 import REF_structs
+import matplotlib.pyplot as plt
 
 def Turbine_Stage_Pitchline(initial, Mc_2m, Mw_3Rm, alpha_1m, schrodinkler, T0_1m, P0_1m, r_mean, ang_vel, gamma_t, R_t, Cp_t, m_dot_t, current_power, target_power):
     # ======== INPUTS ======== 
@@ -78,7 +79,7 @@ def Turbine_Stage_Pitchline(initial, Mc_2m, Mw_3Rm, alpha_1m, schrodinkler, T0_1
     W_1m = np.sqrt(z_1m**2 + Wtheta_1m**2)
     
     # Trig
-    beta_1m = np.acos(z_1m/W_1m)
+    beta_1m = -np.acos(z_1m/W_1m)
     beta_2m = np.acos(z_2m/W_2m)
     beta_3m = -np.acos(z_3m/W_3m)
     alpha_3m = np.atan(Ctheta_3m/z_3m)
@@ -161,3 +162,72 @@ def Turbine_Stage_Pitchline(initial, Mc_2m, Mw_3Rm, alpha_1m, schrodinkler, T0_1
     )
 
     return [velocityTriangle, turbineStageInfo, last]
+
+def Turbine_Annulus_Sizing(triangles, info, m_dot_target, gamma, R, r_mean_1):
+    # Setup for multi-stage shennanigans
+    num_stages = len(info)
+    num_stations = num_stages*2+1
+    num_streamlines = 51 # how very odd (this number MUST be odd to ensure we actually have an integer middle index)
+
+    # Calculations for initial annulus sizing without radial equilibrium effects
+    r_hub_stations = [1 for _ in range(num_stations)]
+    r_tip_stations = [1 for _ in range(num_stations)]
+    rho_m_stations = [1 for _ in range(num_stations)]
+
+    r_hub_stations[0], r_tip_stations[0], rho_m_stations[0] = annulus_adjust(info[0].T0_1m, info[0].P0_1m, R, gamma, m_dot_target, triangles[0].z_1m, triangles[0].Mc_1m, r_mean_1)
+    counter = 1
+    for i in range(len(info)):
+        r_hub_stations[counter], r_tip_stations[counter], rho_m_stations[counter] = annulus_adjust(
+            info[i].T0_2m,
+            info[i].P0_2m,
+            R,
+            gamma,
+            m_dot_target,
+            triangles[i].z_2m,
+            triangles[i].Mc_2m,
+            r_mean_1
+        )
+        r_hub_stations[counter+1], r_tip_stations[counter+1], rho_m_stations[counter+1] = annulus_adjust(
+            info[i].T0_3m,
+            info[i].P0_3m,
+            R,
+            gamma,
+            m_dot_target,
+            triangles[i].z_3m,
+            triangles[i].Mc_3m,
+            r_mean_1
+        )
+        counter = counter + 2
+    stations = [_ for _ in range(1, num_stations+1)]
+    plt.plot(stations, r_tip_stations)
+    plt.plot(stations, r_hub_stations)
+
+    plt.plot(stations, [-_ for _ in r_tip_stations])
+    plt.plot(stations, [-_ for _ in r_hub_stations])
+
+    print(rho_m_stations)
+    
+
+
+    ## ======== Vector Creation and Initialization ========
+    r_spans      = [[] for _ in range(num_stations)]
+    Ctheta_spans = [[] for _ in range(num_stations)]
+    z_spans      = [[] for _ in range(num_stations)]
+    rho_spans    = [[] for _ in range(num_stations)]
+    T_spans      = [[] for _ in range(num_stations)]
+    r_spans      = [[] for _ in range(num_stations)]
+
+    # for i in range(len())
+
+def annulus_adjust(T0, P0, R, gamma, m_dot, z, Mc, r_mean):
+        T = T0 * REF_AEQ.T_T0(gamma, Mc) # | spanwise constant (design choice i think)
+        P = P0 * REF_AEQ.P_P0(gamma, Mc) # | spanwise constant (design choice i think)
+        rho_m = P/(R*T)
+
+        A = m_dot/(rho_m*z)
+        h = A / (4 * np.pi * r_mean)
+
+        r_hub = r_mean - h
+        r_tip = r_mean + h
+    
+        return [r_hub, r_tip, rho_m]

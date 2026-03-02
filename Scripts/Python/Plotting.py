@@ -5,35 +5,31 @@ import numpy as np
 
 def plot(TF):
     
-    T0 = [a.T0 for a in vars(TF.cycle.OUT.T0P0).values()]
-    P0 = [a.P0 for a in vars(TF.cycle.OUT.T0P0).values()]
-    cycle(T0, P0)
+    # T0 = [a.T0 for a in vars(TF.cycle.OUT.T0P0).values()]
+    # P0 = [a.P0 for a in vars(TF.cycle.OUT.T0P0).values()]
+    # cycle(T0, P0)
 
     turbine_velocity_triangles(TF.turbine.LP.OUT.multistage_velocity_triangles)
 
-    compressor_annulus_spans(
-        TF.compressor.LP.OUT.num_stages,
-        TF.compressor.LP.OUT.num_stages*2+1,
-        TF.compressor.LP.OUT.chord_m,
-        TF.compressor.LP.OUT.r_mean_1,
-        TF.compressor.LP.OUT.r_hub_vec,
-        TF.compressor.LP.OUT.r_tip_vec,
-        TF.compressor.LP.OUT.FF
-    )
+    # compressor_annulus_spans(
+    #     TF.compressor.LP.OUT.num_stages,
+    #     TF.compressor.LP.OUT.num_stages*2+1,
+    #     TF.compressor.LP.OUT.chord_m,
+    #     TF.compressor.LP.OUT.r_mean_1,
+    #     TF.compressor.LP.OUT.FF
+    # )
 
-    compressor_info(
-        TF.compressor.LP.OUT.num_stages,
-        TF.compressor.LP.OUT.num_stages*2+1,
-        TF.compressor.LP.OUT.chord_m,
-        TF.compressor.LP.OUT.r_mean_1,
-        TF.compressor.LP.OUT.r_hub_vec,
-        TF.compressor.LP.OUT.r_tip_vec,
-        TF.compressor.LP.OUT.FF,
-        TF.compressor.LP.OUT.Pr_stages,
-        TF.compressor.LP.OUT.T0_stages,
-        TF.compressor.LP.OUT.P0_stages,
-        TF.compressor.LP.OUT.RVT
-    )
+    # compressor_info(
+    #     TF.compressor.LP.OUT.num_stages,
+    #     TF.compressor.LP.OUT.num_stages*2+1,
+    #     TF.compressor.LP.OUT.chord_m,
+    #     TF.compressor.LP.OUT.r_mean_1,
+    #     TF.compressor.LP.OUT.FF,
+    #     TF.compressor.LP.OUT.Pr_stages,
+    #     TF.compressor.LP.OUT.T0_stages,
+    #     TF.compressor.LP.OUT.P0_stages,
+    #     TF.compressor.LP.OUT.RVT
+    # )
 
     plt.show(block=False)
     input("Press enter to close all plots")
@@ -60,7 +56,7 @@ def cycle(T0, P0):
     axRight.set_ylabel("Total Pressure")
     plt.legend(loc="upper right")
 
-def compressor_annulus_spans(num_stages, num_stations, chord_m, r_mean_1, r_hub_vec, r_tip_vec, FF):
+def compressor_annulus_spans(num_stages, num_stations, chord_m, r_mean_1, FF):
     fig, axes = plt.subplots(3,1, num="Compressor Annulus")
     axes[0].set_title("Degree of Reaction")
     axes[0].set_ylabel("r (m)")
@@ -74,7 +70,7 @@ def compressor_annulus_spans(num_stages, num_stations, chord_m, r_mean_1, r_hub_
     axes[2].set_ylabel("r (m)")
     axes[2].set_ylabel("z (m)")
 
-    x_axis, x_axis_long = annulus_base(num_stages, num_stations, chord_m, r_mean_1, r_hub_vec, r_tip_vec, FF, axes)
+    x_axis, x_axis_long = annulus_base(num_stages, num_stations, chord_m, r_mean_1, FF, axes)
     
     data_min = min([min(span) for span in FF.degR_spans]) 
     data_max = max([max(span) for span in FF.degR_spans])
@@ -89,35 +85,41 @@ def compressor_annulus_spans(num_stages, num_stations, chord_m, r_mean_1, r_hub_
     span(FF.r_spans, FF.z_spans,      FF.num_streamlines, num_stations, x_axis_long, axes[2])
 
     axes[0].axis('equal')
-    axes[0].grid('minor')
+    axes[1].axis('equal')
+    axes[2].axis('equal')
 
-def compressor_info(num_stages, num_stations, chord_m, r_mean_1, r_hub_vec, r_tip_vec, FF, Pr_stages, T0_stages, P0_stages, RVT):
-    fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2,2, num="Compressor Info")
+def compressor_info(num_stages, num_stations, chord_m, r_mean_1, FF, Pr_stages, T0_stages, P0_stages, RVT):
+    plt.figure(num="Compressor Pressure Ratios per Stage")
     x_axis = list(range(1,num_stages+1))
+    plt.title("Pressure Ratios per Stage")
+    plt.xlabel("Stages")
+    plt.xticks([_ for _ in range(1, num_stages+2)])
+    plt.plot(x_axis, Pr_stages)
 
-    ax1.plot(x_axis, Pr_stages)
-
+    fig, axLeft = plt.subplots(num="Compressor Total Temperatures and Pressures per Station")
     x_axis = list(range(1,num_stages+2));
-    x_axis = [(i-1)*2*chord_m for i in x_axis]
+    axLeft.set_title("Total Temperatures and Pressures per Station")
+    axLeft.set_xlabel("Stations")
+    axLeft.set_xticks([_ for _ in range(1, num_stations+1)])
+    P0_plot, = axLeft.plot(x_axis, P0_stages, color="teal", label="Pressure (P0)")
+    axLeft.set_ylabel("P0 (Pa)")
 
+    axRight = axLeft.twinx()
+    T0_plot, = axRight.plot(x_axis, T0_stages, color="red", label="Temperature(T0)")
+    axRight.set_ylabel("T0 (K)")
+
+    plots = [P0_plot, T0_plot]
+    labels = [_.get_label() for _ in plots]
+
+    axLeft.legend(plots, labels, loc='upper left')
+
+    plt.figure(num="Compressor Velocity Triangle")
+    x_axis = [(i-1)*2*chord_m for i in x_axis]
     x_axis_long = list(range(1,FF.num_stations+1))
     x_axis_long = [(i-1)*chord_m for i in x_axis_long]
     
-    ax2.hlines(r_mean_1, 0, (num_stations-1)*chord_m)
-    ax2.plot(x_axis, r_hub_vec, '.-r', x_axis, r_tip_vec, '.-r')
-    ax2.plot(x_axis_long, FF.r_hub_vec_full, '.-k', x_axis_long, FF.r_tip_vec_full, '.-k')
-
-
-    ax2.plot(x_axis, r_hub_vec, '.-r', x_axis, r_tip_vec, '.-r')
-    ax2.plot(x_axis_long, FF.r_hub_vec_full, '.-k', x_axis_long, FF.r_tip_vec_full, '.-k')
-    
-    ax2.axis('equal')
-    
-    ax3.plot(x_axis, P0_stages)
-    ax3_right = ax3.twinx()
-    ax3_right.plot(x_axis, T0_stages)
-
-    plt.sca(ax4)
+    plt.title("Velocity Triangle (Repeating)")
+    plt.xlabel("Station Number")
     velocity_triangle(
         RVT.C_1m,
         RVT.W_1m,
@@ -127,10 +129,30 @@ def compressor_info(num_stages, num_stations, chord_m, r_mean_1, r_hub_vec, r_ti
         RVT.z_1m,
         1
     )
+    plt.xlim([0.5,2.5])
+    plt.ylim([-1,1])
+    plt.xticks([1,2])
+    plt.axis('equal')
 
+    plt.figure(num="Compressor Annulus Geometry")
+    plt.title("Compressor Annulus Geometry")
+    plt.xlabel("Axial Length (m)")
+    plt.ylabel("Radial Direction (m)")
+    # Upper Annulus
+    plt.hlines(r_mean_1, 0, (num_stations-1)*chord_m)
+    # plt.plot(x_axis, r_hub_vec, '.-r', x_axis, r_tip_vec, '.-r')
+    plt.plot(x_axis_long, FF.r_hub_vec_full, '.-k', x_axis_long, FF.r_tip_vec_full, '.-k')
+    # plt.plot(x_axis, r_hub_vec, '.-r', x_axis, r_tip_vec, '.-r')
+    plt.plot(x_axis_long, FF.r_hub_vec_full, '.-k', x_axis_long, FF.r_tip_vec_full, '.-k')
+    # Mirrored Lower Annulus
+    plt.hlines(-r_mean_1, 0, (num_stations-1)*chord_m)
+    # plt.plot(x_axis, [-_ for _ in r_hub_vec], '.-r', x_axis, [-_ for _ in r_tip_vec], '.-r')
+    plt.plot(x_axis_long, [-_ for _ in FF.r_hub_vec_full], '.-k', x_axis_long, [-_ for _ in FF.r_tip_vec_full], '.-k')
+    # plt.plot(x_axis, [-_ for _ in r_hub_vec], '.-r', x_axis, [-_ for _ in r_tip_vec], '.-r')
+    plt.plot(x_axis_long, [-_ for _ in FF.r_hub_vec_full], '.-k', x_axis_long, [-_ for _ in FF.r_tip_vec_full], '.-k')
+    plt.axis('equal')
 
-
-def annulus_base(num_stages, num_stations, chord_m, r_mean_1, r_hub_vec, r_tip_vec, FF, axes):
+def annulus_base(num_stages, num_stations, chord_m, r_mean_1, FF, axes):
     x_axis = list(range(1,num_stages+2));
     x_axis = [(i-1)*2*chord_m for i in x_axis]
 
@@ -139,7 +161,7 @@ def annulus_base(num_stages, num_stations, chord_m, r_mean_1, r_hub_vec, r_tip_v
 
     for axis in axes:
         axis.hlines(r_mean_1, 0, (num_stations-1)*chord_m)
-        axis.plot(x_axis, r_hub_vec, '.-r', x_axis, r_tip_vec, '.-r')
+        # axis.plot(x_axis, r_hub_vec, '.-r', x_axis, r_tip_vec, '.-r')
         axis.plot(x_axis_long, FF.r_hub_vec_full, '.-k', x_axis_long, FF.r_tip_vec_full, '.-k')
     return([x_axis, x_axis_long])
 
@@ -159,6 +181,7 @@ def turbine_velocity_triangles(triangles):
     plt.title("Turbine Velocity Triangles")
     plt.xlabel("Station Numbers")
     plt.ylim([-2,2])
+    plt.xticks([_ for _ in range(1, len(triangles)*2+3)])
     plt.quiver(1, 0, triangles[0].C_1m*np.cos(triangles[0].alpha_1m), triangles[0].C_1m*np.sin(triangles[0].alpha_1m), angles='xy', scale_units='xy', scale=triangles[0].z_1m*1.1, color='red')
     offset = 2
 
@@ -167,6 +190,8 @@ def turbine_velocity_triangles(triangles):
         offset = offset + 1
         velocity_triangle(tri.C_3m, tri.W_3m, tri.U_3m, tri.alpha_3m, tri.beta_3m, tri.z_3m, offset)
         offset = offset + 1
+
+    plt.axis('equal')
 
 def tree(trunk, branches, root_x, root_y, scale, style, axis):
     for i in range(len(trunk)):

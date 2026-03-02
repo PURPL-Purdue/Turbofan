@@ -89,11 +89,9 @@ def Axial_Compressor_Sizing(params):
         U_1m = U_tip_inlet * (r_mean_1/r_tip_inlet)
         Ctheta_1m = z_1m*np.tan(alpha_1m)
         Wtheta_1m = U_1m - Ctheta_1m
-        beta_1m = np.atan(Wtheta_1m/z_1m)
+        beta_1m = -np.atan(Wtheta_1m/z_1m)
         W_1m = z_1m / np.cos(beta_1m)
         Mw_1m = W_1m/a_1m
-
-        print(beta_1m)
 
         # Station 2 stuff
         U_2m = U_1m        # Initial Approximation, true if we adjust both hub and shroud
@@ -201,7 +199,7 @@ def Axial_Compressor_Sizing(params):
         T0_current = T0_next
 
     for i in range(num_stages+1):
-        r_hub_vec[i], r_tip_vec[i], rho_m_vec[i] = HELP_Compressor.annulus_adjust(T0_stages[i], P0_stages[i], R, Cp, gamma, m_dot, RVT.C_3m, RVT.z_3m, r_mean_1)
+        r_hub_vec[i], r_tip_vec[i], rho_m_vec[i] = HELP_Compressor.annulus_adjust(T0_stages[i], P0_stages[i], R, gamma, m_dot, RVT.z_1m, RVT.Mc_1m, r_mean_1)
 
     # Compressor Thermodynamics Total Metrics
     Pr_total_actual = np.prod(Pr_stages)
@@ -215,14 +213,14 @@ def Axial_Compressor_Sizing(params):
     chord_m = 1.0*min_chord_m
 
     i = np.degrees(ttc_m)
-    dev_ang_m = np.abs(beta_2m-beta_1m) / 4 * np.sqrt(solidity_rotor) + 2
+    dev_ang_m = np.abs(beta_2m+beta_1m) / 4 * np.sqrt(solidity_rotor) + 2
 
     # Camber angle
-    K_1m = beta_1m - i
+    K_1m = -beta_1m - i
     K_2m = beta_2m - dev_ang_m
     camber_m = K_1m - K_2m
 
-    stagger_ang = beta_1m - camber_m/2 - i
+    stagger_ang = -beta_1m - camber_m/2 - i
 
     num_blades_rotor = 2 * np.pi * r_mean_1 / chord_m
 
@@ -241,8 +239,6 @@ def Axial_Compressor_Sizing(params):
         AC_FF,
         P0_stages,
         T0_stages,
-        r_hub_vec,
-        r_tip_vec,
         Pr_stages,
         StageInfo,
         num_stages_actual,
@@ -275,8 +271,8 @@ def Turbine_Sizing(params):
     m_dot_c         = params.m_dot_c   # Compressor mass flow, just air
     rpm             = params.RPM      # RPM
 
-    T0_2        = params.T0_2comp  # Compressor inlet total temp
-    T0_3        = params.T0_3comp      # Compressor outlet total temp
+    T0_2            = params.T0_2comp  # Compressor inlet total temp
+    T0_3            = params.T0_3comp      # Compressor outlet total temp
     T0_4m           = params.T0_4m        # Turbine inlet total temperature, K
     P0_4m           = params.P0_4m     # Turbine inlet total pressure,    Pa 
 
@@ -317,14 +313,10 @@ def Turbine_Sizing(params):
     ang_vel = rpm * 2*np.pi / 60 # Angular velocity, rad/s
     R_t = (gamma_t-1)*Cp_t/gamma_t
 
-
     # ======== Whole Turbine Calcs (absolute station numbers) ========
     power_c = m_dot_c * Cp_c * (T0_3-T0_2)          # Power required by compressor          | TODO get exact power equation, this is just an approximation
     power_f = 0 if m_dot_f == None else m_dot_f * Cp_f * (T0_2-T0_15)
     req_power_t = power_c + power_f/eta_mech                          # Turbine power generation requirement  | Accounts for mechanical losses
-    print(power_c)
-    print(power_f)
-    print(req_power_t)
 
     # Using symbolic equations to solve for the exit temperature of the whole turbine
     T0_5_cooled_sym = sympy.symbols("T0_5_cooled_sym")                                                                  # Creating symbolic variable
@@ -393,8 +385,16 @@ def Turbine_Sizing(params):
         stage_idx += 1
     
     stage_powers = [stage_info.power for stage_info in multistage_info]
-    print(stage_powers)
     excess_power_margin = (total_power_generated - req_power_t)/req_power_t * 100
+    R = Cp_t * (gamma_t-1)/gamma_t
+
+    HELP_Turbine.Turbine_Annulus_Sizing(
+        multistage_velocity_triangles,
+        multistage_info,
+        m_dot_t,
+        gamma_t,
+        R,
+        r_mean_c)
 
     AT_OUT = REF_structs.Turbine_OUT(
         multistage_velocity_triangles,

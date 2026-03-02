@@ -68,7 +68,7 @@ TF.compressor.LP.IN = REF_structs.Compressor_IN(
     TF.cycle.OUT.T0P0.S2.P0,    # P0_1              Compressor inlet face total pressure        | K
     TF.cycle.IN.Pr.cLP,         # Pr                Design pressure ratio                       | nondimensional
     0.99,                       # e_c               Polytropic Efficiency                       | nondimensional
-    0.8,                        # httrr             Hub-to-tip radius ratio                     | nondimensional
+    0.6,                        # httrr             Hub-to-tip radius ratio                     | nondimensional
     0.72,                       # deHaller          De Haller's Criterion value                 | nondimensional
     300000,                     # min_Re            Minimum Reynold's number for blade sizing   | nondimensional
     1.46e-5,                    # mu_kin            Kinematic viscosity                         | TODO
@@ -90,7 +90,7 @@ TF.turbine.LP.IN = REF_structs.Turbine_IN(
     TF.cycle.OUT.T0P0.S45.T0,       # T0_4m             Turbine inlet total temperature                     | K
     TF.cycle.OUT.T0P0.S45.P0,       # P0_4m             Turbine inlet total pressure                        | Pa 
 
-    TF.compressor.LP.OUT.r_mean_1,    # r_mean_c          Comrpessor pitchline radius                         | m
+    TF.compressor.LP.OUT.r_mean_1,  # r_mean_c          Comrpessor pitchline radius                         | m
 
     # For now, while we have uncooled turbine and ep = 0, these three values don't matter
     None,                           # m_dot_cool        Cooling air bleedoff mass flow                      | kg/s

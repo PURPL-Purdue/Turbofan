@@ -99,8 +99,6 @@ class Compressor_OUT:
     FF                  : CompressorField = None
     P0_stages           : list = None
     T0_stages           : list = None
-    r_hub_vec           : list = None
-    r_tip_vec           : list = None
     Pr_stages           : list = None
     stage_info          : dict = None
     num_stages_actual   : float = None
