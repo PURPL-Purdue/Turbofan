@@ -1,0 +1,8 @@
+problem rocket hp
+    p(bar) = 1
+    o/f = 9.2, 9.4, 9.6, 9.8, 10
+reac
+    fuel = Jet-A(L) t(K) = 298.000
+    ox = Air t(K) = 1500.000
+outp trans
+end

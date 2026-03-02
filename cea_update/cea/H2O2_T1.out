@@ -1,0 +1,52 @@
+
+ *******************************************************************************
+
+         NASA-GLENN CHEMICAL EQUILIBRIUM PROGRAM CEA2, MAY 21, 2004
+                   BY  BONNIE MCBRIDE AND SANFORD GORDON
+      REFS: NASA RP-1311, PART I, 1994 AND NASA RP-1311, PART II, 1996
+
+ *******************************************************************************
+
+
+
+ problem rocket hp
+     p(bar) = 1
+     o/f = 0
+ reac
+     fuel = Jet-A(L) t(K) = 298.000
+     ox = Air t(K) = 1500.000
+ outp trans
+ end
+
+ OPTIONS: TP=F  HP=T  SP=F  TV=F  UV=F  SV=F  DETN=F  SHOCK=F  REFL=F  INCD=F
+ RKT=T  FROZ=F  EQL=F  IONS=F  SIUNIT=T  DEBUGF=F  SHKDBG=F  DETDBG=F  TRNSPT=T
+
+ TRACE= 0.00E+00  S/R= 0.000000E+00  H/R= 0.000000E+00  U/R= 0.000000E+00
+
+ Pc,BAR =     1.000000
+
+ Pc/P =
+
+ SUBSONIC AREA RATIOS =
+
+ SUPERSONIC AREA RATIOS =
+
+ NFZ=  1  Mdot/Ac= 0.000000E+00  Ac/At= 0.000000E+00
+
+ WARNING!!  AMOUNT MISSING FOR REACTANT  1.
+ PROGRAM SETS WEIGHT PERCENT = 100. (REACT)
+
+ WARNING!!  AMOUNT MISSING FOR REACTANT  2.
+ PROGRAM SETS WEIGHT PERCENT = 100. (REACT)
+
+    REACTANT          WT.FRAC   (ENERGY/R),K   TEMP,K  DENSITY
+        EXPLODED FORMULA
+ F: Jet-A(L)         1.000000  -0.364971E+05   298.00  0.0000
+          C 12.00000  H 23.00000
+ O: Air              1.000000   0.464531E+04  1500.00  0.0000
+          N  1.56168  O  0.41959  AR 0.00937  C  0.00032
+
+OXIDANT NOT PERMITTED WHEN SPECIFYING 100% FUEL(main)
+
+
+

@@ -1,0 +1,9 @@
+problem rocket eq fr
+    p(psi) = 20, 30, 40, 50
+    o/f = 6.8, 7, 7.2, 7.4, 7.6, 7.8
+    sup = 1, 1.2, 1.4, 1.6, 1.8, 2
+reac
+    fuel = H2O(L) t(K) = 298.000
+    ox = H2O2(L) t(K) = 298.000
+outp trans
+end
