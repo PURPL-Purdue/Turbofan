@@ -320,6 +320,11 @@ class blade:
     x_thicc: list
     y_thicc: list
 
+    LEx: list
+    LEy: list
+    TEx: list
+    TEy: list
+
 ####################################################
 #                     Turbofan                     #
 ####################################################
