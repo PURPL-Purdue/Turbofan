@@ -11,6 +11,7 @@ from Fan        import HELP_Fan
 def Fan_Sizing(params):
     '''
     Fan "Meanline" Sizing
+    why hello there
 
     The first step for sizing the fan is to do a pitchline velocity triangle determination at the mean inlet radius of the LP compressor.
     This way, we can determine the flow characteristics at the inlet face of the LP compressor and give it actual numbers
