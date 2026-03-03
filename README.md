@@ -7,6 +7,7 @@ This following section contains a brief overview of how the code for the turbofa
 \- Marvel
 
 Note: This was written on 3/1/26 and I'm guessing by now there's new stuff in the repo that I haven't mentioned here. If this README is egregiously out of date, please let me know and I can update it.
+Note #2: If you use VSCode, you can open the workspace I've been using from the Turbofan.Code_Workspace file and it'll hopefully open everything nice and tidy (though I dunno if it works well when you share the file so your mileage may vary)
 
 ### File Hierarchy
 - At the very top, we've got Turbofan_Main.py, which is the main execution file and is the only file you should actually run.
