@@ -1,0 +1,22 @@
+{
+  "folders": [
+    {
+      "path": ".",
+    },
+    {
+      "path": "../Archive",
+    },
+  ],
+  "settings": {},
+  "launch": {
+    "version": "0.2.0",
+    "configurations": [
+      {
+        "name": "Python: Current File",
+        "type": "node",
+        "request": "launch",
+        "console": "integratedTerminal",
+      },
+    ],
+  },
+}
