@@ -4,22 +4,102 @@ import sympy
 
 from Reference  import REF_AEQ
 from Reference  import REF_structs
-from Compressor import HELP_Axial_Compressor
-from Turbine    import HELP_Turbine
 from Fan        import HELP_Fan
+from Compressor import HELP_Axial_Compressor
+from Compressor import HELP_Radial_Compressor
+from Turbine    import HELP_Turbine
+
+def Inlet_Sizing(params):
+    '''
+    Assignee(s): Mark
+
+    Introduction and Objectives:
+        Sizing of the inlet nacelle for our engine. The inlet captures a streamtube of air and directs it to the fan inlet face. The primary purpose is to manipulate the
+        inlet/ambient air into a state suitable for ingestion into the fan e.g. reasonable mach number, desired temperature and pressure, etc.
+
+    Inputs:
+    - Ambient (incoming) conditions
+    - Target conditions to reach at the end of the inlet
+    - Geometric constraints (e.g. axial length)
+
+    Outputs:
+    - Determination of inlet nacelle type
+    - Inlet and nacelle geometric design
+        - Flow path profile defined mathematically and geometrically
+        - Inlet lip geometry (thickness, bluntness)
+    - Thermodynamic calculation for inlet exit conditions
+        - T0, P0, T, P, rho
+
+    Direct Tasks:
+        - Research different types of inlet geometries and choose a path to proceed with
+            - Check with me about chosen inlet geometry before starting to code
+        - Code:
+            - Determine suitable axial length
+            - Implement chosen profile for inlet profile (could be a type of spline or other mathematical distribution/geometry)
+                - Both internal flow path geometry as well as lip geometry
+    
+    Associated Tasks:
+        - In Plotting.py: create plots of the inlet nacelle geometry
+        - In Print_Results.py: display critical values including, but not necessarily limited to: T0, P0, T, P, rho, geometric lengths
+
+    Resources:
+    - Farokhi Chapter 6
+        - Note: content from 6.10 and onwards concerns supersonic inlets, and is therefore not particularly applicable to our engine. Feel free to learn about it, but it's probably not directly useful for us
+
+    Reminders:
+        - If you have helper functions, make a new folder/module titled "Inlet" and put them there (see other folders for structure examples)
+        - One input, one output
+        - If you're ever stuck, please don't hesitate to talk to me so that we can figure something out
+        - AI should not be generating code that ends up in this repository. Please don't do it, or I'll just give your task to someone else who actually wants to learn.
+    '''
+    pass
 
 def Fan_Sizing(params):
     '''
-    Fan "Meanline" Sizing
-    why hello there
+    Assignee(s): David and JP
 
-    The first step for sizing the fan is to do a pitchline velocity triangle determination at the mean inlet radius of the LP compressor.
-    This way, we can determine the flow characteristics at the inlet face of the LP compressor and give it actual numbers
-    I encourage you to look through the pitchline calculations for both the axial compressor as well as the axial turbine for inspiration.
-    If you're confused about how to calculate velocity triangles for this section, talk to me (Marvel) and I will help you out.
+    Introduction and Objectives:
+        Sizing of the fan and determining fan blade geometry. The fan provides the majority of the thrust for the engine by accelerating a lot of mass a relatively small amount.
+        The first step for sizing the fan is to do a pitchline velocity triangle determination at the mean inlet radius of the LP compressor.
+        This way, we can determine the flow characteristics at the inlet face of the LP compressor and give it actual numbers.
+        I encourage you to look through the pitchline calculations for both the axial compressor as well as the axial turbine for inspiration.
+        If you're confused about how to calculate velocity triangles for this section, talk to me and I will help you out.
 
-    The inputs for this function should be our known inlet temperatures and pressures from the cycle analysis output as well as the gas characteristics
-    such as Cp, R, that sort of stuff. The output should be velocity triangles for the two stations, one at the fan blade inlet and one at the fan blade outlet.
+    Inputs:
+    - Inlet nacelle outlet conditions
+    - Target conditions to reach at the fan outlet/compressor inlet
+    - Geometric and material constraints (e.g. maximum diameter, maximum yield stresses)
+    - Design pressure ratio
+
+    Outputs:
+    - Determination of inlet nacelle type
+    - Inlet and nacelle geometric design
+        - Flow path profile defined mathematically and geometrically
+        - Inlet lip geometry (thickness, bluntness)
+    - Thermodynamic calculation for inlet exit conditions
+        - T0, P0, T, P, rho
+
+    Note: As of now, the task list only reflects current actionable items for velocity triangle deterination along the LPC meanline
+    Direct Tasks:
+    - We need to know what the LPC meanline radius is in order to find fan velocity triangles along that radius. Find a way to determine the compressor LPC meanline radius.
+      Remember, the LPC sizing hasn't happened at this point in the code (fan comes before LPC, with fan ouputs going into LPC inputs).
+    - Once we know the LPC meanline radius, we should be able to create velocity triangles for the inlet and outlet of the fan along that radius
+
+    Associated Tasks:
+    - In Plotting.py: plot the velocity triangles at the inlet and outlet
+    - In Print_Results.py display critical values including, but not necessarily limited to: T0, P0, T, P, and rho for both the fan inlet and outlet
+
+    Resources:
+    - Existing code for meanline calculations in the compressor and turbine sections
+    - Farokhi Chapter 8, up to 8.6.2
+        - As you'll see in the book, this is geared towards compressors, not fans, but the section about velocity triangles is good with nice diagrams if you're comfused.
+        
+    Reminders:
+        - If you have helper functions (I'm guessing there will be some), put them in HELP_Fan,py, which can be found in the Fan folder
+            - A note on this: as you know, pitchline calculations already exist for turbine and compressor within the code. Before you make a new helper function, see if it already exists and see how you can adapt it for this
+        - One input, one output    
+        - If you're ever stuck, try asking the other people working on this for help first, and if this doesn't work out, please don't hesitate to talk to me so that we can figure something out
+        - AI should not be generating code that ends up in this repository. Please don't do it, or I'll just give your task to someone else who actually wants to learn.
     '''
     pass
 
@@ -224,29 +304,48 @@ def Axial_Compressor_Sizing(params):
     '''
     Blade Design
 
-    Places to look and get started:
-    Start by reading through Farokhi 8.14 and 8.14.1. I want us to implement as much of the stuff listed in 8.14 as possible.
-    A lot of it already is included in the code, so please first try to fully understand what is already here before adding new stuff.
-    Notable things I would like you to include in your section on blade design include:
-    - 1D blade root stress calcs and the blade taper calcs [5-7]
-    - 1D Bending stress calcs [15]
-    - Subsonic blade geometry generation [Section 8.14.1]
-        - I know this section is very cursory and not very in-depth. I would like us to focus on just subsonic blades for now, which ig the book
+    Assignee(s): Josie and Nishan
+
+    Intro/Objective
+        Sizing of the compressor blade main dimensions and generation of the compressor blade geometry. Also includes determinatinon of blade taper ratios and includes a calculation of
+        blade root and bending stresses. The intent is for these blade stress functions to act as a quick automatic check during the compressor sizing process to make sure that the
+        blades are structurally sound.
+
+    Resources:
+    - Farokhi 8.14 (blade stress)
+        - I want us to implement as much of the stuff listed in 8.14 as possible.
+        - A lot of it already is included in the code, so please first try to fully understand what is already here before adding new stuff.
+        - This section has a cursory introduction to simple blade stress calculations. Let me know if it's not enough and you want more stuff to read into.
+    - Farokhi 8.14.1 (blade design)
+        - I know this section of the book is very surface level and not very in-depth. I would like us to focus on just subsonic blades for now, which ig the book
           only has like one sentence about, and it just talks about NACA-65. This lack of detail is understandable given the intent of the book,
-          but is unfortunate regardless, so I would you like to do some additional reading into compressor blade design. Please go to the reading
-          folder of the turbojet Google Drive, find "Axial Compressor Book" (also by le goat Aungier lmao) and read Chapter 4. Before you start
-          implementing blade geometry code, please talk to me first and explain what approach you have chosen and why, as well as what your plan is.
+          but is unfortunate regardless, so I would you like to do some additional reading into compressor blade design outside of this book.
+    - Aungier, Axial Compressor Design, Chapter 4 (blade design)
+        - Go to the reading folder of the turbojet Google Drive, find "Axial Compressor Book"
+        - This chapter has a lot more detail about blade geometry design, and I encourage you to read all of it before choosing a path to go down
+        - Before you start implementing blade geometry code, please talk to me first and explain what approach you have chosen and why, as well as what your plan is.
     
-    Please start with the 1D blade root stress and bending stress calcs, as it should be an easier, more introductory gateway into the whole sizing code.
+    Note: As of now, the task list only reflects current actionable items for blade stress stuff
+    Direct Tasks 
+    - 1D blade root stress calcs and the blade taper calcs (Points 5-7 in Farokhi 8.14)     | Josie
+    - 1D Bending stress calcs (Points 5-7 in Farokhi 8.14)                                  | Nishan
+    
+    Note 1: Please start with the 1D blade root stress and bending stress calcs, as it should be an easier, more introductory gateway into the whole sizing code.
     I would encourage the use of separate functions for the blade root stress and bending stress calculations. I've already put definitions for them in
     HELP_Compressor, though feel free to add more if it works better.
 
-    The stuff on the lines below until line 260 are the very beginnings of blade design I put in way at the beginning. You might see some familiar things
-    that are mentioned in the numbered list in Farokhi 8.14, and that's cuz that's where I got them from.
+    Note 2: The stuff on the lines below until the long line of dashes are the very beginnings of blade design I put into the code a long time ago. You might see some familiar things
+    that are mentioned in the numbered list in Farokhi 8.14, and that's cuz the book is where I got these numbers from.
 
-    Whatever you end up doing in this code, please try to keep other existing work as unmodified as possible, and if you do end up changing things, that's ok,
-    just please communicate with whoever wrote it first before making big changes. That said, feel free to mess with whatever is in here until Line 260 as you wish,
+    Note 3: Whatever you end up doing in this code, please try to keep other existing work above and below this little chunk as unmodified as possible, and if you do end up changing things, that's ok,
+    just please communicate with whoever wrote it first before making big changes. That said, feel free to mess with whatever is in here until the dashed lined as you wish,
     with the exception of the three lines labeled PLEASE DON'T TOUCH.
+
+    Reminders:
+        - If you have helper functions (I'm guessing there will be some), put add them to HELP_Axial_Compressor,py, which can be found in the Compressor folder. It doesn't really matter where you put them, ig just add them to the end of the file
+        - One input, one output
+        - If you're ever stuck, try asking the other people working on this for help first, and if this doesn't work out, please don't hesitate to talk to me so that we can figure something out
+        - AI should not be generating code that ends up in this repository. Please don't do it, or I'll just give your task to someone else who actually wants to learn.
     '''
     some_output = HELP_Axial_Compressor.Blade_Root_Stress()
     some_output = HELP_Axial_Compressor.Blade_Bending_Stress()
@@ -303,6 +402,49 @@ def Axial_Compressor_Sizing(params):
     )
 
     return AC_OUT
+
+def Radial_Compressor_Sizing(params):
+    '''
+    Assignee(s): Stefan and Trey
+
+    Intro/Objectives
+        Sizing and blade geometry generation for the HPC, which will be a single stage radial compressor. The hope is to move away from CFTurbo for this project.
+        Sizing includes much of the same stuff as what we did for the current engine. This means finding major dimensions and defining the meridional flow path of the air.
+        Blade geometry generation is the very cooked part, where we want to generate our own 3D impeller blade geometry. I think this part will be perhaps some of the most
+        difficult coding of the whole project, but I think it is doable. For now, the task at hand is sizing first, and once that is figured out, we can move onto blade geometry.
+
+    Inputs:
+    - LPC flow outlet conditions (e.g. T0, P0, T, P, rho, Mach numbers, velocities, angles, etc.)
+    - Maximum impeller tip radius
+    - Impeller tip tangential velocity
+
+    Outputs:
+    - Flow path geometry
+    - Impeller main dimensions (e.g. tip radius, inlet radius, axial length, blade heights, etc.)
+
+    Direct Tasks:
+    - From the inputs, determine velocity triangles
+    - Size the impeller
+        - Axial length
+        - Radii dimensions
+
+    Associated Tasks
+    - In Plotting.py, plot the flow path geometry
+    - In Print_Results.py, display the impeller main dimensions
+
+    Resources:
+    - Aungier, Centrifugal Compressors, Chapters 4, 5, 6
+        - None of these chapters are onerously long, so please read all of them
+    - CFTurbo manual
+        - The CFTurbo manual is nice in that it often cites where it gets its math from. Reading through the documentation for CFTurbo impeller design is a good way to see how they do it.
+
+    Reminders:
+        - If you have helper functions (I'm guessing there will be some), put them in HELP_Radial_Compressor,py, which can be found in the Compressor folder
+        - One input, one output
+        - If you're ever stuck, try asking the other people working on this for help first, and if this doesn't work out, please don't hesitate to talk to me so that we can figure something out
+        - AI should not be generating code that ends up in this repository. Please don't do it, or I'll just give your task to someone else who actually wants to learn.
+    '''
+    pass
 
 def Turbine_Sizing(params):
     '''
@@ -453,3 +595,34 @@ def Turbine_Sizing(params):
     )
 
     return AT_OUT
+
+def Nozzle_Sizing(params):
+    '''
+    Assignee(s): Max and Amish
+
+    Lowkey it's 3AM and 1) I don't want to write anymore and 2) I think you guys have got a good idea of what is going on, so I'll keep it short. Let me know though if you have more questions
+
+    Inputs
+    - LPT outlet conditions (e.g. T0, P0, Mach numbers, velocities, T, P, etc.)
+    - LPT outlet geometry (annulus radii and whatnot)
+        - This is what I am working on at the moment, it's very much a work in progress, but you should see the one unlabeled output graphs that is the turbine annulus geometry.
+        - Assume for now (this should be a very safe assumptions, i don't see why it wouldn't be true) that the turbine sizing function outputs the tip and hub radii of the LPT
+          at the very last station.
+    
+    Outputs
+    - Nozzle profile geometry (plotted in Plotting.py)
+    - In Print_results.py:
+        - Performance parameters such as final outlet velocity, final outlet temperatures and pressures
+        - Geometric dimensions
+    
+    Some musings:
+    - In the future, if we really wanna get all bougie with our nozzle, what if we did some chevrons and used it as an excuse for yall to learn acoustic modelling? that might be kinda cool
+    - Also, chevrons look cool
+
+    Same reminders as everyone else:
+        - If you have helper functions (I'm guessing there will be some), make a new folder called "Nozzle" and put them in a new file called HELP_Nozzle.py. Turn the folder into a module. See other folder structures for reference
+        - One input, one output
+        - If you're ever stuck, try asking the other people working on this for help first, and if this doesn't work out, please don't hesitate to talk to me so that we can figure something out
+        - AI should not be generating code that ends up in this repository. Please don't do it, or I'll just give your task to someone else who actually wants to learn.    
+    '''
+    pass
