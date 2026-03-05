@@ -1,4 +1,4 @@
-passfrom dataclasses import dataclass
+from dataclasses import dataclass
 import numpy as np
 import math as m
 import matplotlib.pyplot as plt
