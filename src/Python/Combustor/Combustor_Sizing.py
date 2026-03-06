@@ -4,7 +4,7 @@ import math as m
 import numpy as np
 from dataclasses import dataclass
 sys.path.append(os.path.abspath(os.path.join(os.getcwd(), ".")))
-from src.Python.Combustor import CMB_Air_Distribution as air_dist
+import src.Python.Combustor.CMB_Air_Distribution as air_dist
 
 t3 = 900 # K
 t4 = 1300 # K;
