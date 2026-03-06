@@ -5,8 +5,8 @@ import numpy as np
 from dataclasses import dataclass
 sys.path.append(os.path.abspath(os.path.join(os.getcwd(), ".")))
 os.environ["CEA_USE_SITE_PACKAGES"] = '1'
-import CEA_Wrap as CEA
-
+import src.Python.Combustor.CEA.CEA_Wrap as CEA
+    
 #run CEA
 fuel = CEA.Fuel(name = "Jet-A(L)", temp = 300, wt = 100) #Fuel Specs
 oxid = CEA.Oxidizer(name = "Air",temp = 900, wt = 100) #Oxidizer Specs
