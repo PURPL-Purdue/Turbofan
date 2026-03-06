@@ -206,7 +206,7 @@ def Turbine_Annulus_Sizing(triangles, info, m_dot_target, gamma, R, r_mean_1):
     plt.plot(stations, [-_ for _ in r_tip_stations])
     plt.plot(stations, [-_ for _ in r_hub_stations])
 
-    print(rho_m_stations)
+    # print(rho_m_stations)
     
 
 

@@ -4,16 +4,18 @@ import math as m
 import numpy as np
 from dataclasses import dataclass
 sys.path.append(os.path.abspath(os.path.join(os.getcwd(), ".")))
-from src.Python.Combustor import CMB_Air_Distribution as air_dist
+import src.Python.Combustor.CMB_Air_Distribution as air_dist
+import src.Python.Combustor.CEA.CEA_Runner as CEA
 
 t3 = 900 # K
-t4 = 1300 # K;
+t4 = 1300 # K
 tSecondary = 1800 # K
-tFlame = 2500 # K
 mDot3 = 33 # kg/s
-fuelAirRatio = 0.06381831
+fuelAirRatio = 0.06
 cp3 = 1.124 # kJ/kg-K
-cpPrimary = 2.6 # kJ/kg-K
+
+tFlame = CEA.data.t
+cpPrimary = CEA.data.cp
 
 # Calculates the air distribution to each section of the combustor
 # See CMB_Air_Distribution.py for more details on the function and its inputs/outputs
