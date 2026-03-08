@@ -8,7 +8,7 @@ os.environ["CEA_USE_SITE_PACKAGES"] = '1'
 import src.Python.Combustor.CEA.CEA_Wrap as CEA
     
 #run CEA
-def CEA_Run(t3, tFuel, p3):
+def Run_CEA(t3, tFuel, p3):
     oxid = CEA.Oxidizer(name = "Air",temp = t3, wt = 100) #Oxidizer Specs
     fuel = CEA.Fuel(name = "Jet-A(L)", temp = tFuel, wt = 100) #Fuel Specs
 
