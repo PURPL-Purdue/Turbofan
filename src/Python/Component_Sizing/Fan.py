@@ -53,4 +53,7 @@ def Sizing(params):
         - If you're ever stuck, try asking the other people working on this for help first, and if this doesn't work out, please don't hesitate to talk to me so that we can figure something out
         - AI should not be generating code that ends up in this repository. Please don't do it, or I'll just give your task to someone else who actually wants to learn.
     '''
+
+    T0 = StationTnP.T0
+
     pass
