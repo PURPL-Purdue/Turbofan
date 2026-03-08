@@ -71,7 +71,7 @@ TF.compressor.LP.IN = REF_structs.Compressor_IN(
     TF.cycle.OUT.m_dot_core     # m_dot_core        Core mass flow rate                         | kg/s
 )
 
-TF.compressor.LP.OUT = Component_Sizing.Axial_Compressor_Sizing(TF.compressor.LP.IN)
+TF.compressor.LP.OUT = Component_Sizing.Axial_Compressor.Sizing(TF.compressor.LP.IN)
 
 TF.turbine.LP.IN = REF_structs.Turbine_IN(
     TF.cycle.OUT.m_dot_core,        # m_dot_t           Turbine total mass flow TODO: add in fuel mass flow | kg/s
@@ -119,7 +119,7 @@ TF.turbine.LP.IN = REF_structs.Turbine_IN(
     0.85                            # Mw_3Rm_default    Subsequent rotor relative exit Mach number          | nondimensional
 )
 
-TF.turbine.LP.OUT = Component_Sizing.Turbine_Sizing(TF.turbine.LP.IN)
+TF.turbine.LP.OUT = Component_Sizing.Turbine.Sizing(TF.turbine.LP.IN)
 
 Print_Results.write(TF)
 Plotting.plot(TF)
