@@ -8,7 +8,7 @@ from Fan        import HELP_Fan
 
 def Sizing(params):
     '''
-    Assignee(s): David and JP
+    Assignee(s): David and JP (The GOATs)
 
     Introduction and Objectives:
         Sizing of the fan and determining fan blade geometry. The fan provides the majority of the thrust for the engine by accelerating a lot of mass a relatively small amount.
