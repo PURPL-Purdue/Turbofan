@@ -54,22 +54,31 @@ def Sizing(params):
         - AI should not be generating code that ends up in this repository. Please don't do it, or I'll just give your task to someone else who actually wants to learn.
     '''
 
+    gamma           = params.gamma
+    Cp              = params.Cp_cLP
+    bypassRatio     = params.bypass
+    M_tip_inlet_max = params.M_tip_inlet_max
+    V_1             = params.V_1
+    R               = params.R
+    
+
     # local station 1 velocity triangle calculations
-    htftrr = 0.2    # hub to fan tip radius ratio (arbitrary) 
-    U_tip = M_tip_max * a_tip # tangential velocity of fan tip based on max mach number we want
+    htftrr = 0.2
+    r_tip = 0.33    # hub to fan tip radius ratio (arbitrary) 
+    U_tip = M_tip_inlet_max * r_tip # tangential velocity of fan tip based on max mach number we want
     omega = U_tip / r_tip # angular velocity
     r_hub = r_tip * htftrr # hub radius
-    r_LPC_tip = m.sqrt((r_tip2 + bypassRatio * r_hub2)/(bypassRatio + 1)) # LPC tip radius based on bypass ratio and fan tip radius
+    r_LPC_tip = m.sqrt((r_tip**2 + bypassRatio * r_hub**2)/(bypassRatio + 1)) # LPC tip radius based on bypass ratio and fan tip radius
     r_mean = (r_LPC_tip + r_hub) / 2
     U_m = r_mean * omega # **
     alpha_1 = m.atan(U_m / V_1) # **
-    w_magnitude = v_1 / m.sin(alpha_1) # **
+    w_magnitude = V_1 / m.sin(alpha_1) # **
 
     # local station 3 velocity triangle calculations
-    Cp = gamma / (gamma - 1) * R_constant
+    # Cp = gamma / (gamma - 1) * R
     C_theta2 = Cp * (T02 - T01) / U_m
     alpha_2 = m.atan((U_m - C_theta2) / V_1) # **
-    w_magnitude_2 = v_1 / m.sin(alpha_2) # **
+    w_magnitude_2 = V_1 / m.sin(alpha_2) # **
 
 
     pass
