@@ -1,21 +1,19 @@
-import numpy as np
-import math as m
-import sys
 import os
-import sympy
+import sys
+import math as m
+import numpy as np
+from dataclasses import dataclass
+sys.path.append(os.path.abspath(os.path.join(os.getcwd(), ".")))
+import Python.Combustor.CMB_Air_Distribution as Air_Dist
+import Python.Combustor.CEA.CEA_Runner as CEA
 
-from Reference      import REF_AEQ
-from Reference      import REF_structs
-from Combustor      import CMB_Air_Distribution
-from Combustor.CEA  import CEA_Runner as CEA
-
-def Sizing(params):
-    t3              = REF_structs.params.t3 # K
-    t4              = REF_structs.params.t4 # K
-    tSecondary      = REF_structs.params.tSecondary # K
-    mDot3           = REF_structs.params.mDot3 # kg/s
+def combustor_sizing(params):
+    t3              = params.t3 # K
+    t4              = params.t4 # K
+    tSecondary      = params.tSecondary # K
+    mDot3           = params.mDot3 # kg/s
     fuelAirRatio    = params.fuelAirRatio
-    cp3             = params.cp3 # kJ/kg-K
+    cp3             = params.cp3 # kJ/kg-
 
     data = CEA.Run_CEA(t3, tSecondary, cp3) # K
     tPrim = data.t # temp of primary zone 
@@ -30,4 +28,3 @@ def Sizing(params):
     print(f"Dilution Zone Mass Flow Fraction: {dzd:.3f}")
 
     return
-    pass

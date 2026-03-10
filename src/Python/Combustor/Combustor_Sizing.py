@@ -4,8 +4,8 @@ import math as m
 import numpy as np
 from dataclasses import dataclass
 sys.path.append(os.path.abspath(os.path.join(os.getcwd(), ".")))
-import src.Python.Combustor.CMB_Air_Distribution as air_dist
-import src.Python.Combustor.CEA.CEA_Runner as CEA
+import CMB_Air_Distribution as air_dist
+import CEA.CEA_Runner as CEA
 
 def combustor_sizing(params):
     t3              = params.t3 # K
@@ -13,7 +13,9 @@ def combustor_sizing(params):
     tSecondary      = params.tSecondary # K
     mDot3           = params.mDot3 # kg/s
     fuelAirRatio    = params.fuelAirRatio
-    cp3             = params.cp3 # kJ/kg-K
+    cp3             = params.cp3 # kJ/kg-
+    
+    print(f"t3: {t3} K")
 
     data = CEA.Run_CEA(t3, tSecondary, cp3) # K
     tPrim = data.t # temp of primary zone 
