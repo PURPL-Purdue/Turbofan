@@ -54,9 +54,6 @@ def Sizing(params):
         - AI should not be generating code that ends up in this repository. Please don't do it, or I'll just give your task to someone else who actually wants to learn.
     '''
 
-
-    T0 = REF_structs.StationTnP.T0
-
     # local station 1 velocity triangle calculations
     htftrr = 0.2    # hub to fan tip radius ratio (arbitrary) 
     U_tip = M_tip_max * a_tip # tangential velocity of fan tip based on max mach number we want
