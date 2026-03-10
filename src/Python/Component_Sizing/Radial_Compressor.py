@@ -47,4 +47,27 @@ def Radial_Compressor_Sizing(params):
         - If you're ever stuck, try asking the other people working on this for help first, and if this doesn't work out, please don't hesitate to talk to me so that we can figure something out
         - AI should not be generating code that ends up in this repository. Please don't do it, or I'll just give your task to someone else who actually wants to learn.
     '''
+
+    C1              = params.C1             # inlet absolute velocity (m/s)
+    U1              = params.U1             # inlet tangential velocity (m/s)
+    w1              = params.w1             # inlet relative velocity (m/s)
+    P1              = params.P1             # inlet pressure
+    T1              = params.T1             # inlet temp
+    P2              = params.P2             # outlet pressure
+    alpha1          = params.alpha1         # inlet flow angle
+    r_tip_max       = params.r_tip_max      # max tip radius
+    r_hub           = params.r_hub          # hub radius
+    m_dot           = params.m_dot          # mdot
+    nu              = params.nu             # overall efficiency
+    rho             = params.rho            # density
+
+
+
+    
+
+
+
+
+
+
     pass
