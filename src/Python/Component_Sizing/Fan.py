@@ -54,6 +54,23 @@ def Sizing(params):
         - AI should not be generating code that ends up in this repository. Please don't do it, or I'll just give your task to someone else who actually wants to learn.
     '''
 
-    T0 = StationTnP.T0
+    T0 = REF_structs.StationTnP.T0
+
+    # local station 1 velocity triangle calculations
+    htftrr = 0.2    # hub to fan tip radius ratio (arbitrary) 
+    U_tip = M_tip_max * a_tip # tangential velocity of fan tip based on max mach number we want
+    omega = U_tip / r_tip # angular velocity
+    r_hub = r_tip * htftrr # hub radius
+    r_LPC_tip = m.sqrt((r_tip2 + bypassRatio * r_hub2)/(bypassRatio + 1)) # LPC tip radius based on bypass ratio and fan tip radius
+    r_mean = (r_LPC_tip + r_hub) / 2
+    U_m = r_mean * omega # **
+    alpha_1 = m.atan(U_m / V_1) # **
+    w_magnitude = v_1 / m.sin(alpha_1) # **
+
+    # local station 3 velocity triangle calculations
+    Cp = gamma / (gamma - 1) * R_constant
+    C_theta2 = Cp * (T02 - T01) / U_m
+    alpha_2 = m.atan((U_m - C_theta2) / V_1) # **
+    w_magnitude_2 = v_1 / m.sin(alpha_2) # **
 
     pass
