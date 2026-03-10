@@ -61,9 +61,11 @@ def Radial_Compressor_Sizing(params):
     nu              = params.nu             # overall efficiency
     rho             = params.rho            # density
 
+    gamma           = params.gamma          # cp/cv
+    e_T             = params.e_T            # efficiency?
 
-
-    
+    # compressor outlet temp? - (9.15)
+    T_t2 = (P2/P1)*T1**((gamma*e_T)/(gamma-1))
 
 
 
