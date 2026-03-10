@@ -2,8 +2,10 @@ import os
 import sys
 import math as m
 import numpy as np
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 sys.path.append(os.path.abspath(os.path.join(os.getcwd(), ".")))
+from Python.Reference import REF_AEQ
+from Python.Reference import REF_structs
 import Python.Combustor.CMB_Air_Distribution as Air_Dist
 import Python.Combustor.CEA.CEA_Runner as CEA
 
@@ -21,7 +23,7 @@ def combustor_sizing(params):
 
     # Calculates the air distribution to each section of the combustor
     # See CMB_Air_Distribution.py for more details on the function and its inputs/outputs
-    pzd, szd, dzd = air_dist.Calc_Air_Distribution(t3, t4, tSecondary, tPrim, mDot3, fuelAirRatio, cp3, cpPrimary)
+    pzd, szd, dzd = Air_Dist.Calc_Air_Distribution(t3, t4, tSecondary, tPrim, mDot3, fuelAirRatio, cp3, cpPrimary)
 
     print(f"Primary Zone Mass Flow Fraction: {pzd:.3f}")
     print(f"Secondary Zone Mass Flow Fraction: {szd:.3f}")
