@@ -71,6 +71,5 @@ def Sizing(params):
     alpha_2 = m.atan((U_m - C_theta2) / V_1) # **
     w_magnitude_2 = v_1 / m.sin(alpha_2) # **
 
-\
-\
+
     pass
