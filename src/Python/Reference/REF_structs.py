@@ -124,7 +124,8 @@ class Combustor_IN:
     t3              : float
     t4              : float
     tSecondary      : float
-    mDot3           : float
+    tFuel           : float
+    mDot            : float
     fuelAirRatio    : float
     cp3             : float
 
@@ -133,6 +134,11 @@ class Combustor_OUT:
     pzd             : float
     szd             : float
     dzd             : float
+
+@dataclass
+class Combustor:
+    IN: Combustor_IN = field(default=Combustor_IN)
+    OUT: Combustor_OUT = field(default=Combustor_OUT)
 
 ####################################################
 #                     Turbine                      #
@@ -360,4 +366,5 @@ class TF:
     cycle:      Cycle = field(default=Cycle)
     fan:        Fan = field(default=Fan)
     compressor: Compressor = field(default=Compressor)
+    combustor:  Combustor = field(default=Combustor)
     turbine:    Turbine = field(default=Turbine)
