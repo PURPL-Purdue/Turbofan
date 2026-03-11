@@ -2,7 +2,7 @@ import os
 import sys
 import math as m
 import numpy as np
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 sys.path.append(os.path.abspath(os.path.join(os.getcwd(), ".")))
 from Python.Reference import REF_AEQ
 from Python.Reference import REF_structs
@@ -29,4 +29,12 @@ def combustor_sizing(params):
     print(f"Secondary Zone Mass Flow Fraction: {szd:.3f}")
     print(f"Dilution Zone Mass Flow Fraction: {dzd:.3f}")
 
-    return
+    # Combustor output struct (ADD MORE OUTPUTS AS NECESSARY)
+    CMB_OUT = REF_structs.Combustor_OUT(
+        pzd, 
+        szd, 
+        dzd,
+
+    )
+
+    return CMB_OUT

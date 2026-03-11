@@ -114,6 +114,26 @@ class Compressor:
     LP:  Compressor_Gen = field(default=Compressor_Gen)
     HP: Compressor_Gen = field(default=Compressor_Gen)
 
+
+####################################################
+#                    Combustor                     #
+####################################################
+
+@dataclass
+class Combustor_IN:
+    t3              : float
+    t4              : float
+    tSecondary      : float
+    mDot3           : float
+    fuelAirRatio    : float
+    cp3             : float
+
+@dataclass
+class Combustor_OUT:
+    pzd             : float
+    szd             : float
+    dzd             : float
+
 ####################################################
 #                     Turbine                      #
 ####################################################
