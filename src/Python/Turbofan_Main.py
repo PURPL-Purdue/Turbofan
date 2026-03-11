@@ -74,12 +74,13 @@ TF.compressor.LP.IN = REF_structs.Compressor_IN(
 TF.compressor.LP.OUT = Component_Sizing.Axial_Compressor.Sizing(TF.compressor.LP.IN)
 
 TF.combustor.IN = REF_structs.Combustor_IN(
-    TF.cycle.OUT.T0P0.S25.T0,   # t3                Combustor inlet total temperature           | K
-    TF.cycle.OUT.T0P0.S45.T0,   # t4                Combustor outlet total temperature          | K
+    TF.cycle.OUT.T0P0.S3.T0,    # t3                Combustor inlet total temperature           | K
+    TF.cycle.OUT.T0P0.S4.T0,    # t4                Combustor outlet total temperature          | K
     1800,                       # tSecondary        Secondary zone temperature                  | K
-    300,
+    300,                        # tFuel             Fuel temperature                            | K 
+    TF.cycle.OUT.T0P0.S3.P0,    # tFuel             Fuel temperature                            | K
     TF.cycle.OUT.m_dot_core,    # mDot              Core mass flow rate                         | kg/s
-    0.06,                       # fuelAirRatio      Fuel to air ratio                           | nondimensional
+    0.06,                       # fuelAirRatio      Fuel to air ratio                           | kg fuel / kg air
     TF.cycle.OUT.Cps.b          # cp3               Specific heat of combustor inlet flow       | kJ/kg-K
 )
 

@@ -1,6 +1,79 @@
 from dataclasses import dataclass, field
 
 ####################################################
+#                      Cycle                       #
+####################################################
+
+@dataclass
+class ByComponent:
+    a:   float = None     # Ambient
+    d:   float = None      # Diffuser
+    f:   float = None      # Fan
+    fn:  float = None      # Fan Nozzle
+    cLP: float = None      # LP Compressor
+    cHP: float = None      # HP Compressor
+    b:   float = None      # Burner
+    tHP: float = None      # HP Turbine
+    tLP: float = None      # LP Turbine
+    n:   float = None      # Nozzle
+
+@dataclass
+class StationTnP:
+    T0: float
+    P0: float
+    
+@dataclass
+class StationThermo:
+    Sa:  StationTnP
+    S15: StationTnP
+    S2:  StationTnP
+    S25: StationTnP
+    S3:  StationTnP
+    S4:  StationTnP
+    S45: StationTnP
+    S5:  StationTnP
+    S6:  StationTnP
+    S7:  StationTnP
+    S8:  StationTnP
+
+@dataclass
+class Cycle_IN:
+    eta    : ByComponent = None
+    gamma  : ByComponent = None
+    Pr     : ByComponent = None
+    T_0    : float = None
+    P_0    : float = None
+    M_f    : float = None
+    Ra     : float = None
+    Rp     : float = None
+    QR     : float = None
+    bypass : float = None
+    combustion_temp: float = None
+
+@dataclass
+class Cycle_OUT:
+    T0P0            : StationThermo = None
+    Cps             : ByComponent = None
+    ST              : float = None
+    TSFC            : float = None
+    total_thrust    : float = None
+    core_thrust     : float = None
+    bypass_thrust   : float = None
+    eta_p           : float = None
+    eta_th          : float = None
+    eta_0           : float = None
+    m_dot_core      : float = None
+    m_dot_bypass    : float = None
+    m_dot_total     : float = None
+    u_ec            : float = None
+    u_ef            : float = None
+
+@dataclass
+class Cycle:
+    IN: Cycle_IN = field(default=Cycle_IN)
+    OUT: Cycle_OUT = field(default=Cycle_OUT)
+
+####################################################
 #                        Fan                       #
 ####################################################
 
@@ -125,7 +198,8 @@ class Combustor_IN:
     t4              : float
     tSecondary      : float
     tFuel           : float
-    mDot            : float
+    p3              : float
+    mDot3           : float
     fuelAirRatio    : float
     cp3             : float
 
@@ -134,6 +208,9 @@ class Combustor_OUT:
     pzd             : float
     szd             : float
     dzd             : float
+    mDot4           : float
+    p4              : float
+
 
 @dataclass
 class Combustor:
@@ -283,79 +360,6 @@ class blade:
     LEy: list
     TEx: list
     TEy: list
-
-####################################################
-#                      Cycle                       #
-####################################################
-
-@dataclass
-class ByComponent:
-    a:   float = None     # Ambient
-    d:   float = None      # Diffuser
-    f:   float = None      # Fan
-    fn:  float = None      # Fan Nozzle
-    cLP: float = None      # LP Compressor
-    cHP: float = None      # HP Compressor
-    b:   float = None      # Burner
-    tHP: float = None      # HP Turbine
-    tLP: float = None      # LP Turbine
-    n:   float = None      # Nozzle
-
-@dataclass
-class StationTnP:
-    T0: float
-    P0: float
-    
-@dataclass
-class StationThermo:
-    Sa:  StationTnP
-    S15: StationTnP
-    S2:  StationTnP
-    S25: StationTnP
-    S3:  StationTnP
-    S4:  StationTnP
-    S45: StationTnP
-    S5:  StationTnP
-    S6:  StationTnP
-    S7:  StationTnP
-    S8:  StationTnP
-
-@dataclass
-class Cycle_IN:
-    eta    : ByComponent = None
-    gamma  : ByComponent = None
-    Pr     : ByComponent = None
-    T_0    : float = None
-    P_0    : float = None
-    M_f    : float = None
-    Ra     : float = None
-    Rp     : float = None
-    QR     : float = None
-    bypass : float = None
-    combustion_temp: float = None
-
-@dataclass
-class Cycle_OUT:
-    T0P0            : StationThermo = None
-    Cps             : ByComponent = None
-    ST              : float = None
-    TSFC            : float = None
-    total_thrust    : float = None
-    core_thrust     : float = None
-    bypass_thrust   : float = None
-    eta_p           : float = None
-    eta_th          : float = None
-    eta_0           : float = None
-    m_dot_core      : float = None
-    m_dot_bypass    : float = None
-    m_dot_total     : float = None
-    u_ec            : float = None
-    u_ef            : float = None
-
-@dataclass
-class Cycle:
-    IN: Cycle_IN = field(default=Cycle_IN)
-    OUT: Cycle_OUT = field(default=Cycle_OUT)
 
 ####################################################
 #                     Turbofan                     #

@@ -73,13 +73,13 @@ szd             secondary zone mass flow fraction       unitless
 dzd             dilution zone mass flow fraction        unitless
 ------------------------------------------------------------
 '''
-def Calc_Air_Distribution(t3, t4, tSecDesired, tFlame, mDot3, fuelAirRatio, cp3, cpPrimary):
+def Calc_Air_Distribution(t3, t4, tSecDesired, tPrimary, mDot3, fuelAirRatio, cp3, cpPrimary):
     pzd = 1 # fraction of mass flow to the primary zone (unitless)
     szd = 0 # fraction of mass flow to the secondary zone (unitless)
     pz_sz_ratio = 0 # ratio of primary zone mass flow to secondary zone mass flow (unitless)
     dzd = 0 # fraction of mass flow to the dilution zone (unitless)
     tSecondary = tSecDesired + 1 # temperature of secondary zone (K)
-    tOutlet = tFlame + 1 # initial guess for outlet temperature of combustor (K)
+    tOutlet = tPrimary + 1 # initial guess for outlet temperature of combustor (K)
     inc = 0.001 # increment for iterating through the fractions
 
 # primary and secondary zone loop
@@ -89,7 +89,7 @@ def Calc_Air_Distribution(t3, t4, tSecDesired, tFlame, mDot3, fuelAirRatio, cp3,
         szd = 1 - pzd
         mDotPrimary = pzd * mDot3 * (1 + fuelAirRatio)
         mDotSecondary = szd * mDot3
-        tSecondary = Calc_T_Next(mDotPrimary, mDotSecondary, cpPrimary, cp3, tFlame, tSecDesired, t3)
+        tSecondary = Calc_T_Next(mDotPrimary, mDotSecondary, cpPrimary, cp3, tPrimary, tSecDesired, t3)
 
     pz_sz_ratio = pzd / szd
 
