@@ -102,58 +102,52 @@ Velocity Triangle:
 #                 Turbine Sizing                   #
 ####################################################
 Overview:
-    Number of Stages:                            4
+    Number of Stages:                            3
     Power Required by Compressor:          2.04049 MW
     Power Required by Fan:                 1.35948 MW
     Total Power Required:                  3.41023 MW
-    Total Power Generated:                 4.09464 MW
-    Excess Power Margin:                  20.06960 %
+    Total Power Generated:                 4.08136 MW
+    Excess Power Margin:                  19.68010 %
 Info per Stage:
     Stage 1
-        Power Generated:               1.37834 MW
-        Mean Degree of Reaction:       0.00000
+        Power Generated:               1.87008 MW
+        Mean Degree of Reaction:          0.50
+        Stator Turning:                  60.00 deg
+        Rotor Turning:                  101.73 deg
         --------------------------------------------------------------------------------
-        C_1m: 305.34 (0.514) | C_2m: 610.67 (1.100) | C_3m: 311.50 (0.565) | m/s (Mach)
-        W_1m: 398.80 (0.671) | W_2m: 409.13 (0.737) | W_3m: 440.99 (0.800) | m/s (Mach)
+        C_1m: 305.34 (0.514) | C_2m: 610.67 (1.100) | C_3m: 409.13 (0.780) | m/s (Mach)
+        W_1m: 398.80 (0.671) | W_2m: 409.13 (0.737) | W_3m: 610.67 (0.800) | m/s (Mach)
         U_1m:         256.54 | U_2m:         256.54 | U_3m:         256.54 | m/s
-        alpha_1m:       0.00 | alpha_2m:      60.00 | alpha_3m:     -11.42 | degrees
-        beta_1m:      -40.04 | beta_2m:       41.73 | beta_3m:      -46.18 | degrees
+        alpha_1m:       0.00 | alpha_2m:      60.00 | alpha_3m:     -41.73 | degrees
+        beta_1m:      -40.04 | beta_2m:       41.73 | beta_3m:      -60.00 | degrees
         --------------------------------------------------------------------------------
-        T0_1m:       971.038 | T0_2m:       971.038 | T0_3m:       843.078 | K
-        P0_1m:       573.586 | P0_2m:       568.184 | P0_3m:       309.827 | kPa
+        T0_1m:       971.038 | T0_2m:       971.038 | T0_3m:       797.427 | K
+        P0_1m:       573.586 | P0_2m:       568.184 | P0_3m:       369.964 | kPa
     Stage 2
-        Power Generated:               1.08360 MW
-        Mean Degree of Reaction:       0.00000
+        Power Generated:               1.21626 MW
+        Mean Degree of Reaction:          0.50
+        Stator Turning:                  93.59 deg
+        Rotor Turning:                   75.28 deg
         --------------------------------------------------------------------------------
-        C_1m: 311.50 (0.565) | C_2m: 508.32 (0.964) | C_3m: 310.77 (0.603) | m/s (Mach)
-        W_1m: 440.99 (0.800) | W_2m: 340.13 (0.645) | W_3m: 438.25 (0.850) | m/s (Mach)
+        C_1m: 409.13 (0.780) | C_2m: 494.37 (0.964) | C_3m: 332.75 (0.677) | m/s (Mach)
+        W_1m: 610.67 (1.164) | W_2m: 332.75 (0.649) | W_3m: 494.37 (0.850) | m/s (Mach)
         U_1m:         256.54 | U_2m:         256.54 | U_3m:         256.54 | m/s
-        alpha_1m:     -11.42 | alpha_2m:      53.08 | alpha_3m:     -10.73 | degrees
-        beta_1m:      -46.18 | beta_2m:       26.14 | beta_3m:      -45.84 | degrees
+        alpha_1m:     -41.73 | alpha_2m:      51.86 | alpha_3m:     -23.42 | degrees
+        beta_1m:      -60.00 | beta_2m:       23.42 | beta_3m:      -51.86 | degrees
         --------------------------------------------------------------------------------
-        T0_1m:       843.078 | T0_2m:       843.078 | T0_3m:       742.481 | K
-        P0_1m:       309.827 | P0_2m:       306.373 | P0_3m:       178.007 | kPa
+        T0_1m:       797.427 | T0_2m:       797.427 | T0_3m:       684.515 | K
+        P0_1m:       369.964 | P0_2m:       362.901 | P0_3m:       224.268 | kPa
     Stage 3
-        Power Generated:               0.90132 MW
-        Mean Degree of Reaction:       0.00000
+        Power Generated:               0.99502 MW
+        Mean Degree of Reaction:          0.50
+        Stator Turning:                  71.61 deg
+        Rotor Turning:                   63.73 deg
         --------------------------------------------------------------------------------
-        C_1m: 310.77 (0.603) | C_2m: 477.03 (0.964) | C_3m: 305.97 (0.632) | m/s (Mach)
-        W_1m: 438.25 (0.850) | W_2m: 324.54 (0.656) | W_3m: 411.71 (0.850) | m/s (Mach)
+        C_1m: 332.75 (0.677) | C_2m: 458.03 (0.964) | C_3m: 316.91 (0.694) | m/s (Mach)
+        W_1m: 494.37 (1.006) | W_2m: 316.91 (0.667) | W_3m: 458.03 (0.850) | m/s (Mach)
         U_1m:         256.54 | U_2m:         256.54 | U_3m:         256.54 | m/s
-        alpha_1m:     -10.73 | alpha_2m:      50.20 | alpha_3m:      -3.68 | degrees
-        beta_1m:      -45.84 | beta_2m:       19.81 | beta_3m:      -42.13 | degrees
+        alpha_1m:     -23.42 | alpha_2m:      48.19 | alpha_3m:     -15.53 | degrees
+        beta_1m:      -51.86 | beta_2m:       15.53 | beta_3m:      -48.19 | degrees
         --------------------------------------------------------------------------------
-        T0_1m:       742.481 | T0_2m:       742.481 | T0_3m:       658.807 | K
-        P0_1m:       178.007 | P0_2m:       175.786 | P0_3m:       105.284 | kPa
-    Stage 4
-        Power Generated:               0.73139 MW
-        Mean Degree of Reaction:       0.00000
-        --------------------------------------------------------------------------------
-        C_1m: 305.97 (0.632) | C_2m: 449.35 (0.964) | C_3m: 305.77 (0.669) | m/s (Mach)
-        W_1m: 411.71 (0.850) | W_2m: 313.97 (0.674) | W_3m: 388.50 (0.850) | m/s (Mach)
-        U_1m:         256.54 | U_2m:         256.54 | U_3m:         256.54 | m/s
-        alpha_1m:      -3.68 | alpha_2m:      47.19 | alpha_3m:       3.06 | degrees
-        beta_1m:      -42.13 | beta_2m:       13.47 | beta_3m:      -38.19 | degrees
-        --------------------------------------------------------------------------------
-        T0_1m:       658.807 | T0_2m:       658.807 | T0_3m:       590.908 | K
-        P0_1m:       105.284 | P0_2m:       103.861 | P0_3m:        64.980 | kPa
+        T0_1m:       684.515 | T0_2m:       684.515 | T0_3m:       592.141 | K
+        P0_1m:       224.268 | P0_2m:       220.862 | P0_3m:       140.440 | kPa

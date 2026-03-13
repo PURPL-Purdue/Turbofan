@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 from Reference import REF_AEQ
 from Reference import REF_structs
 
-def Turbine_Stage_Pitchline(initial, Mc_2m, Mw_3Rm, alpha_1m, schrodinkler, T0_1m, P0_1m, r_mean, ang_vel, gamma_t, R_t, Cp_t, m_dot_t, current_power, target_power):
+def Turbine_Stage_Pitchline(initial, Mc_2m, Mw_3Rm, alpha_1m, schrodinkler, T0_1m, P0_1m, r_mean, ang_vel, gamma_t, R_t, Cp_t, m_dot_t, degR_m, current_power, target_power):
     # ======== INPUTS ======== 
     # initial       | Whether or not this function call is for the first turbine stage
     # Mc_2m         | Target stator exit Mach number
@@ -19,11 +19,13 @@ def Turbine_Stage_Pitchline(initial, Mc_2m, Mw_3Rm, alpha_1m, schrodinkler, T0_1
     # R_t           | Gas constant R
     # Cp_t          | Specific heat at constant pressure for the turbine
     # m_dot_t       | Turbine mass flow rate
+    # degR_m        | Stage degree of reaction
     # current_power | Power generation currently before adding on the present stage
     # target_power  | Power generation target
     
     # ======== Pitchline Calcs (turbine-specific station numbers) ========
-    T0_2m = T0_1m   # No total temp drop over stator
+    # Stator stuff
+    T0_2m = T0_1m   # No total temp drop over stator, assume adiabatic
     T_2m = REF_AEQ.T_T0(gamma_t, Mc_2m)*T0_2m  
     a_2m = REF_AEQ.a(gamma_t, R_t, T_2m)
 
@@ -69,8 +71,14 @@ def Turbine_Stage_Pitchline(initial, Mc_2m, Mw_3Rm, alpha_1m, schrodinkler, T0_1
     Wtheta_1m = Ctheta_1m - U_1m
     
     # Rotor exit relative and absolute tangential speed
-    Wtheta_3m = -np.sqrt( (Mw_3Rm**2*(a_2m**2+(gamma_t-1)*Wtheta_2m**2/2)-z_2m**2) / (1+(gamma_t-1)*Mw_3Rm**2/2) )
-    Ctheta_3m = U_2m + Wtheta_3m
+
+    # This section below is for if we want to have degree of reaction be an ouput
+    # Wtheta_3m = -np.sqrt( (Mw_3Rm**2*(a_2m**2+(gamma_t-1)*Wtheta_2m**2/2)-z_2m**2) / (1+(gamma_t-1)*Mw_3Rm**2/2) )
+    # Ctheta_3m = U_2m + Wtheta_3m
+
+    # This section below is for when we specify degree of reaction as a design variable
+    Ctheta_3m = (1 - degR_m)*2*U_2m - Ctheta_2m
+    Wtheta_3m = Ctheta_3m-U_3m
 
     # Calculating miscellaneous velocities and angles
     # Pythagoreas
@@ -131,7 +139,7 @@ def Turbine_Stage_Pitchline(initial, Mc_2m, Mw_3Rm, alpha_1m, schrodinkler, T0_1
     if power + current_power > target_power:
         last = True
 
-    degR_m = 1 - (Ctheta_2m + Ctheta_3m)/(2*U_2m)     # Stage degree of reaction
+    # degR_m = 1 - (Ctheta_2m + Ctheta_3m)/(2*U_2m)     # Stage degree of reaction
 
     # ======== OUTPUT ========
     velocityTriangle = REF_structs.FullVelTriInfo(

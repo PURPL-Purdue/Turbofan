@@ -120,7 +120,9 @@ def write(TF):
         for i in range(len(tris)):
             txt.write("    Stage {:d}\n".format(i+1))
             txt.write("        Power Generated:          {:12.5f} MW\n".format(info[i].power/1e6))
-            txt.write("        Mean Degree of Reaction:  {:12.5f}\n".format(info[i].degR_m/1e6))
+            txt.write("        Mean Degree of Reaction:  {:12.2f}\n".format(info[i].degR_m))
+            txt.write("        Stator Turning:           {:12.2f} deg\n".format(abs(np.degrees(tris[i].alpha_1m-tris[i].alpha_2m))))
+            txt.write("        Rotor Turning:            {:12.2f} deg\n".format(abs(np.degrees(tris[i].beta_2m -tris[i].beta_3m))))
             txt.write("        --------------------------------------------------------------------------------\n")
             txt.write("        C_1m: {:6.2f} ({:.3f}) | C_2m: {:6.2f} ({:.3f}) | C_3m: {:6.2f} ({:.3f}) | m/s (Mach)\n".format(tris[i].C_1m, tris[i].Mc_1m, tris[i].C_2m, tris[i].Mc_2m, tris[i].C_3m, tris[i].Mc_3m))
             txt.write("        W_1m: {:6.2f} ({:.3f}) | W_2m: {:6.2f} ({:.3f}) | W_3m: {:6.2f} ({:.3f}) | m/s (Mach)\n".format(tris[i].W_1m, tris[i].Mw_1m, tris[i].W_2m, tris[i].Mw_2m, tris[i].W_3m, tris[i].Mw_3m))

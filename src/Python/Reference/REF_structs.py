@@ -232,6 +232,7 @@ class Turbine_IN:
 
     Mc_2m_default   : float
     Mw_3Rm_default  : float
+    degR_m          : float
 
 @dataclass
 class Turbine_OUT:

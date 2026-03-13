@@ -116,7 +116,8 @@ TF.turbine.LP.IN = REF_structs.Turbine_IN(
 
     # Multistage design decisions
     0.964,                          # Mc_2m_default     Subsequent stator nozzle Mach number, keep <1       | nondimensional
-    0.85                            # Mw_3Rm_default    Subsequent rotor relative exit Mach number          | nondimensional
+    0.85,                           # Mw_3Rm_default    Subsequent rotor relative exit Mach number          | nondimensional
+    0.5                             # degR_m            Stage degree of reaction                            | nondimensional
 )
 
 TF.turbine.LP.OUT = Component_Sizing.Turbine.Sizing(TF.turbine.LP.IN)

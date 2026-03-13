@@ -56,6 +56,8 @@ def Sizing(params):
     # Multistage design decisions
     Mc_2m_default   = params.Mc_2m_default               # Just barely not choking the flow at stator nozzle exit
     Mw_3Rm_default  = params.Mw_3Rm_default               # TODO find justification for this
+    degR_m          = params.degR_m
+    
     r_mean = r_mean_c
 
     ang_vel = rpm * 2*np.pi / 60 # Angular velocity, rad/s
@@ -94,6 +96,7 @@ def Sizing(params):
         R_t,
         Cp_t,
         m_dot_t,
+        degR_m,
         0,
         req_power_t
         )
@@ -120,6 +123,7 @@ def Sizing(params):
             R_t,
             Cp_t,
             m_dot_t,
+            degR_m,
             total_power_generated,
             req_power_t
             )
