@@ -105,18 +105,23 @@ def write(TF):
 
         txt.write("\n\n")
         txt.write("####################################################\n")
-        txt.write("#                 Turbine Sizing                   #\n")
+        txt.write("#                LP Turbine Sizing                 #\n")
         txt.write("####################################################\n")
+        txt.write("Initial Pass Values NOTE: NOT ACTUALLY USED IN FINAL SIZING:\n")
+        txt.write("    Number of Stages:                 {:12d}\n".format(len(turb_LP.OUT.initial_pitchline_res.multistage_info)))
+        txt.write("    Total Power Required:             {:12.5f} MW\n".format(turb_LP.OUT.req_power/1e6))
+        txt.write("    Total Power Generated:            {:12.5f} MW\n".format(turb_LP.OUT.initial_pitchline_res.total_power_generated/1e6))
+        txt.write("    Excess Power Margin:              {:12.5f} %\n".format(turb_LP.OUT.initial_pitchline_res.excess_power_margin))
         txt.write("Overview:\n")
-        txt.write("    Number of Stages:                 {:12d}\n".format(len(turb_LP.OUT.multistage_info)))
+        txt.write("    Number of Stages:                 {:12d}\n".format(len(turb_LP.OUT.pitchline_res.multistage_info)))
         txt.write("    Power Required by Compressor:     {:12.5f} MW\n".format(turb_LP.OUT.req_power_fan/1e6))
         txt.write("    Power Required by Fan:            {:12.5f} MW\n".format(turb_LP.OUT.req_power_comp/1e6))
         txt.write("    Total Power Required:             {:12.5f} MW\n".format(turb_LP.OUT.req_power/1e6))
-        txt.write("    Total Power Generated:            {:12.5f} MW\n".format(turb_LP.OUT.total_power_gen/1e6))
-        txt.write("    Excess Power Margin:              {:12.5f} %\n".format(turb_LP.OUT.excess_power_margin))
+        txt.write("    Total Power Generated:            {:12.5f} MW\n".format(turb_LP.OUT.pitchline_res.total_power_generated/1e6))
+        txt.write("    Excess Power Margin:              {:12.5f} %\n".format(turb_LP.OUT.pitchline_res.excess_power_margin))
         txt.write("Info per Stage:\n")
-        info = turb_LP.OUT.multistage_info
-        tris = turb_LP.OUT.multistage_velocity_triangles
+        info = turb_LP.OUT.pitchline_res.multistage_info
+        tris = turb_LP.OUT.pitchline_res.multistage_velocity_triangles
         for i in range(len(tris)):
             txt.write("    Stage {:d}\n".format(i+1))
             txt.write("        Power Generated:          {:12.5f} MW\n".format(info[i].power/1e6))

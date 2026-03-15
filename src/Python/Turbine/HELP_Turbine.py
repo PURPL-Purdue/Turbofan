@@ -1,5 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
+from dataclasses import dataclass
 
 from Reference import REF_AEQ
 from Reference import REF_structs
@@ -172,7 +173,7 @@ def Turbine_Stage_Pitchline(initial, Mc_2m, Mw_3Rm, alpha_1m, schrodinkler, T0_1
 
     return [velocityTriangle, turbineStageInfo, last]
 
-def Turbine_Annulus_Sizing(triangles, info, m_dot_target, gamma, R, r_mean_1):
+def Turbine_Annulus_Sizing(triangles, info, m_dot_target, gamma, R, r_mean_vec):
     # Setup for multi-stage shennanigans
     num_stages = len(info)
     num_stations = num_stages*2+1
@@ -183,10 +184,19 @@ def Turbine_Annulus_Sizing(triangles, info, m_dot_target, gamma, R, r_mean_1):
     r_tip_stations = [1 for _ in range(num_stations)]
     rho_m_stations = [1 for _ in range(num_stations)]
 
-    r_hub_stations[0], r_tip_stations[0], rho_m_stations[0] = annulus_adjust(info[0].T0_1m, info[0].P0_1m, R, gamma, m_dot_target, triangles[0].z_1m, triangles[0].Mc_1m, r_mean_1)
-    counter = 1
+    counter = 0
     for i in range(len(info)):
         r_hub_stations[counter], r_tip_stations[counter], rho_m_stations[counter] = annulus_adjust(
+            info[i].T0_1m,
+            info[i].P0_1m,
+            R,
+            gamma,
+            m_dot_target,
+            triangles[i].z_1m,
+            triangles[i].Mc_1m,
+            r_mean_vec[i]
+        )
+        r_hub_stations[counter+1], r_tip_stations[counter+1], rho_m_stations[counter+1] = annulus_adjust(
             info[i].T0_2m,
             info[i].P0_2m,
             R,
@@ -194,25 +204,33 @@ def Turbine_Annulus_Sizing(triangles, info, m_dot_target, gamma, R, r_mean_1):
             m_dot_target,
             triangles[i].z_2m,
             triangles[i].Mc_2m,
-            r_mean_1
-        )
-        r_hub_stations[counter+1], r_tip_stations[counter+1], rho_m_stations[counter+1] = annulus_adjust(
-            info[i].T0_3m,
-            info[i].P0_3m,
-            R,
-            gamma,
-            m_dot_target,
-            triangles[i].z_3m,
-            triangles[i].Mc_3m,
-            r_mean_1
+            r_mean_vec[i]
         )
         counter = counter + 2
-    stations = [_ for _ in range(1, num_stations+1)]
-    plt.plot(stations, r_tip_stations)
-    plt.plot(stations, r_hub_stations)
+    r_hub_stations[num_stations-1], r_tip_stations[num_stations-1], rho_m_stations[num_stations-1] = annulus_adjust(info[-1].T0_3m, info[-1].P0_3m, R, gamma, m_dot_target, triangles[-1].z_3m, triangles[-1].Mc_3m, r_mean_vec[-1])
 
-    plt.plot(stations, [-_ for _ in r_tip_stations])
-    plt.plot(stations, [-_ for _ in r_hub_stations])
+
+    stations = [_ for _ in range(1, num_stations+1)]
+
+    # Plotting the hub and tip radii
+    plt.plot(stations, r_tip_stations, 'k')
+    plt.plot(stations, r_hub_stations, 'k')
+
+    # Plotting the meanline
+    r_mean_plot_stages =   [_*2 + 1 for _ in range(0, num_stages)]
+    r_mean_plot_stages.append(r_mean_plot_stages[-1]+2)
+    r_mean_vec_plot = r_mean_vec
+    r_mean_vec_plot.append(r_mean_vec[-1])
+    plt.plot(r_mean_plot_stages, r_mean_vec_plot, "--r")
+
+    # Plotting the horizontal inlet radius line (to make the real meanline easier to see)
+    plt.hlines(r_mean_vec[0], 1, stations[-1], linestyles='--', colors='gray')
+
+    # Mirrored
+    plt.plot(stations, [-_ for _ in r_tip_stations], 'k')
+    plt.plot(stations, [-_ for _ in r_hub_stations], 'k')
+    plt.plot(r_mean_plot_stages, [-_ for _ in r_mean_vec_plot], "--r")
+    plt.hlines(-r_mean_vec[0], 1, stations[-1], linestyles='--', colors='gray')
 
     # print(rho_m_stations)
     
@@ -240,3 +258,114 @@ def annulus_adjust(T0, P0, R, gamma, m_dot, z, Mc, r_mean):
         r_tip = r_mean + h
     
         return [r_hub, r_tip, rho_m]
+
+def pitchline_staging(initial, Mc_2m, Mw_3Rm, Mc_2m_default, Mw_3Rm_default, alpha_1m, alpha_2m, T0_4m, P0_4m, r_mean_i, ang_vel, gamma_t, R_t, Cp_t, m_dot_t, degR_m, req_power_t, **kwargs):
+        # ======== Pitchline Staging ========
+    # Setting up lists to contain staging data
+    multistage_velocity_triangles = []
+    multistage_info = []
+
+    if initial:
+        r_mean_vec = [r_mean_i for _ in range(0,50)] # kind of scuffed and is definitely not rigorous coding, but also, if it's telling us we need more than 50 turbine stages, we have bigger issues to worry about lol
+    else:
+        dr = kwargs["r_inc_factor"] * r_mean_i
+        r_mean_vec = [r_mean_i + _*dr for _ in [_ for _ in range(0, kwargs["num_stages_target"])]]
+
+
+
+    # First stage
+    velocity_triangles_s1, info_s1, powerReqMet = Turbine_Stage_Pitchline(
+        True,       # Initial
+        Mc_2m,      
+        Mw_3Rm,
+        alpha_1m,
+        alpha_2m,
+        T0_4m,
+        P0_4m,
+        r_mean_vec[0],
+        ang_vel,
+        gamma_t,
+        R_t,
+        Cp_t,
+        m_dot_t,
+        degR_m,
+        0,          # Current_Power
+        req_power_t
+        )
+    multistage_velocity_triangles.append(velocity_triangles_s1)
+    multistage_info.append(info_s1)
+    
+    total_power_generated = multistage_info[0].power
+
+    # Subsequent staging for initial case:
+    if initial:
+        stage_idx = 1
+        while not powerReqMet:  # FOR INITIAL CASE: Continues generating stages until power generates exceeds required power
+            # Calculate triangles and info for new stage
+            velocity_triangles, info, powerReqMet = Turbine_Stage_Pitchline(
+                False,
+                Mc_2m_default,
+                Mw_3Rm_default,
+                multistage_velocity_triangles[stage_idx-1].alpha_3m,
+                multistage_velocity_triangles[stage_idx-1].z_3m,
+                multistage_info[stage_idx-1].T0_3m,
+                multistage_info[stage_idx-1].P0_3m,
+                r_mean_vec[stage_idx],
+                ang_vel,
+                gamma_t,
+                R_t,
+                Cp_t,
+                m_dot_t,
+                degR_m,
+                total_power_generated,
+                req_power_t
+                )
+            
+            # Keep track of total power generated up to this point
+            total_power_generated += info.power
+            # Add to info lists
+            multistage_velocity_triangles.append(velocity_triangles)
+            multistage_info.append(info)
+            # Updating loop
+            stage_idx += 1
+    else:
+        stage_idx = 1
+        for _ in range(kwargs["num_stages_target"]-1):  # FOR SUBSEQUENT PASSES: Generates the specified number of stages, then stops, regardless of whether or not power requirement is met
+            # Calculate triangles and info for new stage
+            velocity_triangles, info, powerReqMet = Turbine_Stage_Pitchline(
+                False,
+                Mc_2m_default,
+                Mw_3Rm_default,
+                multistage_velocity_triangles[stage_idx-1].alpha_3m,
+                multistage_velocity_triangles[stage_idx-1].z_3m,
+                multistage_info[stage_idx-1].T0_3m,
+                multistage_info[stage_idx-1].P0_3m,
+                r_mean_vec[stage_idx],
+                ang_vel,
+                gamma_t,
+                R_t,
+                Cp_t,
+                m_dot_t,
+                degR_m,
+                total_power_generated,
+                req_power_t
+                )
+            
+            # Keep track of total power generated up to this point
+            total_power_generated += info.power
+            # Add to info lists
+            multistage_velocity_triangles.append(velocity_triangles)
+            multistage_info.append(info)
+            # Updating loop
+            stage_idx += 1
+
+    num_stages = len(multistage_velocity_triangles)
+    num_stages_target = num_stages - 1      # This will calculate a number for non-initial passes, but is meaningless unless it is the initial pass
+
+    total_power_generated = sum([info.power for info in multistage_info])
+    excess_power_margin = (total_power_generated - req_power_t)/req_power_t * 100
+
+    if initial:
+        r_mean_vec = [r_mean_i for _ in range(0, num_stages)]
+
+    return REF_structs.Turbine_Pitchline_Results(multistage_velocity_triangles, multistage_info, r_mean_vec, total_power_generated, excess_power_margin, num_stages_target)

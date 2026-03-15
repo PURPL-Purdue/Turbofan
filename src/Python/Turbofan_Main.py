@@ -83,7 +83,7 @@ TF.turbine.LP.IN = REF_structs.Turbine_IN(
     TF.cycle.OUT.T0P0.S45.T0,       # T0_4m             Turbine inlet total temperature                     | K
     TF.cycle.OUT.T0P0.S45.P0,       # P0_4m             Turbine inlet total pressure                        | Pa 
 
-    TF.compressor.LP.OUT.r_mean_1,  # r_mean_c          Comrpessor pitchline radius                         | m
+    TF.compressor.LP.OUT.r_mean_1,  # r_mean_i          Inlet pitchline radius                         | m
 
     # For now, while we have uncooled turbine and ep = 0, these three values don't matter
     None,                           # m_dot_cool        Cooling air bleedoff mass flow                      | kg/s
