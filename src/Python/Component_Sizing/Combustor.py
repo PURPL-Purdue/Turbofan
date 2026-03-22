@@ -16,12 +16,14 @@ def Sizing(params):
     tFuel           = params.tFuel # K
     p3              = params.p3 # Pa
     mDot3           = params.mDot3 # kg/s
-    fuelAirRatio    = params.fuelAirRatio
+    phi             = 1 # equivalence ratio, set to 1 for now since we don't have a fuel flow rate input
     cp3             = params.cp3 # kJ/kg-
 
-    data = CEA.Run_CEA(t3, tFuel, p3 / 100000) # K
+    data = CEA.Run_CEA(t3, tFuel, p3 / 100000, phi) # K
     tPrimary = data.t # temp of primary zone 
-    cpPrimary = data.cp 
+    cpPrimary = data.cp
+
+    fuelAirRatio = (phi * 1 / 15) # kg fuel / kg air, convert from g fuel / kg air
 
     # Calculates the air distribution to each section of the combustor
     # See CMB_Air_Distribution.py for more details on the function and its inputs/outputs
@@ -41,6 +43,7 @@ def Sizing(params):
         dzd,
         mDot3 * (1 + fuelAirRatio), # kg/s
         p3,
+        fuelAirRatio
     )
 
     return CMB_OUT

@@ -200,7 +200,7 @@ class Combustor_IN:
     tFuel           : float
     p3              : float
     mDot3           : float
-    fuelAirRatio    : float
+    phi             : float
     cp3             : float
 
 @dataclass
@@ -210,6 +210,7 @@ class Combustor_OUT:
     dzd             : float
     mDot4           : float
     p4              : float
+    fuelAirRatio    : float
 
 
 @dataclass

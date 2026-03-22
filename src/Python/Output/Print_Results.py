@@ -5,6 +5,7 @@ def write(TF):
         cycle = TF.cycle
         comp_LP = TF.compressor.LP
         turb_LP = TF.turbine.LP
+        comb = TF.combustor
 
         txt.write("####################################################\n")
         txt.write("#                  Cycle Analysis                  #\n")
@@ -102,6 +103,23 @@ def write(TF):
         txt.write("    U_1m: {:14.2f} | U_2m: {:14.2f} | U_3m: {:14.2f} | m/s\n".format(RVT.U_1m, RVT.U_2m, RVT.U_3m))
         txt.write("    alpha_1m: {:10.2f} | alpha_2m: {:10.2f} | alpha_3m: {:10.2f} | degrees\n".format(np.degrees(RVT.alpha_1m), np.degrees(RVT.alpha_2m), np.degrees(RVT.alpha_3m)))
         txt.write("    beta_1m: {:11.2f} | beta_2m: {:11.2f} | beta_3m: {:11.2f} | degrees\n".format(np.degrees(RVT.beta_1m), np.degrees(RVT.beta_2m), np.degrees(RVT.beta_3m)))
+
+
+        txt.write("\n\n")
+        txt.write("####################################################\n")
+        txt.write("#                 Combustor Sizing                 #\n")
+        txt.write("####################################################\n")
+        txt.write("Overview:\n")
+        txt.write("    Primary Zone Mass Flow Fraction:   {:12.5f}\n".format(comb.OUT.pzd))
+        txt.write("    Secondary Zone Mass Flow Fraction: {:12.5f}\n".format(comb.OUT.szd))
+        txt.write("    Dilution Zone Mass Flow Fraction:  {:12.5f}\n".format(comb.OUT.dzd))
+        txt.write("    Total Combustor Mass Flow:         {:12.5f} kg/s\n".format(comb.OUT.mDot4))
+        txt.write("    Combustor Inlet Pressure:          {:12.5f} kPa\n".format(comb.IN.p3/1000))
+        txt.write("    Combustor Outlet Pressure:         {:12.5f} kPa\n".format(comb.OUT.p4/1000))
+        txt.write("    Combustor Inlet Temperature:       {:12.5f} K\n".format(comb.IN.t3))
+        txt.write("    Combustor Fuel Temperature:        {:12.5f} K\n".format(comb.IN.tFuel))
+        txt.write("    Combustor Outlet Temperature:      {:12.5f} K\n".format(comb.IN.t4))
+        txt.write("    Fuel-Air Ratio:                    {:12.5f} kg/kg\n".format(comb.OUT.fuelAirRatio))
 
         txt.write("\n\n")
         txt.write("####################################################\n")

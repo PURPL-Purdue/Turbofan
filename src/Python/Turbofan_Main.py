@@ -80,7 +80,7 @@ TF.combustor.IN = REF_structs.Combustor_IN(
     300,                        # tFuel             Fuel temperature                            | K 
     TF.cycle.OUT.T0P0.S3.P0,    # tFuel             Fuel temperature                            | K
     TF.cycle.OUT.m_dot_core,    # mDot              Core mass flow rate                         | kg/s
-    0.06,                       # fuelAirRatio      Fuel to air ratio                           | kg fuel / kg air
+    1,                          # phi               Equivalence ratio                           | kg/kg
     TF.cycle.OUT.Cps.b          # cp3               Specific heat of combustor inlet flow       | kJ/kg-K
 )
 
