@@ -23,7 +23,7 @@ def Sizing(params):
     tPrimary = data.t # temp of primary zone 
     cpPrimary = data.cp
 
-    fuelAirRatio = (phi * 1 / 15) # kg fuel / kg air, convert from g fuel / kg air
+    fuelAirRatio = (phi * 1 / (1 + 14.66948)) # fuel to air ratio, calculated from equivalence ratio and stoichiometric fuel-air ratio for Jet-A
 
     # Calculates the air distribution to each section of the combustor
     # See CMB_Air_Distribution.py for more details on the function and its inputs/outputs

@@ -102,16 +102,16 @@ Velocity Triangle:
 #                 Combustor Sizing                 #
 ####################################################
 Overview:
-    Primary Zone Mass Flow Fraction:        0.16504
-    Secondary Zone Mass Flow Fraction:      0.29596
+    Primary Zone Mass Flow Fraction:        0.16550
+    Secondary Zone Mass Flow Fraction:      0.29550
     Dilution Zone Mass Flow Fraction:       0.53900
-    Total Combustor Mass Flow:              9.70526 kg/s
+    Total Combustor Mass Flow:              9.67934 kg/s
     Combustor Inlet Pressure:            2238.73000 kPa
     Combustor Outlet Pressure:           2238.73000 kPa
     Combustor Inlet Temperature:          896.57321 K
     Combustor Fuel Temperature:           300.00000 K
     Combustor Outlet Temperature:        1300.00000 K
-    Fuel-Air Ratio:                         0.06667 kg/kg
+    Fuel-Air Ratio:                         0.06382 kg/kg
 
 
 ####################################################
