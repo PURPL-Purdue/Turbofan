@@ -99,61 +99,63 @@ Velocity Triangle:
 
 
 ####################################################
-#                 Turbine Sizing                   #
+#                HP Turbine Sizing                 #
 ####################################################
+Initial Pass Values NOTE: NOT ACTUALLY USED IN FINAL SIZING:
+    Number of Stages:                            2
+    Total Power Required:                  3.58670 MW
+    Total Power Generated:                 4.84212 MW
+    Excess Power Margin:                  35.00178 %
 Overview:
-    Number of Stages:                            4
-    Power Required by Compressor:          2.04049 MW
-    Power Required by Fan:                 1.35948 MW
-    Total Power Required:                  3.41023 MW
-    Total Power Generated:                 4.09464 MW
-    Excess Power Margin:                  20.06960 %
+    Number of Stages:                            1
+    Power Required by HP Compressor:       3.58670 MW
+    Total Power Required:                  3.58670 MW
+    Total Power Generated:                 3.59845 MW
+    Excess Power Margin:                   0.32746 %
 Info per Stage:
     Stage 1
-        Power Generated:               1.37834 MW
-        Mean Degree of Reaction:       0.00000
+        Power Generated:               3.59845 MW
+        Mean Degree of Reaction:          0.61
+        Stator Turning:                  60.00 deg
+        Rotor Turning:                   87.53 deg
         --------------------------------------------------------------------------------
-        C_1m: 305.34 (0.514) | C_2m: 610.67 (1.100) | C_3m: 311.50 (0.565) | m/s (Mach)
-        W_1m: 398.80 (0.671) | W_2m: 409.13 (0.737) | W_3m: 440.99 (0.800) | m/s (Mach)
-        U_1m:         256.54 | U_2m:         256.54 | U_3m:         256.54 | m/s
-        alpha_1m:       0.00 | alpha_2m:      60.00 | alpha_3m:     -11.42 | degrees
-        beta_1m:      -40.04 | beta_2m:       41.73 | beta_3m:      -46.18 | degrees
+        C_1m: 353.29 (0.514) | C_2m: 706.58 (1.100) | C_3m: 436.78 (0.754) | m/s (Mach)
+        W_1m: 576.25 (0.838) | W_2m: 386.47 (0.602) | W_3m: 794.90 (0.800) | m/s (Mach)
+        U_1m:         455.24 | U_2m:         455.24 | U_3m:         455.24 | m/s
+        alpha_1m:       0.00 | alpha_2m:      60.00 | alpha_3m:     -36.02 | degrees
+        beta_1m:      -52.19 | beta_2m:       23.92 | beta_3m:      -63.61 | degrees
         --------------------------------------------------------------------------------
-        T0_1m:       971.038 | T0_2m:       971.038 | T0_3m:       843.078 | K
-        P0_1m:       573.586 | P0_2m:       568.184 | P0_3m:       309.827 | kPa
-    Stage 2
-        Power Generated:               1.08360 MW
-        Mean Degree of Reaction:       0.00000
+        T0_1m:      1300.000 | T0_2m:      1300.000 | T0_3m:       965.935 | K
+        P0_1m:      2238.730 | P0_2m:      2217.645 | P0_3m:      1270.107 | kPa
+
+
+####################################################
+#                LP Turbine Sizing                 #
+####################################################
+Initial Pass Values NOTE: NOT ACTUALLY USED IN FINAL SIZING:
+    Number of Stages:                            2
+    Total Power Required:                  3.58670 MW
+    Total Power Generated:                 4.84212 MW
+    Excess Power Margin:                  35.00178 %
+Overview:
+    Number of Stages:                            1
+    Power Required by LP Compressor:       3.58670 MW
+    Power Required by Fan:                 0.00000 MW
+    Total Power Required:                  3.58670 MW
+    Total Power Generated:                 3.59845 MW
+    Excess Power Margin:                   0.32746 %
+Info per Stage:
+    Stage 1
+        Power Generated:               3.59845 MW
+        Mean Degree of Reaction:          0.61
+        Stator Turning:                  60.00 deg
+        Rotor Turning:                   87.53 deg
         --------------------------------------------------------------------------------
-        C_1m: 311.50 (0.565) | C_2m: 508.32 (0.964) | C_3m: 310.77 (0.603) | m/s (Mach)
-        W_1m: 440.99 (0.800) | W_2m: 340.13 (0.645) | W_3m: 438.25 (0.850) | m/s (Mach)
-        U_1m:         256.54 | U_2m:         256.54 | U_3m:         256.54 | m/s
-        alpha_1m:     -11.42 | alpha_2m:      53.08 | alpha_3m:     -10.73 | degrees
-        beta_1m:      -46.18 | beta_2m:       26.14 | beta_3m:      -45.84 | degrees
+        C_1m: 353.29 (0.514) | C_2m: 706.58 (1.100) | C_3m: 436.78 (0.754) | m/s (Mach)
+        W_1m: 576.25 (0.838) | W_2m: 386.47 (0.602) | W_3m: 794.90 (0.800) | m/s (Mach)
+        U_1m:         455.24 | U_2m:         455.24 | U_3m:         455.24 | m/s
+        alpha_1m:       0.00 | alpha_2m:      60.00 | alpha_3m:     -36.02 | degrees
+        beta_1m:      -52.19 | beta_2m:       23.92 | beta_3m:      -63.61 | degrees
         --------------------------------------------------------------------------------
-        T0_1m:       843.078 | T0_2m:       843.078 | T0_3m:       742.481 | K
-        P0_1m:       309.827 | P0_2m:       306.373 | P0_3m:       178.007 | kPa
-    Stage 3
-        Power Generated:               0.90132 MW
-        Mean Degree of Reaction:       0.00000
-        --------------------------------------------------------------------------------
-        C_1m: 310.77 (0.603) | C_2m: 477.03 (0.964) | C_3m: 305.97 (0.632) | m/s (Mach)
-        W_1m: 438.25 (0.850) | W_2m: 324.54 (0.656) | W_3m: 411.71 (0.850) | m/s (Mach)
-        U_1m:         256.54 | U_2m:         256.54 | U_3m:         256.54 | m/s
-        alpha_1m:     -10.73 | alpha_2m:      50.20 | alpha_3m:      -3.68 | degrees
-        beta_1m:      -45.84 | beta_2m:       19.81 | beta_3m:      -42.13 | degrees
-        --------------------------------------------------------------------------------
-        T0_1m:       742.481 | T0_2m:       742.481 | T0_3m:       658.807 | K
-        P0_1m:       178.007 | P0_2m:       175.786 | P0_3m:       105.284 | kPa
-    Stage 4
-        Power Generated:               0.73139 MW
-        Mean Degree of Reaction:       0.00000
-        --------------------------------------------------------------------------------
-        C_1m: 305.97 (0.632) | C_2m: 449.35 (0.964) | C_3m: 305.77 (0.669) | m/s (Mach)
-        W_1m: 411.71 (0.850) | W_2m: 313.97 (0.674) | W_3m: 388.50 (0.850) | m/s (Mach)
-        U_1m:         256.54 | U_2m:         256.54 | U_3m:         256.54 | m/s
-        alpha_1m:      -3.68 | alpha_2m:      47.19 | alpha_3m:       3.06 | degrees
-        beta_1m:      -42.13 | beta_2m:       13.47 | beta_3m:      -38.19 | degrees
-        --------------------------------------------------------------------------------
-        T0_1m:       658.807 | T0_2m:       658.807 | T0_3m:       590.908 | K
-        P0_1m:       105.284 | P0_2m:       103.861 | P0_3m:        64.980 | kPa
+        T0_1m:      1300.000 | T0_2m:      1300.000 | T0_3m:       965.935 | K
+        P0_1m:      2238.730 | P0_2m:      2217.645 | P0_3m:      1270.107 | kPa

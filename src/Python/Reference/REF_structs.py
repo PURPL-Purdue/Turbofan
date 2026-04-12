@@ -193,6 +193,17 @@ class Compressor:
 ####################################################
 
 @dataclass
+class Turbine_Pitchline_Results:
+    multistage_velocity_triangles   : list
+    multistage_info                 : list
+    r_mean_vec                      : list
+
+    total_power_generated           : float
+    excess_power_margin             : float
+
+    num_stages_target               : float
+
+@dataclass
 class Turbine_IN:
     m_dot_t         : float
     m_dot_c         : float
@@ -203,7 +214,7 @@ class Turbine_IN:
     T0_4m           : float
     P0_4m           : float
 
-    r_mean_c        : float
+    r_mean_i        : float
 
     m_dot_cool      : float
     T0_cool         : float
@@ -232,16 +243,15 @@ class Turbine_IN:
 
     Mc_2m_default   : float
     Mw_3Rm_default  : float
+    degR_m          : float
 
 @dataclass
 class Turbine_OUT:
-    multistage_velocity_triangles:  list
-    multistage_info:                list
-    total_power_gen:                float
-    req_power:                      float
-    req_power_comp:                 float
-    req_power_fan:                  float
-    excess_power_margin:            float
+    initial_pitchline_res:  Turbine_Pitchline_Results
+    pitchline_res:          Turbine_Pitchline_Results
+    req_power:              float
+    req_power_comp:         float
+    req_power_fan:          float
 
 @dataclass
 class Turbine_Gen:
