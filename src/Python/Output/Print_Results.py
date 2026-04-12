@@ -5,6 +5,7 @@ def write(TF):
         cycle = TF.cycle
         comp_LP = TF.compressor.LP
         turb_LP = TF.turbine.LP
+        turb_HP = TF.turbine.HP
 
         txt.write("####################################################\n")
         txt.write("#                  Cycle Analysis                  #\n")
@@ -105,6 +106,40 @@ def write(TF):
 
         txt.write("\n\n")
         txt.write("####################################################\n")
+        txt.write("#                HP Turbine Sizing                 #\n")
+        txt.write("####################################################\n")
+        txt.write("Initial Pass Values NOTE: NOT ACTUALLY USED IN FINAL SIZING:\n")
+        txt.write("    Number of Stages:                 {:12d}\n".format(len(turb_HP.OUT.initial_pitchline_res.multistage_info)))
+        txt.write("    Total Power Required:             {:12.5f} MW\n".format(turb_HP.OUT.req_power/1e6))
+        txt.write("    Total Power Generated:            {:12.5f} MW\n".format(turb_HP.OUT.initial_pitchline_res.total_power_generated/1e6))
+        txt.write("    Excess Power Margin:              {:12.5f} %\n".format(turb_HP.OUT.initial_pitchline_res.excess_power_margin))
+        txt.write("Overview:\n")
+        txt.write("    Number of Stages:                 {:12d}\n".format(len(turb_HP.OUT.pitchline_res.multistage_info)))
+        txt.write("    Power Required by HP Compressor:  {:12.5f} MW\n".format(turb_HP.OUT.req_power_comp/1e6))
+        txt.write("    Total Power Required:             {:12.5f} MW\n".format(turb_HP.OUT.req_power/1e6))
+        txt.write("    Total Power Generated:            {:12.5f} MW\n".format(turb_HP.OUT.pitchline_res.total_power_generated/1e6))
+        txt.write("    Excess Power Margin:              {:12.5f} %\n".format(turb_HP.OUT.pitchline_res.excess_power_margin))
+        txt.write("Info per Stage:\n")
+        info = turb_HP.OUT.pitchline_res.multistage_info
+        tris = turb_HP.OUT.pitchline_res.multistage_velocity_triangles
+        for i in range(len(tris)):
+            txt.write("    Stage {:d}\n".format(i+1))
+            txt.write("        Power Generated:          {:12.5f} MW\n".format(info[i].power/1e6))
+            txt.write("        Mean Degree of Reaction:  {:12.2f}\n".format(info[i].degR_m))
+            txt.write("        Stator Turning:           {:12.2f} deg\n".format(abs(np.degrees(tris[i].alpha_1m-tris[i].alpha_2m))))
+            txt.write("        Rotor Turning:            {:12.2f} deg\n".format(abs(np.degrees(tris[i].beta_2m -tris[i].beta_3m))))
+            txt.write("        --------------------------------------------------------------------------------\n")
+            txt.write("        C_1m: {:6.2f} ({:.3f}) | C_2m: {:6.2f} ({:.3f}) | C_3m: {:6.2f} ({:.3f}) | m/s (Mach)\n".format(tris[i].C_1m, tris[i].Mc_1m, tris[i].C_2m, tris[i].Mc_2m, tris[i].C_3m, tris[i].Mc_3m))
+            txt.write("        W_1m: {:6.2f} ({:.3f}) | W_2m: {:6.2f} ({:.3f}) | W_3m: {:6.2f} ({:.3f}) | m/s (Mach)\n".format(tris[i].W_1m, tris[i].Mw_1m, tris[i].W_2m, tris[i].Mw_2m, tris[i].W_3m, tris[i].Mw_3m))
+            txt.write("        U_1m: {:14.2f} | U_2m: {:14.2f} | U_3m: {:14.2f} | m/s\n".format(tris[i].U_1m, tris[i].U_2m, tris[i].U_3m))
+            txt.write("        alpha_1m: {:10.2f} | alpha_2m: {:10.2f} | alpha_3m: {:10.2f} | degrees\n".format(np.degrees(tris[i].alpha_1m), np.degrees(tris[i].alpha_2m), np.degrees(tris[i].alpha_3m)))
+            txt.write("        beta_1m: {:11.2f} | beta_2m: {:11.2f} | beta_3m: {:11.2f} | degrees\n".format(np.degrees(tris[i].beta_1m), np.degrees(tris[i].beta_2m), np.degrees(tris[i].beta_3m)))
+            txt.write("        --------------------------------------------------------------------------------\n")
+            txt.write("        T0_1m: {:13.3f} | T0_2m: {:13.3f} | T0_3m: {:13.3f} | K\n".format(info[i].T0_1m, info[i].T0_2m, info[i].T0_3m))
+            txt.write("        P0_1m: {:13.3f} | P0_2m: {:13.3f} | P0_3m: {:13.3f} | kPa\n".format(info[i].P0_1m/1e3, info[i].P0_2m/1e3, info[i].P0_3m/1e3))
+
+        txt.write("\n\n")
+        txt.write("####################################################\n")
         txt.write("#                LP Turbine Sizing                 #\n")
         txt.write("####################################################\n")
         txt.write("Initial Pass Values NOTE: NOT ACTUALLY USED IN FINAL SIZING:\n")
@@ -114,8 +149,8 @@ def write(TF):
         txt.write("    Excess Power Margin:              {:12.5f} %\n".format(turb_LP.OUT.initial_pitchline_res.excess_power_margin))
         txt.write("Overview:\n")
         txt.write("    Number of Stages:                 {:12d}\n".format(len(turb_LP.OUT.pitchline_res.multistage_info)))
-        txt.write("    Power Required by Compressor:     {:12.5f} MW\n".format(turb_LP.OUT.req_power_fan/1e6))
-        txt.write("    Power Required by Fan:            {:12.5f} MW\n".format(turb_LP.OUT.req_power_comp/1e6))
+        txt.write("    Power Required by LP Compressor:  {:12.5f} MW\n".format(turb_LP.OUT.req_power_comp/1e6))
+        txt.write("    Power Required by Fan:            {:12.5f} MW\n".format(turb_LP.OUT.req_power_fan/1e6))
         txt.write("    Total Power Required:             {:12.5f} MW\n".format(turb_LP.OUT.req_power/1e6))
         txt.write("    Total Power Generated:            {:12.5f} MW\n".format(turb_LP.OUT.pitchline_res.total_power_generated/1e6))
         txt.write("    Excess Power Margin:              {:12.5f} %\n".format(turb_LP.OUT.pitchline_res.excess_power_margin))

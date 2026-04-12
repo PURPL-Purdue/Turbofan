@@ -360,7 +360,7 @@ def pitchline_staging(initial, Mc_2m, Mw_3Rm, Mc_2m_default, Mw_3Rm_default, alp
             stage_idx += 1
 
     num_stages = len(multistage_velocity_triangles)
-    num_stages_target = num_stages - 1      # This will calculate a number for non-initial passes, but is meaningless unless it is the initial pass
+    num_stages_target = num_stages - 1 if num_stages != 1 else 1      # This will calculate a number for non-initial passes, but is meaningless unless it is the initial pass
 
     total_power_generated = sum([info.power for info in multistage_info])
     excess_power_margin = (total_power_generated - req_power_t)/req_power_t * 100
