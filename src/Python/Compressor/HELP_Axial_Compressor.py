@@ -129,15 +129,14 @@ def Compressor_Free_Vortex(rps, r_hub_vec_stages, r_tip_vec_stages, ang_vel, deg
 
     return flow_field
 
-def Blade_Root_Stress(ang_vel, r_tip_vec_full, r_hub_vec_full, taper_ratio, r_mean_1):
+def Blade_Root_Stress(ang_vel, r_tip_vec_full, r_hub_vec_full, r_mean_1):
+    taper_ratio = 0.9
+    rho = 4680 #set for now, review this if we choose different material, this is rho for titanium
     flow_area = 2 * (m.pi) * r_mean_1 * (r_tip_vec_full - r_hub_vec_full)
-    blade_stress = ((ang_vel**2) * flow_area / (4 * m.pi)) * (1 + taper_ratio) * rho_titanium  #equations for flow area and blade stress taken from Farokhi 669
-    #are taper_ratio, ang_vel rho_titanium set?
-    #used the r_mean_1 parameter from ref structs
-    # do i need to return anything other than blade stress? do we need flow area anywhere?
+    blade_stress = ((ang_vel**2) * flow_area / (4 * m.pi)) * (1 + taper_ratio) * rho_titanium  #equations for flow area and blade stress taken from Farokhi pg 669 in pdf, not actual textbook page number
     # do any of these variables need to be added to REF structs?
     pass
-    return(blade_stress)
+    return(blade_stress, flow_area)
 
 def Blade_Bending_Stress():
     pass
