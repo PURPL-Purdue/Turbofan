@@ -37,7 +37,7 @@ class Cycle_OUT:
 
 @dataclass
 class ByComponent:
-    a:   float = None     # Ambient
+    a:   float = None      # Ambient
     d:   float = None      # Diffuser
     f:   float = None      # Fan
     fn:  float = None      # Fan Nozzle
@@ -185,7 +185,7 @@ class Compressor_Gen:
 
 @dataclass
 class Compressor:
-    LP:  Compressor_Gen = field(default=Compressor_Gen)
+    LP: Compressor_Gen = field(default=Compressor_Gen)
     HP: Compressor_Gen = field(default=Compressor_Gen)
 
 ####################################################
@@ -265,6 +265,39 @@ class Turbine_Stage_Info:
     P0_3m : float
 
 ####################################################
+#                     Nozzle                       #
+####################################################
+
+@dataclass
+class Nozzle_IN:
+    m_dot_t         : float
+    m_dot_b         : float
+    T05             : float
+    P05             : float
+    T015            : float
+    P015            : float
+    T_a             : float
+    P_a             : float
+    gamma_n         : float
+    gamma_fn        : float
+    eta_n           : float
+    eta_fn          : float
+
+@dataclass
+class Nozzle_OUT:
+    exit_velocity_c:                  float
+    exit_mach_c:                      float
+    exit_area_c:                      float
+    exit_velocity_b:                  float
+    exit_mach_b:                      float
+    exit_area_b:                      float
+
+@dataclass
+class Nozzle:
+    IN:  Nozzle_IN = field(default=(Nozzle_IN))
+    OUT: Nozzle_OUT = field(default=(Nozzle_OUT))
+
+####################################################
 #                    Pritchard                     #
 ####################################################
 @dataclass
@@ -342,3 +375,4 @@ class TF:
     fan:        Fan = field(default=Fan)
     compressor: Compressor = field(default=Compressor)
     turbine:    Turbine = field(default=Turbine)
+    nozzle:     Nozzle = field(default=Nozzle)

@@ -452,3 +452,93 @@ def Turbine_Sizing(params):
     )
 
     return AT_OUT
+
+def Nozzle_Sizing(params):
+    # ======== INPUTS ========
+    # m_dot_c       | Core mass flow rate
+    # m_dot_b       | Bypass mass flow rate
+    # T0_5          | Stagnation temperature at stage 5
+    # P0_5          | Stagnation pressure at stage 5
+    # T0_15         | Stagnation temperature at stage 15
+    # P0_15         | Stagnation pressure at stage 15    
+    # P_a           | Ambient pressure
+    # T_a           | Ambient temperature
+    # gamma_n       | Specific heat ratio of nozzle
+    # eta_n         | Nozzle efficiency
+    # gamma_fn      | Specific heat ratio of fan nozzle
+    # eta_fn        | Fan nozzle efficiency
+    # ======== OUTPUTS ========
+    # V_e_c         | Core exit velocity 
+    # M_e_c         | Core exit mach
+    # A_e_c         | Core exit area
+    # V_e_b         | Bypass exit velocity
+    # M_e_b         | Bypass exit mach 
+    # A_e_c         | Bypass exit area
+
+    # INPUTS
+    m_dot_c         = params.m_dot_t
+    m_dot_b         = params.m_dot_b
+    T0_5            = params.T05
+    P0_5            = params.P05
+    T0_15           = params.T015
+    P0_15           = params.P015
+    T_a             = params.T_a 
+    P_a             = params.P_a   
+    gamma_n         = params.gamma_n
+    gamma_fn        = params.gamma_fn
+    eta_n           = params.eta_n
+    eta_fn          = params.eta_fn
+
+    R = 287   # Specific gas constant for air [J/(kg*K)]     | TODO: ACCOUNT FOR COMBUSTION PRODUCTS
+
+    # Check if choked
+    if (P_a / P0_5) < (2 / (gamma_n+1))**(gamma_n/(gamma_n - 1)):     
+        # Choked flow -> C-D nozzle
+        # Mach 9 iterated using Newton-Rhapson Method
+        # until nozzle is perfectly expanded
+        M_guess1 = 2
+        M_guess2 = 1.2
+        while abs(M_diff) > 0.001:  
+            P_guess1 = P0_5 * REF_AEQ.P_P0(gamma_n, M_guess1) - P_a 
+            P_guess2 = P0_5 * REF_AEQ.P_P0(gamma_n, M_guess2) - P_a
+
+            M_new -= P_guess2*(M_guess2 - M_guess1)/(P_guess2 - P_guess1)
+            M_guess1 = M_guess2
+            M_guess2 = M_new
+            M_diff = M_guess2 - M_guess1
+
+        M_9 = M_guess2        
+    else:   
+        # Unchoked flow -> converging nozzle
+        M_9 = 0.9
+
+    M_19 = 0.9      # estimated target Mach since bypass is unchoked
+    A_star_b = (m_dot_b * m.sqrt((R*T0_15)/gamma_fn)) / (P0_15 * (2/(gamma_fn+1))**((gamma_fn+1/(2*(gamma_fn-1)))))
+    A_19 = A_star_b * REF_AEQ.A_Astar(gamma_fn, M_19)
+    # T_19 = T0_15 * REF_AEQ.T_T0(gamma_fn, M_19)
+    T_19 = T_a
+
+     # Throat area of core nozzle
+    A_th = (m_dot_c * m.sqrt((R*T0_5)/gamma_n)) / (P0_5 * (2/(gamma_n+1))**((gamma_n+1/(2*(gamma_n-1)))))
+    A_9 = A_th * REF_AEQ.A_Astar(gamma_n, M_9)
+    T_9 = T0_5 * REF_AEQ.T_T0(gamma_n, M_9)
+
+    exit_velocity_c = M_9 * REF_AEQ.a(gamma_n, R, T_9)
+    exit_mach_c = M_9
+    exit_area_c = A_9
+    exit_velocity_b = M_19 * REF_AEQ.a(gamma_fn, R, T_19)
+    exit_mach_b = M_19
+    exit_area_b = A_19
+
+    thrust = m_dot_c * exit_velocity_c + m_dot_b * m_dot_b * exit_velocity_b
+
+    N_OUT = REF_structs.Nozzle_OUT(
+        exit_velocity_c,
+        exit_mach_c,             
+        exit_area_c,                     
+        exit_velocity_b,                  
+        exit_mach_b,                  
+        exit_area_b 
+    )
+
+    return N_OUT

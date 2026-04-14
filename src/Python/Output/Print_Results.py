@@ -5,6 +5,7 @@ def write(TF):
         cycle = TF.cycle
         comp_LP = TF.compressor.LP
         turb_LP = TF.turbine.LP
+        nozzle = TF.nozzle
 
         txt.write("####################################################\n")
         txt.write("#                  Cycle Analysis                  #\n")
@@ -130,4 +131,17 @@ def write(TF):
             txt.write("        --------------------------------------------------------------------------------\n")
             txt.write("        T0_1m: {:13.3f} | T0_2m: {:13.3f} | T0_3m: {:13.3f} | K\n".format(info[i].T0_1m, info[i].T0_2m, info[i].T0_3m))
             txt.write("        P0_1m: {:13.3f} | P0_2m: {:13.3f} | P0_3m: {:13.3f} | kPa\n".format(info[i].P0_1m/1e3, info[i].P0_2m/1e3, info[i].P0_3m/1e3))
+        
+        txt.write("\n\n")
+        txt.write("####################################################\n")
+        txt.write("#                  Nozzle Sizing                   #\n")
+        txt.write("####################################################\n")
+        txt.write("Core:\n")
+        txt.write("    Exit Velocity:               {:12.5f} m/s\n".format(nozzle.OUT.exit_velocity_c))
+        txt.write("    Exit Mach:                   {:12.5f}\n".format(nozzle.OUT.exit_mach_c))
+        txt.write("    Exit Area:                   {:12.5f} m^2\n".format(nozzle.OUT.exit_area_c))
+        txt.write("Bypass:\n")
+        txt.write("    Exit Velocity:               {:12.5f} m/s\n".format(nozzle.OUT.exit_velocity_b))
+        txt.write("    Exit Mach:                   {:12.5f}\n".format(nozzle.OUT.exit_mach_b))
+        txt.write("    Exit Area:                   {:12.5f} m^2\n".format(nozzle.OUT.exit_area_b))
 
