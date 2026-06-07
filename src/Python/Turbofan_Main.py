@@ -50,6 +50,7 @@ TF.cycle.IN = REF_structs.Cycle_IN(
     287,                # Rp                Combustion product gas constsant   | TODO
     45000000,           # QR                Heat of reaction of fuel           | TODO
     2.89,               # Bypass            Bypass Ratio                       | nondimensional
+    2500,               # thrust            Target total thrust                | lbf
     1300                # combustion_temp   T0_4, turbine inlet temp           | K
 )
 TF.cycle.OUT = Station_Thermo.thermoCalcs(TF.cycle.IN)
@@ -178,4 +179,4 @@ print(TF.turbine.HP.OUT.req_power/1e6)
 
 # print(TF.turbine.HP.OUT.req_power/1e6)
 Print_Results.write(TF)
-# Plotting.plot(TF)
+Plotting.plot(TF)

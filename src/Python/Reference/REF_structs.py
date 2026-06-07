@@ -15,6 +15,7 @@ class Cycle_IN:
     Rp     : float = None
     QR     : float = None
     bypass : float = None
+    thrust : float = None
     combustion_temp: float = None
 
 @dataclass

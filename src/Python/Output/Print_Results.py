@@ -92,9 +92,10 @@ def write(TF):
         txt.write("Misc:\n")
         txt.write("    Number of Stages (calculated):    {:12.5f}\n".format(comp_LP.OUT.num_stages_actual))
         txt.write("    Number of Stages (rounded up):    {:12.5f}\n".format(comp_LP.OUT.num_stages))
-        txt.write("    Blade Chord Length:               {:12.5f} m\n".format(comp_LP.OUT.chord_m))
         txt.write("    RPM:                              {:12.5f} rpm\n".format(comp_LP.OUT.RPM))
         txt.write("    Inlet Tip Radius:                 {:12.5f} mm ({:.5f} in)\n".format(comp_LP.OUT.FF.r_tip_vec_full[0]*1000, comp_LP.OUT.FF.r_tip_vec_full[0]*1000/25.4))
+        txt.write("    Inlet Blade Height:               {:12.5f} mm ({:.5f} in)\n".format(comp_LP.OUT.FF.r_tip_vec_full[0]*1000 - comp_LP.OUT.FF.r_hub_vec_full[0]*1000, (comp_LP.OUT.FF.r_tip_vec_full[0]-comp_LP.OUT.FF.r_hub_vec_full[0])*1000/25.4))
+        txt.write("    Blade Chord Length:               {:12.5f} mm ({:.5f} in)\n".format(comp_LP.OUT.chord_m*1000, comp_LP.OUT.chord_m*1000/25.4))
         txt.write("    Inlet Tip Velocity:               {:12.5f} m/s\n".format(comp_LP.OUT.U_tip_inlet))
         RVT = comp_LP.OUT.RVT
         txt.write("Velocity Triangle:\n")

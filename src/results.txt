@@ -86,9 +86,10 @@ Triangles:
 Misc:
     Number of Stages (calculated):         3.01765
     Number of Stages (rounded up):         3.00000
-    Blade Chord Length:                    0.01897 m
     RPM:                               22540.77969 rpm
     Inlet Tip Radius:                    136.58696 mm (5.37744 in)
+    Inlet Blade Height:                   55.81108 mm (2.19729 in)
+    Blade Chord Length:                   18.96713 mm (0.74674 in)
     Inlet Tip Velocity:                  320.67334 m/s
 Velocity Triangle:
     C_1m: 191.26 (0.520) | C_2m: 293.30 (0.782) | C_3m: 191.26 (0.520) | m/s (Mach)
