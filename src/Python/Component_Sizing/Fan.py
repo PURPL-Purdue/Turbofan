@@ -58,9 +58,21 @@ def Sizing(params):
     Cp              = params.Cp_cLP
     bypassRatio     = params.bypass
     M_tip_inlet_max = params.M_tip_inlet_max
-    V_1             = params.V_1
+    C_1             = params.V_1
     R               = params.R
-    
+
+    # TODO
+    # - Use inputs to calculate a1, calculate U_tip properly
+    # - Correclty implement numeric integration to calculate area ratio using B
+    #   - calculating C at many points along the span of the fan
+    #   - integrating along the span to calculate mass flow through the core until it matches B
+
+    # additional inputs you'll need
+    # T01 total temp
+    # P01 total pressure
+    # M_f flight mach number, will be zero for stationary engine
+
+    # a1 = sqrt(gamma * R * T1)
 
     # local station 1 velocity triangle calculations
     htftrr = 0.2
@@ -68,17 +80,19 @@ def Sizing(params):
     U_tip = M_tip_inlet_max * r_tip # tangential velocity of fan tip based on max mach number we want
     omega = U_tip / r_tip # angular velocity
     r_hub = r_tip * htftrr # hub radius
-    r_LPC_tip = m.sqrt((r_tip**2 + bypassRatio * r_hub**2)/(bypassRatio + 1)) # LPC tip radius based on bypass ratio and fan tip radius
+
+    r_LPC_tip = m.sqrt((r_tip**2 + bypassRatio * r_hub**2)/(bypassRatio + 1)) # LPC tip radius based on bypass ratio and fan tip radius TODO INTEGRATE!!!
+    
     r_mean = (r_LPC_tip + r_hub) / 2
     U_m = r_mean * omega # **
-    alpha_1 = m.atan(U_m / V_1) # **
-    w_magnitude = V_1 / m.sin(alpha_1) # **
+    alpha_1 = m.atan(U_m / C_1) # **
+    w_magnitude = C_1 / m.sin(alpha_1) # **
 
     # local station 3 velocity triangle calculations
     # Cp = gamma / (gamma - 1) * R
     C_theta2 = Cp * (T02 - T01) / U_m
-    alpha_2 = m.atan((U_m - C_theta2) / V_1) # **
-    w_magnitude_2 = V_1 / m.sin(alpha_2) # **
+    alpha_2 = m.atan((U_m - C_theta2) / C_1) # **
+    w_magnitude_2 = C_1 / m.sin(alpha_2) # **
 
 
     pass
