@@ -7,7 +7,9 @@
       "path": "../Archive",
     },
   ],
-  "settings": {},
+  "settings": {
+    "markdown.validate.enabled": true,
+  },
   "launch": {
     "version": "0.2.0",
     "configurations": [

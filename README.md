@@ -9,7 +9,18 @@ This following section contains a brief overview of how the code for the turbofa
 Note: This was written on 3/1/26 and I'm guessing by now there's new stuff in the repo that I haven't mentioned here. If this README is egregiously out of date, please let me know and I can update it.
 Note #2: If you use VSCode, you can open the workspace I've been using from the Turbofan.Code_Workspace file and it'll hopefully open everything nice and tidy (though I dunno if it works well when you share the file so your mileage may vary)
 
-### File Hierarchy
+### File Structure
+
+```
+.
+├── Components
+    └── Combustor
+│
+└
+```
+
+
+
 - At the very top, we've got Turbofan_Main.py, which is the main execution file and is the only file you should actually run.
 - On the next level down we've got Station_Thermo, Component_Sizing, Print_Results, and Plotting. These are the only files that are directly called from Turbofan_Main. They each only take in one input, and give back either one or no outputs (more on this later)
 - On the bottom level are the "HELP_" and "REF_" files. Files that start with "HELP_" contain helper functions that assist the sizing functions defined in Component_Sizing. Files that start with "REF_" contain commonly used objects and functions that are referenced everywhere in the code.
