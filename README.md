@@ -19,6 +19,7 @@ Note #2: If you use VSCode, you can open the workspace I've been using from the 
 └
 ```
 
+- Setup 
 
 
 - At the very top, we've got Turbofan_Main.py, which is the main execution file and is the only file you should actually run.
