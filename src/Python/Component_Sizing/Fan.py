@@ -71,29 +71,28 @@ def Sizing(params):
     M_tip_inlet_max = params.M_tip_inlet_max
     C_1             = params.V_1
     R               = params.R
-    P_r             = 30 #input pressure ratio
-    T_r             = m.pow(P_r, (gamma - 1) / gamma)
-    # TODO
-    # - Use inputs to calculate a1, calculate U_tip properly
-    # - Correclty implement numeric integration to calculate area ratio using B
-    #   - calculating C at many points along the span of the fan
-    #   - integrating along the span to calculate mass flow through the core until it matches B
-    # - meow
+    M_1             = params.M_1                # inlet mach number
+    T01             = params.T01
+    P01             = params.P01
+    mdot_1          = params.mdot_1
+    Pr              = params.Pr #input pressure ratio
+    Tr              = m.pow(Pr, (gamma - 1) / gamma) # NOTE: you need polytropic efficiency in this equation. Have it be an input. You can set it to an arbitrary value for now, but include it in this equation
+    htftrr          = params.htftrr
 
     # additional inputs you'll need
     # T01 total temp
     # P01 total pressure
-    # M_f flight mach number, will be zero for stationary engine
 
     #check muhehehe
-    T1 = T01 / (1 + ((gamma - 1) / 2) * m.pow(M_tip_inlet_max, 2)) # static temp
-    a1 = m.sqrt(gamma * R * T1) # speed of sound
+    # T1 = T01 / (1 + ((gamma - 1) / 2) * m.pow(M_tip_inlet_max, 2)) # static temp 
+    T1 = T01 * REF_AEQ.T_T0(gamma, M_1)
+    a1 = m.sqrt(gamma * R * T1) # speed of sound TODO: check your units!
 
-    # local station 1 velocity triangle calculations
-    htftrr = 0.2
+    # local station 1 velocity triangle calculations :thumbsup:
+    # htftrr = 0.2
     r_tip = 0.33    # hub to fan tip radius ratio (arbitrary) 
-    U_tip = M_tip_inlet_max * a1 # tangential velocity of fan tip based on max mach number we want
-    omega = U_tip / r_tip # angular velocity
+    U_tip_inlet = M_tip_inlet_max * a1 # tangential velocity of fan tip based on max mach number we want
+    omega = U_tip_inlet / r_tip # angular velocity
     r_hub = r_tip * htftrr # hub radius
 
     # r_LPC_tip = m.sqrt((r_tip**2 + bypassRatio * r_hub**2)/(bypassRatio + 1)) # LPC tip radius based on bypass ratio and fan tip radius TODO INTEGRATE!!!
@@ -102,10 +101,10 @@ def Sizing(params):
     # --------------------------------------------------------------------------------------------------------------------------------------------------------------
     num_increments = 100 # input desired number of dividends along blade span (higher num = higher accuracy)
     rho_2 = np.zeros((1, num_increments + 1))
-    V_2 = np.zeros((1, num_increments + 1))
+    V_2 = np.zeros((1, num_increments + 1)) # NOTE: do you mean C_2
     r_2 = np.zeros((1, num_increments + 1))
-    T02 = T_r * T01
-    P02 = P_r * P01
+    T02 = Tr * T01
+    P02 = Pr * P01
     rho02 = P02 / (R * T02)
     z_2m = C_1
     dr = r_tip / num_increments
@@ -118,7 +117,7 @@ def Sizing(params):
         # V along span
         U_i = omega * r_i
         Ctheta_2i = Cp * (T02 - T01) / U_i
-        C_i = Ctheta_2i + z_2m
+        C_i = Ctheta_2i + z_2m # TODO: trig!
         V_2[i] = C_i
 
         # rho along span
@@ -127,7 +126,7 @@ def Sizing(params):
         rho_2[i] = rho_2i
 
     # total mass flow
-    mdot_2 = mass_flow(rho_2, V_2, r_2)
+    mdot_2 = mass_flow(rho_2, V_2, r_2) # NOTE: you need to make sure this equals mdot_1, conservation of mass.
 
     j = 0
     coreFlow = 0
