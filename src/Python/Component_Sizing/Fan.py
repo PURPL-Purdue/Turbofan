@@ -78,62 +78,105 @@ def Sizing(params):
     np              = params.np # polytropic efficiency (decimal)
     Pr              = params.Pr #input pressure ratio
     Tr              = m.pow(Pr, (gamma - 1) / gamma * np) # NOTE: you need polytropic efficiency in this equation. Have it be an input. You can set it to an arbitrary value for now, but include it in this equation
-    htftrr          = params.htftrr
-    
+    constantRad     = params.constantRad # ("hub", "tip", or "mean"); determines what characteristic remains constant for annulus calculation
+
 
     #check muhehehe
-    # T1 = T01 / (1 + ((gamma - 1) / 2) * m.pow(M_tip_inlet_max, 2)) # static temp 
-    T1 = T01 * REF_AEQ.T_T0(gamma, M_1)
-    a1 = m.sqrt(gamma * R * T1) # speed of sound TODO: check your units! (checked! R is currently in terms of J so it should be correct)
+    T1 = T01 * REF_AEQ.T_T0(gamma, M_1) # static temp
+    a1 = REF_AEQ.a(gamma, R, T1) # speed of sound TODO: check your units! (checked! R is currently in terms of J so it should be correct)
+
+    # ======== Inlet Annulus ========
+    rho01 = P01 / (R * T01)
+    A_1 = mdot_1 / (rho01 * C_1)
+
+    if constantRad == "hub":
+        
+        r_hub_1 = params.r_hub_1
+        r_tip_1 = m.sqrt((A_1 / m.pi) + r_hub**2)
+        htftrr = r_hub_1 / r_tip_1
+
+    elif constantRad == "tip":
+
+        r_tip_1 = params.r_tip_1
+        r_hub_1 = m.sqrt(r_tip_1**2 - (A_1 / m.pi))
+        htftrr = r_hub_1 / r_tip_1
+
+    elif constantRad == "mean":
+    
+        htftrr = params.htftrr
+        r_hub_1 = m.sqrt((A_1 * htftrr**2) / (m.pi * (1 - htftrr**2)))
+        r_tip_1 = r_hub_1 / htftrr
+
+    else:
+        print("Check for typos goober")
+
 
     # local station 1 velocity triangle calculations :thumbsup:
-    # htftrr = 0.2
-    r_tip = 0.33    # hub to fan tip radius ratio (arbitrary)
     U_tip_inlet = M_tip_inlet_max * a1 # tangential velocity of fan tip based on max mach number we want
-    omega = U_tip_inlet / r_tip # angular velocity
-    r_hub = r_tip * htftrr # hub radius
+    omega = U_tip_inlet / r_tip_1 # angular velocity
+    r_mean = (r_hub_1 + r_tip_1) / 2 # constant
+    # ========================================================================================
+    
+    
 
     # r_LPC_tip = m.sqrt((r_tip**2 + bypassRatio * r_hub**2)/(bypassRatio + 1)) # LPC tip radius based on bypass ratio and fan tip radius TODO INTEGRATE!!!
     
     #fix code attempt!!! (numerical integration or something)
-    # --------------------------------------------------------------------------------------------------------------------------------------------------------------
+    # ======== Mass Flow Along Blade Span ========
     num_increments = 100 # input desired number of dividends along blade span (higher num = higher accuracy)
-    rho_2 = np.zeros((1, num_increments + 1))
-    C_2 = np.zeros((1, num_increments + 1)) # NOTE: do you mean C_2
-    r_2 = np.zeros((1, num_increments + 1))
     T02 = Tr * T01
     P02 = Pr * P01
     rho02 = P02 / (R * T02)
     z_2m = C_1
-    dr = (r_tip - r_hub) / num_increments
-    r_i = r_hub
-    for i in range(num_increments + 1):
-        
-        # C along span
-        U_i = omega * r_i
-        Ctheta_2i = Cp * (T02 - T01) / U_i
-        C_i = m.sqrt(Ctheta_2i**2 + z_2m**2)
-        C_2[i] = C_i
 
-        # rho along span
-        T2_i = T02 - (C_i**2 / (2 * Cp))
-        rho_2i = rho02 * m.pow((T2_i / T02), (1 / (gamma - 1)))
-        rho_2[i] = rho_2i
+    r_hub_2 = r_hub_1   # temporary initial values
+    r_tip_2 = r_tip_1   # temporary initial values
+    mdot_2 = 0          # temporary initial values
+    rho_2_vec = np.zeros((1, num_increments + 1))
+    C_2_vec = np.zeros((1, num_increments + 1))
+    r_2_vec = np.zeros((1, num_increments + 1))
+    massflowConditionMet = False
+    while not massflowConditionMet:
         
-        # annulus radii along span
-        r_i += dr
-        r_2[i] = r_i
+        dr = (r_tip_2 - r_hub_2) / num_increments
+        r_i = r_hub_2
+        for i in range(num_increments + 1):
+            
+            # C along span
+            U_i = omega * r_i
+            Ctheta_2i = Cp * (T02 - T01) / U_i
+            C_i = m.sqrt(Ctheta_2i**2 + z_2m**2)
+            C_2_vec[i] = C_i
+    
+            # rho along span
+            T2_i = T02 - (C_i**2 / (2 * Cp))
+            rho_2i = rho02 * m.pow((T2_i / T02), (1 / (gamma - 1)))
+            rho_2_vec[i] = rho_2i
+            
+            # annulus radii along span
+            r_i += dr
+            r_2_vec[i] = r_i
+    
+        # total mass flow
+        mdot_2 = mass_flow(rho_2_vec, C_2_vec, r_2_vec) # NOTE: you need to make sure this equals mdot_1, conservation of mass.
+        
+        if abs(mdot_2 - mdot_1) <= 0.001:
+            massflowConditionMet = True
 
-    # total mass flow
-    mdot_2 = mass_flow(rho_2, C_2, r_2) # NOTE: you need to make sure this equals mdot_1, conservation of mass.
+        else:
+            A_2_current = m.pi * (r_tip_2**2 - r_hub_2**2)
+            A_2_actual = A_2_current * mdot_1 / mdot_2
+            h = A_2_actual / (4 * m.pi * r_mean)
+            r_hub_2 = r_mean - h
+            r_tip_2 = r_mean + h
 
     j = 0
     coreFlow = 0
     bypassConditionMet = False
     while not bypassConditionMet:
-        rho_avg = (rho_2[j] + rho_2[j + 1]) / 2
-        V_avg = (C_2[j] + C_2[j + 1]) / 2
-        area = m.pi * ((r_2[j] + r_2[j + 1])**2 - (r_2[j])**2)
+        rho_avg = (rho_2_vec[j] + rho_2_vec[j + 1]) / 2
+        V_avg = (C_2_vec[j] + C_2_vec[j + 1]) / 2
+        area = m.pi * ((r_2_vec[j] + r_2_vec[j + 1])**2 - (r_2_vec[j])**2)
         coreFlow += rho_avg * V_avg * area
 
         if (((mdot_2 - coreFlow) / coreFlow) >= bypassRatio):
@@ -141,11 +184,11 @@ def Sizing(params):
 
         else:
             j += 1
+    
+    r_LPC_tip = r_2_vec[j]
+    # ========================================================================================
 
-    r_LPC_tip = r_2[j]
-    # --------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-
+    # TODO: confirm whether these calculations are for fan outlet or compressor inlet (r_mean may differ?)
     r_mean = (r_LPC_tip + r_hub) / 2
     U_m = r_mean * omega # **
     alpha_1 = m.atan(U_m / C_1) # **
