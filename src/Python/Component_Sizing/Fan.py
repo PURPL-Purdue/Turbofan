@@ -77,14 +77,14 @@ def Sizing(params):
     mdot_1          = params.mdot_1
     np              = params.np # polytropic efficiency (decimal)
     Pr              = params.Pr #input pressure ratio
-    Tr              = m.pow(Pr, (gamma - 1) / gamma * np) # NOTE: you need polytropic efficiency in this equation. Have it be an input. You can set it to an arbitrary value for now, but include it in this equation
-    constantRad     = params.constantRad # ("hub", "tip", or "mean"); determines what characteristic remains constant for annulus calculation
+    Tr              = m.pow(Pr, (gamma - 1) / gamma * np)
+    constantRad     = params.constantRad # ("hub", "tip", or "mean"); determines what characteristic remains constant for inlet annulus calculation
 
 
     #check muhehehe
     T1 = T01 * REF_AEQ.T_T0(gamma, M_1) # static temp
-    a1 = REF_AEQ.a(gamma, R, T1) # speed of sound TODO: check your units! (checked! R is currently in terms of J so it should be correct)
-
+    a1 = REF_AEQ.a(gamma, R, T1) # speed of sound
+    
     # ======== Inlet Annulus ========
     rho01 = P01 / (R * T01)
     A_1 = mdot_1 / (rho01 * C_1)
@@ -92,7 +92,7 @@ def Sizing(params):
     if constantRad == "hub":
         
         r_hub_1 = params.r_hub_1
-        r_tip_1 = m.sqrt((A_1 / m.pi) + r_hub**2)
+        r_tip_1 = m.sqrt((A_1 / m.pi) + r_hub_1**2)
         htftrr = r_hub_1 / r_tip_1
 
     elif constantRad == "tip":
@@ -118,9 +118,6 @@ def Sizing(params):
     # ========================================================================================
     
     
-
-    # r_LPC_tip = m.sqrt((r_tip**2 + bypassRatio * r_hub**2)/(bypassRatio + 1)) # LPC tip radius based on bypass ratio and fan tip radius TODO INTEGRATE!!!
-    
     #fix code attempt!!! (numerical integration or something)
     # ======== Mass Flow Along Blade Span ========
     num_increments = 100 # input desired number of dividends along blade span (higher num = higher accuracy)
@@ -136,6 +133,7 @@ def Sizing(params):
     C_2_vec = np.zeros((1, num_increments + 1))
     r_2_vec = np.zeros((1, num_increments + 1))
     massflowConditionMet = False
+
     while not massflowConditionMet:
         
         dr = (r_tip_2 - r_hub_2) / num_increments
@@ -157,13 +155,15 @@ def Sizing(params):
             r_i += dr
             r_2_vec[i] = r_i
     
-        # total mass flow
-        mdot_2 = mass_flow(rho_2_vec, C_2_vec, r_2_vec) # NOTE: you need to make sure this equals mdot_1, conservation of mass.
+        # total station 2 mass flow
+        mdot_2 = mass_flow(rho_2_vec, C_2_vec, r_2_vec)
         
         if abs(mdot_2 - mdot_1) <= 0.001:
             massflowConditionMet = True
 
         else:
+
+            # iterate r_hub and r_tip based on constant r_mean
             A_2_current = m.pi * (r_tip_2**2 - r_hub_2**2)
             A_2_actual = A_2_current * mdot_1 / mdot_2
             h = A_2_actual / (4 * m.pi * r_mean)
@@ -189,7 +189,7 @@ def Sizing(params):
     # ========================================================================================
 
     # TODO: confirm whether these calculations are for fan outlet or compressor inlet (r_mean may differ?)
-    r_mean = (r_LPC_tip + r_hub) / 2
+    r_mean = (r_LPC_tip + r_hub_2) / 2
     U_m = r_mean * omega # **
     alpha_1 = m.atan(U_m / C_1) # **
     w_magnitude = C_1 / m.sin(alpha_1) # **
