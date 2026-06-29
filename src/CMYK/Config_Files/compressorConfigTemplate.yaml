@@ -1,6 +1,0 @@
-# Configuration of the Component
-ComponentConfig:
-  numFlowInlets: 1
-  numFlowExits : 1
-  type         : "Compressor"
-
