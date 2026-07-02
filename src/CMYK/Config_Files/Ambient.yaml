@@ -1,0 +1,3 @@
+T_0   : 298         # Freestream/ambient temperature      | K
+P_0   : 101300      # Freestream pressure                 | Pa
+M_f   : 0.0         # Freestream/flight Mach number       | nondimensional
