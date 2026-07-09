@@ -2,7 +2,6 @@ from CoolProp.CoolProp import PropsSI
 from CMYK.Run import helper_functions as hf
 
 class Flow:
-    # Thermodynamic properties of interest
     def __init__(self, name: str) -> None:
         self.name: str = name
 
@@ -15,8 +14,8 @@ class Flow:
         self.P = None           # Static pressure                                       | Pa
         self.M = None           # Mach number                                           | nondim
 
-        self.H0 = None          # Total enthalpy                                        | J/kg
-        self.H  = None          # Static enthalpy                                       | J/kg
+        self.h0 = None          # Total enthalpy                                        | J/kg
+        self.h  = None          # Static enthalpy                                       | J/kg
 
         self.gamma0     = None  # Total specific heat ratio                             | nondim
         self.Cp0        = None  # Total specific heat capacity at constant pressure     | J/kg/K
@@ -27,13 +26,17 @@ class Flow:
         self.gamma_avg  = None  # Average gamma_avg                                     | nondim
 
         self.R = None           # Gas constant (no total/static distinction)            | J/kg/K
-        self.S = None           # Entropy (no total/static distinction)                 | J/kg/K
+        self.s = None           # Entropy (no total/static distinction)                 | J/kg/K
         self.A = None           # Speed of sound (based on static temperature)          | m/s
 
         self.totally_defined = False        # Flag for whether total properties are known or not
         self.statically_defined = False     # Flag for whether static properties are known or not
 
-    def setFlow(self, working_fluid: str = 'Air', FAR: float = 0, **kwargs: float) -> None:
+        self.W = None                       # Mass flow rate
+        self.Wfactor = None
+        self.Wstream = None
+
+    def setFlow(self, working_fluid: str = 'Air', FAR: float = 0, Wfactor: float = -9999, Wstream: str = 'N/A', **kwargs: float) -> None:
         """
         Sets flow thermodynamic properties.
 
@@ -56,11 +59,13 @@ class Flow:
         The above method call will set the Flow object's working fluid to be regular air and will set the full thermodynamic state of the air. The flow state's fuel-to-air ratio is now zero, regardless of its previous state.
         using total temperature T0, total pressure P0, and Mach number M.
         """
+        self.Wfactor = Wfactor if Wfactor != -9999 else self.Wfactor
+        self.Wstream = Wstream if Wstream != 'N/A' else self.Wstream
         self.WF = working_fluid
-        self.FAR = FAR if self.FAR is None else self.FAR
+        self.FAR = FAR if self.FAR !=0 else self.FAR
 
         # INPUT VALIDATION -------------------------------------------------------------------------------------------------------------------------------
-        ALLOWED_PROPERTIES = {'T0', 'P0', 'H0', 'T', 'P', 'H', 'S'}
+        ALLOWED_PROPERTIES = {'T0', 'P0', 'h0', 'T', 'P', 'h', 's'}
         if len(kwargs) == 0:
             raise RuntimeError("what are you doing lol")
         elif len(kwargs) == 1:
@@ -104,13 +109,13 @@ class Flow:
         self.T0 = T0
         self.P0 = P0
 
-        self.H0     = PropsSI('HMASS', 'T', T0, 'P', P0, self.WF)
+        self.h0     = PropsSI('HMASS', 'T', T0, 'P', P0, self.WF)
 
         self.Cp0    = PropsSI('CPMASS', 'T', T0, 'P', P0, self.WF)
         self.Cv0    = PropsSI('CVMASS', 'T', T0, 'P', P0, self.WF)
         self.gamma0 = self.Cp0 / self.Cv0
 
-        self.S      = PropsSI('SMASS', 'T', T0, 'P', P0, self.WF)
+        self.s      = PropsSI('SMASS', 'T', T0, 'P', P0, self.WF)
 
         self.totally_defined = True
 
@@ -118,13 +123,13 @@ class Flow:
         self.T = T
         self.P = P
 
-        self.H      = PropsSI('HMASS', 'T', T, 'P', P, self.WF)
+        self.h      = PropsSI('HMASS', 'T', T, 'P', P, self.WF)
 
         self.Cp     = PropsSI('CPMASS', 'T', T, 'P', P, self.WF)
         self.Cv     = PropsSI('CVMASS', 'T', T, 'P', P, self.WF)
         self.gamma  = self.Cp / self.Cv
 
-        self.S      = PropsSI('SMASS', 'T', T, 'P', P, self.WF)
+        self.s      = PropsSI('SMASS', 'T', T, 'P', P, self.WF)
         self.A      = PropsSI('A', 'T', T, 'P', P, self.WF)
 
         self.statically_defined = True
@@ -150,7 +155,7 @@ class Flow:
 
         else:
             raise RuntimeError("Flow: total-static relationship overdefined. Perchance consider using calcMach()?")
-    
+
     def calcMach(self) -> None:
         self.gamma_avg = (self.gamma0 + self.gamma) / 2
         self.M = hf.M_fromTT0(self.gamma, self.T, self.T0)

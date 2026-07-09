@@ -1,5 +1,4 @@
-import yaml
-from pathlib import Path
+from CoolProp.CoolProp import PropsSI
 from CMYK.Object_Definitions.Base_Objects import ComponentBase
 
 class Burner(ComponentBase):
@@ -14,25 +13,53 @@ class Burner(ComponentBase):
         # INLET AND EXIT GEOMETRY INTERFACES ------------------
         self.GeoIn  = None
         self.GeoOut = None
-    
-    def config(self, configFile: Path) -> None:
-        cfg       = yaml.safe_load(configFile.read_text())[self.name]
-        cfg_cycle = yaml.safe_load(configFile.read_text())['CYCLE']
+
+        # COMPONENT PROPERTIES --------------------------------
+        self.eta = None
+        self.LHV = None
+        self.FAR = None
+        self.T04 = None
+        self.pr = None
+
+        self.Wfactor = None
+        self.Wstream = None
+
+    def config(self) -> None:
+        cfg = self.cfg[self.name]
+        super()._set_Wfactor()
 
         self.eta = cfg['eta']
         self.LHV = cfg['LHV']
-        # self.FAR = cfg['FAR']
-        self.Pr = cfg['Pr_Des']
-        self.T0_4 = cfg_cycle['T0_4']
+        self.pr = cfg['Pr_Des']
+        self.T04 = self.cfg['CYCLE']['T0_4']
+
 
     #-----------------------------------------------------
     #                   CMYK Methods
     #-----------------------------------------------------
 
     def CYAN(self):
-        T0_out = self.T0_4
-        P0_out = self.FlowIn.P0 * self.Pr
+        """Refer to CycleAnalysis.md for explanation of the math"""
+        # PREPARING REQUIRED VALUES ---------------------
+        h01 = self.FlowIn.h0
+        P01 = self.FlowIn.P0
+        eta = self.eta
+        pr = self.pr
+        LHV = self.LHV
 
-        self.FAR = (T0_out/self.FlowIn.T0 - 1)/((self.eta*self.LHV)/(self.FlowIn.Cp0*self.FlowIn.T0)-T0_out/self.FlowIn.T0)
+        # T02 -------------------------------------------
+        T02 = self.T04
 
-        self.FlowOut.setFlowTotalTP(T0_out, P0_out)
+        # P02 CALCULATION -------------------------------
+        P02 = pr * P01
+
+        # FAR CALCULATION -------------------------------
+        h02 = PropsSI('HMASS', 'T', T02, 'P', P02, self.FlowIn.WF)      # TODO: Start from here, replacing working fluid with post-combustion mixture
+        self.FAR = FAR = (h02 - h01) / (eta*LHV - h02)
+        self.Wfactor += FAR
+
+        # SET EXIT FLOW ---------------------------------
+        self.FlowOut.setFlow(
+            T0=T02, P0=P02, FAR=FAR,
+            Wfactor=self.Wfactor, Wstream=self.Wstream
+        )

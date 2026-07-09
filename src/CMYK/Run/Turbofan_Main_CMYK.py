@@ -9,20 +9,17 @@
    :: ##:::::::. ######:: ##::. ##: ##::::::: ########::::::::::: ##::::. ######:: ##::. ##: #######::. ######:: ##:::::: ##:::: ##: ##::. ##:::
    ::..:::::::::......:::..::::..::..::::::::........::::::::::::..::::::......:::..::::..::..::::..:::......:::..:::::::..:::::..::..::::..::::
 
-TODO: redo the burner cycle analysis to make FAR a design input
-TODO: reconfirm all the cycle analysis equations based on 490 HWs
 """
-
 
 from pathlib import Path
 
 from CMYK.Object_Definitions.Components import (
-    Ambient, Inlet, Fan, AxialCompressor,
+    Turbofan, Start, Inlet, Fan, AxialCompressor,
     RadialCompressor, Burner, AxialTurbine,
-    Nozzle, Shaft
+    Nozzle, Shaft, End
 )
 
-from CMYK.Object_Definitions.Base_Objects import Engine, Display
+from CMYK.Object_Definitions.Base_Objects import Display
 
 CONFIG_PATH = Path(__file__).resolve().parent.parent/'Config_Files'/'Config.yaml'
 OUTPUT_PATH = Path(__file__).resolve().parent.parent/'Output'/'Output.txt'
@@ -30,51 +27,52 @@ OUTPUT_PATH = Path(__file__).resolve().parent.parent/'Output'/'Output.txt'
 #----------------------------------------------------------------------------
 #                       DECLARING ENGINE COMPONENTS
 #----------------------------------------------------------------------------
-AMB_FS  = Ambient('AMB_FS')
+AMB_FS  = Start('AMB_FS')
 INLET   = Inlet('INLET')
 FAN     = Fan('FAN')
 NOZ_BYP = Nozzle('NOZ_BYP')
-AMB_BYP = Ambient('AMB_BYP')
+JET_BYP = End('JET_BYP')
 LPC     = AxialCompressor("LPC")
 HPC     = RadialCompressor("HPC")
 BURNER  = Burner('BURNER')
 HPT     = AxialTurbine('HPT')
 LPT     = AxialTurbine('LPT')
 NOZ_COR = Nozzle('NOZ_COR')
-AMB_COR = Ambient('AMB_COR')
+JET_COR = End('JET_COR')
 
 LPS = Shaft('LPS')
 HPS = Shaft('HPS')
 
 #----------------------------------------------------------------------------
-#                          ASSEMBLING THE ENGINE
+#                    ASSEMBLING AND CONFIGURING THE ENGINE
 #----------------------------------------------------------------------------
-Turbofan = Engine('Turbofan')
+Turbofan = Turbofan('Turbofan')
 
 Turbofan.build(
     AMB_FS,  INLET,   FAN,
-    NOZ_BYP, AMB_BYP, LPC,
+    NOZ_BYP, JET_BYP, LPC,
     HPC,     BURNER,  HPT, 
-    LPT,     NOZ_COR, AMB_COR,
+    LPT,     NOZ_COR, JET_COR,
     LPS, HPS
 )
 
+# CONFIG --------------------------------------------------------------------------
 Turbofan.config(CONFIG_PATH)
 
 #----------------------------------------------------------------------------
-#                           LINKING COMPONENTS
+#                     LINKING AND CONFIGURING COMPONENTS
 #----------------------------------------------------------------------------
 Turbofan.interface(  "AMB_FS.FlowOut",        "INLET.FlowIn", "S1"  )
 Turbofan.interface(   "INLET.FlowOut",          "FAN.FlowIn", "S2"  )
 Turbofan.interface(     "FAN.FlowOut_BYP",  "NOZ_BYP.FlowIn", "S13" )
-Turbofan.interface( "NOZ_BYP.FlowOut",      "AMB_BYP.FlowIn", "S19" )
+Turbofan.interface( "NOZ_BYP.FlowOut",      "JET_BYP.FlowIn", "S19" )
 Turbofan.interface(     "FAN.FlowOut_COR",      "LPC.FlowIn", "S21" )
 Turbofan.interface(     "LPC.FlowOut",          "HPC.FlowIn", "S25" )
 Turbofan.interface(     "HPC.FlowOut",       "BURNER.FlowIn", "S3"  )
 Turbofan.interface(  "BURNER.FlowOut",          "HPT.FlowIn", "S4"  )
 Turbofan.interface(     "HPT.FlowOut",          "LPT.FlowIn", "S45" )
 Turbofan.interface(     "LPT.FlowOut",      "NOZ_COR.FlowIn", "S5"  )
-Turbofan.interface( "NOZ_COR.FlowOut",      "AMB_COR.FlowIn", "S9"  )
+Turbofan.interface( "NOZ_COR.FlowOut",      "JET_COR.FlowIn", "S9"  )
 
 # Low Pressure Spool Shaft Connections
 Turbofan.interface( "FAN.Shaft", "LPS", "FAN_ShaftLink" )
@@ -87,13 +85,15 @@ Turbofan.interface( "HPT.Shaft", "HPS", "HPT_ShaftLink" )
 
 
 #----------------------------------------------------------------------------
-#                           CYCLE ANALYSIS CONFIG
+#                             CYCLE ANALYSIS
 #----------------------------------------------------------------------------
 
 Turbofan.CYAN()
 
+#----------------------------------------------------------------------------
+#                                 OUTPUT
+#----------------------------------------------------------------------------
 Disp = Display(Turbofan)
-Disp.textOutput(OUTPUT_PATH)
-Disp.plotOutput()
+Disp.textOutput(OUTPUT_PATH, verbose=True)
 
 pass

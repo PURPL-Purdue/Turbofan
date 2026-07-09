@@ -1,14 +1,24 @@
+from abc import abstractmethod, ABC
+from pathlib import Path
+import yaml
+
 from .Flow import Flow
 from .GeometryInterface import GeometryInterface
 from .ComponentBase import ComponentBase
-from CMYK.Object_Definitions.Components import Nozzle
+from .Compressor import Compressor
+from .Turbine import Turbine
+from .Display import Display
 
-class Engine:
+DEBUG_PATH = Path(__file__).resolve().parent.parent.parent / 'Output' / 'Debug.txt'
+
+class Engine(ABC):
     def __init__(self, name):
         self.name = name
         self.flowpath = {}
         self.shafts = {}
-    
+
+        self.debug_file = DEBUG_PATH
+
     def build(self, *args) -> None:
         for component in args:
             setattr(self, component.name, component)
@@ -19,25 +29,29 @@ class Engine:
             elif component.type == 'SHAFT':
                 self.shafts[component.name] = component
             else:
-                raise RuntimeError("Engine.build(): Unrecognized component type")
+                raise RuntimeError("engine.build(): Unrecognized component type")
 
     def config(self, config_file) -> None:
+        ComponentBase.load_config(config_file)
+        Engine.load_config(config_file)
         for attributeValue in self.__dict__.values():
             if isinstance(attributeValue, ComponentBase):
-                attributeValue.config(config_file)
+                attributeValue.config()
 
     def CYAN(self) -> None:
-        for component in self.flowpath.values():
-            component.CYAN()
-        self.performance()
-    
-    def performance(self):
-        for attributeValue in self.__dict__.values():
-            if isinstance(attributeValue, Nozzle):
-                attributeValue.calcExitVelocity()
-                
-    
-    def interface(self, comp1, comp2, station_name) -> None:
+        try:
+            for component in self.flowpath.values():
+                component.CYAN()
+            self.performance()
+        except RuntimeError as error:
+            try:
+                Disp = Display(self)
+                Disp.textOutput(DEBUG_PATH, verbose=True)
+            except RuntimeError:
+                pass
+            raise RuntimeError(error)
+
+    def interface(self, comp1: str, comp2: str, station_name: str) -> None:
         # Shaft interface
         if '.' not in comp2:
             comp = comp1.split('.')[0]
@@ -45,6 +59,12 @@ class Engine:
             shaft = self.shafts[comp2]
 
             comp.Shaft = shaft
+            if isinstance(comp, Compressor):
+                shaft.consumers.append(comp)
+            elif isinstance(comp, Turbine):
+                shaft.generators.append(comp)
+            else:
+                raise RuntimeError("engine.interface(): invalid component type for shaft interface")
 
         else:
             # Get the names of both components and attributes
@@ -67,7 +87,16 @@ class Engine:
             # Instantiate flows and geometry for the upstream port
             setattr(up_comp, up_flow, Flow(station_name))
             setattr(up_comp, up_geo, GeometryInterface(station_name))
-            
+
             setattr(down_comp, down_flow, getattr(up_comp, up_flow))
             setattr(down_comp, down_geo, getattr(up_comp, up_geo))
-        
+
+    @abstractmethod
+    def performance(self) -> None:
+        pass
+
+    @classmethod
+    def load_config(cls, config_file):
+        """Loads the configuration YAML file into a python dictionary as a ComponentBase class attribute. This allows for all component objects (that are subclasses of ComponentBase) to freely access all the config information"""
+        cls.cfg = yaml.safe_load(config_file.read_text())
+        cls.cfg_path = config_file

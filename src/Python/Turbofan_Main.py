@@ -52,8 +52,8 @@ TF.cycle.IN.Pr = REF_structs.ByComponent(
 # ===============================================================================================
 TF.cycle.IN = REF_structs.Cycle_IN(
     TF.cycle.IN.eta,    # eta               Efficiencies                       | nondimensional
-    TF.cycle.IN.gamma,  # gamma             Specific heat ratios               | nondimensional
-    TF.cycle.IN.Pr,     # Pr                Design pressure ratios             | nondimensional
+    TF.cycle.IN.gamma,  # gamma_avg             Specific heat ratios               | nondimensional
+    TF.cycle.IN.Pr,     # pr                Design pressure ratios             | nondimensional
     298,                # T_0               Freestream/ambient temperature     | K
     101300,             # P_0               Freestream pressure                | Pa
     0.0,                # M_f               Freestream/flight Mach number      | nondimensional
@@ -72,11 +72,11 @@ TF.cycle.OUT = Station_Thermo.thermoCalcs(TF.cycle.IN)
 #
 # ===============================================================================================
 TF.compressor.LP.IN = REF_structs.Compressor_IN(
-    TF.cycle.IN.gamma.cLP,      # gamma             Specific heat ratio                         | nondimensional
+    TF.cycle.IN.gamma.cLP,      # gamma_avg             Specific heat ratio                         | nondimensional
     TF.cycle.OUT.Cps.cLP,       # Cp_cLP            Specific heat capacity at constant volume   | TODO
     TF.cycle.OUT.T0P0.S2.T0,    # T0_1              Compressor inlet face total temperature     | Pa
     TF.cycle.OUT.T0P0.S2.P0,    # P0_1              Compressor inlet face total pressure        | K
-    TF.cycle.IN.Pr.cLP,         # Pr                Design pressure ratio                       | nondimensional
+    TF.cycle.IN.Pr.cLP,         # pr                Design pressure ratio                       | nondimensional
     0.99,                       # e_c               Polytropic Efficiency                       | nondimensional
     0.6,                        # httrr             Hub-to-tip radius ratio                     | nondimensional
     0.72,                       # deHaller          De Haller's Criterion value                 | nondimensional

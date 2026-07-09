@@ -1,8 +1,7 @@
-import yaml
-from pathlib import Path
-from CMYK.Object_Definitions.Base_Objects import ComponentBase
+from CoolProp.CoolProp import PropsSI
+from CMYK.Object_Definitions.Base_Objects import Compressor
 
-class Fan(ComponentBase):
+class Fan(Compressor):
 
     def __init__(self, name):
         super().__init__(name, 'FLOWPATH')
@@ -20,20 +19,52 @@ class Fan(ComponentBase):
         # SHAFT CONNECTION ------------------------------------
         self.Shaft = None
 
-    def config(self, configFile: Path) -> None:
-        cfg = yaml.safe_load(configFile.read_text())[self.name]
+        # COMPONENT PROPERTIES --------------------------------
+        self.eta = None
+        self.pr = None
+        self.bypass = None
+
+        self.Wfactor = None
+        self.Wstream = None
+
+    def config(self) -> None:
+        cfg = self.cfg[self.name]
+        super()._set_Wfactor()
 
         self.eta = cfg['eta']
-        self.Pr  = cfg['Pr_Des']
+        self.pr  = cfg['Pr_Des']
         self.bypass = cfg['Bypass']
+
 
     #-----------------------------------------------------
     #                   CMYK Methods
     #-----------------------------------------------------
 
     def CYAN(self):
-        T0_out = self.FlowIn.T0 * (1 + 1/self.eta*(self.Pr**((self.FlowIn.gammat-1)/self.FlowIn.gammat)-1))
-        P0_out = self.FlowIn.P0 * self.Pr
+        """Refer to CycleAnalysis.md for explanation of the math"""
+        # PREPARING REQUIRED VALUES ---------------------
+        h01 = self.FlowIn.h0
+        P01 = self.FlowIn.P0
+        s1 = self.FlowIn.s
+        eta = self.eta
+        pr = self.pr
 
-        self.FlowOut_COR.setFlowTotalTP(T0_out, P0_out)
-        self.FlowOut_BYP.setFlowTotalTP(T0_out, P0_out)
+        # P02 CALCULATION -------------------------------
+        P02 = pr * P01
+
+        # T02 CALCULATION -------------------------------
+        P02s = P02
+        s2s = s1
+        h02s = PropsSI('HMASS', 'P', P02s, 'S', s2s, self.FlowIn.WF)
+        h02 = (h02s - h01) / eta + h01
+        T02 = PropsSI('T', 'P', P02, 'HMASS', h02, self.FlowIn.WF)
+
+        # SET EXIT FLOWS --------------------------------
+        self.FlowOut_COR.setFlow(
+            T0=T02, P0=P02,
+            Wfactor=1, Wstream='CORE'
+        )
+        self.FlowOut_BYP.setFlow(
+            T0=T02, P0=P02,
+            Wfactor=self.bypass, Wstream='BYPASS'
+        )

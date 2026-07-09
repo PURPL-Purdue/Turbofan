@@ -1,5 +1,3 @@
-import yaml
-from pathlib import Path
 from CMYK.Object_Definitions.Base_Objects import ComponentBase
 
 class Shaft(ComponentBase):
@@ -8,7 +6,11 @@ class Shaft(ComponentBase):
         super().__init__(name, 'SHAFT')
 
         self.RPM = 0
-    
-    def config(self, configFile: Path) -> None:
-        cfg = yaml.safe_load(configFile.read_text())[self.name]
+        self.eta_mech = None
+        self.generators = []    # List of power generators attached to the shaft i.e. turbines
+        self.consumers = []     # List of power consumers attached to the shaft i.e. compressors, fans
+
+    def config(self) -> None:
+        cfg = self.cfg[self.name]
+        self.eta_mech = cfg['eta_mech']
 

@@ -1,8 +1,7 @@
-import yaml
-from pathlib import Path
-from CMYK.Object_Definitions.Base_Objects import ComponentBase
+from CoolProp.CoolProp import PropsSI
+from CMYK.Object_Definitions.Base_Objects import Turbine
 
-class AxialTurbine(ComponentBase):
+class AxialTurbine(Turbine):
 
     def __init__(self, name):
         super().__init__(name, 'FLOWPATH')
@@ -23,24 +22,59 @@ class AxialTurbine(ComponentBase):
         #-----------------------------------------------------
         self.Shaft = None
 
-    def config(self, configFile: Path) -> None:
-        cfg = yaml.safe_load(configFile.read_text())[self.name]
+        # COMPONENT PARAMETERS -------------------------------
+        self.eta = None
+
+        self.Wfactor = None
+        self.Wstream = None
+
+    def config(self) -> None:
+        cfg = self.cfg[self.name]
+        self.Wstream = cfg['Wstream']
 
         self.eta = cfg['eta']
-    
+
+
     #-----------------------------------------------------
     #                   CMYK Methods
     #-----------------------------------------------------
 
-    def CYAN(self):
-        if self.name == "HPT":
-            T0_out = ((1+self.engine.BURNER.FAR)*self.FlowIn.T0*self.FlowIn.Cp0 - self.engine.HPC.FlowIn.Cp0*(self.engine.HPC.FlowOut.T0-self.engine.HPC.FlowIn.T0)) / ((1+self.engine.BURNER.FAR)*self.FlowIn.Cp0)
-        elif self.name == "LPT":
-            T0_out = ((1+self.engine.BURNER.FAR)*self.FlowIn.T0*self.FlowIn.Cp0 - self.engine.LPC.FlowIn.Cp0*(self.engine.LPC.FlowOut.T0-self.engine.LPC.FlowIn.T0) - 
-                                                           self.engine.FAN.bypass*self.engine.FAN.FlowIn.Cp0*(self.engine.FAN.FlowOut_COR.T0-self.engine.FAN.FlowIn.T0)) / ((1+self.engine.BURNER.FAR)*self.FlowIn.Cp0)
-        else:
-            raise RuntimeError("Invalid axial turbine name: Must be 'LPT' or 'HPT'")
-        P0_out = self.FlowIn.P0*(1 - 1/self.eta*(1 - T0_out/self.FlowIn.T0))**(self.FlowIn.gammat/(self.FlowIn.gammat-1))
+    def CYAN(self) -> None:
+        # PREPARING REQUIRED VALUES ---------------------
+        self.Wfactor = Wfactor = self.FlowIn.Wfactor
+        eta = self.eta
+        eta_mech = self.Shaft.eta_mech
+        h01 = self.FlowIn.h0
+        s1 = self.FlowIn.s
+        consumers = self.Shaft.consumers
 
-        self.FlowOut.setFlowTotalTP(T0_out, P0_out)
+        # POWER BALANCE ----------------------------------
+        specific_req_power = 0
+        for consumer in consumers:
+            consumer_flows = [_ for _ in consumer.__dict__.keys() if _[0:4] == 'Flow']
+            num_flowouts = sum('FlowOut' in flow_name for flow_name in consumer_flows)
+            num_flowins = sum('FlowIn' in flow_name for flow_name in consumer_flows)
 
+            if num_flowins == 1 and num_flowouts == 1:
+                specific_req_power += consumer.Wfactor * (consumer.FlowOut.h0 - consumer.FlowIn.h0)
+            elif num_flowins > 1:
+                raise RuntimeError("AxialTurbine CYAN(): Multiple FlowIn objects, unable to know which one to query for upstream conditions.")
+            elif num_flowouts > 1:
+                try:
+                    specific_req_power += consumer.Wfactor * (consumer.FlowOut_COR.h0 - consumer.FlowIn.h0)
+                except:
+                    raise RuntimeError("AxialTurbine CYAN(): Multiple FlowIn objects without a 'FlowOut_COR' option.")
+
+        h02 = specific_req_power/(-Wfactor*eta_mech) + h01
+        h02s = (h02-h01)/eta + h01
+        s2s = s1
+
+        P02s = PropsSI('P', 'HMASS', h02s, 'S', s2s, self.FlowIn.WF)
+        P02 = P02s
+        T02 = PropsSI('T', 'HMASS', h02, 'P', P02, self.FlowIn.WF)
+
+        # SET EXIT FLOW ----------------------------------
+        self.FlowOut.setFlow(
+            T0=T02, P0=P02, FAR = self.FlowIn.FAR,
+            Wfactor=self.Wfactor, Wstream=self.Wstream
+        )
