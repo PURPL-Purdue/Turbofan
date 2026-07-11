@@ -29,6 +29,11 @@ class Display:
         line2 = f"{' ':40s}{formattedUpperTitle}"
         return "\n".join([line1, line2, line3]) + "\n\n"
 
+    @staticmethod
+    def standalone_block_header(title):
+        width = OutVarCYAN.title_width + OutVarCYAN.data_width + 10
+        return title + ' ' + '-' * (width - len(title)) + '\n'
+
     # ----------------------------------------------------------------------------
     #                               MAIN FUNCTIONS
     # ----------------------------------------------------------------------------
@@ -75,6 +80,7 @@ class Display:
     def CYAN_textOutput(self, txt):
         self.CYAN_datalines(txt)
         self.CYAN_performance(txt)
+        self.CYAN_config_report(txt)
 
     def CYAN_datalines(self, txt):
         # Set station name column widths
@@ -131,39 +137,51 @@ class Display:
                     txt.write(dataline)
             txt.write("-" * len(dataline) + "\n")
 
-    def CYAN_performance(self, txt):
-        def perf_header(title):
-            width = OutVarCYAN.title_width + OutVarCYAN.data_width + 10
-            return title + ' ' + '-' * (width-len(title)) + '\n'
-
+    def CYAN_config_report(self, txt):
         txt.write("\n")
-        txt.write(perf_header("THRUSTS"))
+        txt.write(self.standalone_block_header("PRESSURE RATIOS AND BYPASS RATIO"))
+        txt.write(OutVarCYAN('OPR',    'NONDIM', '', False, 'Overall Design Pressure Ratio').gen_standalone_dataline(self.Engine))
+        txt.write(OutVarCYAN('pr',     'NONDIM', '', False, 'Fan Design Pressure Ratio').gen_standalone_dataline(self.Engine.FAN))
+        txt.write(OutVarCYAN('pr',     'NONDIM', '', False, 'LPC Design Pressure Ratio').gen_standalone_dataline(self.Engine.LPC))
+        txt.write(OutVarCYAN('pr',     'NONDIM', '', False, 'HPC Design Pressure Ratio').gen_standalone_dataline(self.Engine.HPC))
+        txt.write(OutVarCYAN('bypass', 'NONDIM', '', False, 'Bypass Ratio').gen_standalone_dataline(self.Engine))
+        txt.write(self.standalone_block_header("COMPONENT EFFICIENCIES"))
+        txt.write(OutVarCYAN('eta',      'NONDIM', '', False, 'Inlet (Isentropic)').gen_standalone_dataline(self.Engine.INLET))
+        txt.write(OutVarCYAN('eta',      'NONDIM', '', False, 'Fan (Isentropic) ').gen_standalone_dataline(self.Engine.FAN))
+        txt.write(OutVarCYAN('eta',      'NONDIM', '', False, 'Bypass Nozzle (Isentropic)').gen_standalone_dataline(self.Engine.NOZ_BYP))
+        txt.write(OutVarCYAN('eta',      'NONDIM', '', False, 'LPC (Isentropic)').gen_standalone_dataline(self.Engine.LPC))
+        txt.write(OutVarCYAN('eta',      'NONDIM', '', False, 'HPC (Isentropic)').gen_standalone_dataline(self.Engine.HPC))
+        txt.write(OutVarCYAN('eta',      'NONDIM', '', False, 'Combustor (Isentropic)').gen_standalone_dataline(self.Engine.BURNER))
+        txt.write(OutVarCYAN('eta',      'NONDIM', '', False, 'HPT (Isentropic)').gen_standalone_dataline(self.Engine.HPT))
+        txt.write(OutVarCYAN('eta',      'NONDIM', '', False, 'LPT (Isentropic)').gen_standalone_dataline(self.Engine.LPT))
+        txt.write(OutVarCYAN('eta',      'NONDIM', '', False, 'Core Nozzle (Isentropic)').gen_standalone_dataline(self.Engine.NOZ_COR))
+        txt.write(OutVarCYAN('eta_mech', 'NONDIM', '', False, 'Low Pressure (Mechanical)').gen_standalone_dataline(self.Engine.LPS))
+        txt.write(OutVarCYAN('eta_mech', 'NONDIM', '', False, 'High Pressure (Mechanical)').gen_standalone_dataline(self.Engine.HPS))
+
+    def CYAN_performance(self, txt):
+        txt.write("\n")
+        txt.write(self.standalone_block_header("THRUSTS"))
         txt.write(OutVarCYAN('total_thrust',  'N',      'lbf', False, 'Total Thrust').gen_standalone_dataline(self.Engine))
         txt.write(OutVarCYAN('core_thrust',   'N',      'lbf', False, 'Core Thrust').gen_standalone_dataline(self.Engine))
         txt.write(OutVarCYAN('bypass_thrust', 'N',      'lbf', False, 'Bypass Thrust').gen_standalone_dataline(self.Engine))
         txt.write(OutVarCYAN('Fbypass_Fcore', 'NONDIM', '',    False, 'Bypass:Core Thrust Ratio').gen_standalone_dataline(self.Engine))
-        txt.write(perf_header("EFFICIENCIES"))
+        txt.write(self.standalone_block_header("EFFICIENCIES"))
         txt.write(OutVarCYAN('thermal_eff',    'NONDIM', '%',      False, 'Thermal Efficiency').gen_standalone_dataline(self.Engine))
         txt.write(OutVarCYAN('propulsive_eff', 'NONDIM', '%',      False, 'Propulsive Efficiency').gen_standalone_dataline(self.Engine))
         txt.write(OutVarCYAN('total_eff',      'NONDIM', '%',      False, 'Total Efficiency').gen_standalone_dataline(self.Engine))
         txt.write(OutVarCYAN('TSFC',           's/m', 'lb/lbf/hr', False, 'Thrust-Specific Fuel Consumption').gen_standalone_dataline(self.Engine))
-        txt.write(perf_header("MASS FLOW RATES"))
+        txt.write(self.standalone_block_header("MASS FLOW RATES"))
         txt.write(OutVarCYAN('Wtotal',  'kg/s', '', False, 'Total Mass Flow Rate').gen_standalone_dataline(self.Engine))
         txt.write(OutVarCYAN('Wcore',   'kg/s', '', False, 'Core Mass Flow Rate').gen_standalone_dataline(self.Engine))
         txt.write(OutVarCYAN('Wbypass', 'kg/s', '', False, 'Bypass Mass Flow Rate').gen_standalone_dataline(self.Engine))
         txt.write(OutVarCYAN('Wfuel'  , 'kg/s', '', False, 'Fuel Mass Flow Rate').gen_standalone_dataline(self.Engine))
-        txt.write(perf_header("SPECIFIC THRUSTS"))
+        txt.write(self.standalone_block_header("SPECIFIC THRUSTS"))
         txt.write(OutVarCYAN('specific_thrust_total',  'm/s', 'N*s/kg', False, 'Total Specific Thrust').gen_standalone_dataline(self.Engine))
         txt.write(OutVarCYAN('specific_thrust_core',   'm/s', 'N*s/kg', False, 'Core Specific Thrust').gen_standalone_dataline(self.Engine))
         txt.write(OutVarCYAN('specific_thrust_bypass', 'm/s', 'N*s/kg', False, 'Bypass Specific Thrust').gen_standalone_dataline(self.Engine))
-        txt.write(perf_header("EXIT VELOCITIES"))
+        txt.write(self.standalone_block_header("EXIT VELOCITIES"))
         txt.write(OutVarCYAN('u_out', 'm/s', '', False, 'Core Exit Velocity').gen_standalone_dataline(self.Engine.JET_COR))
         txt.write(OutVarCYAN('u_out', 'm/s', '', False, 'Bypass Exit Velocity').gen_standalone_dataline(self.Engine.JET_BYP))
-        txt.write(perf_header("PRESSURE RATIOS"))
-        txt.write(OutVarCYAN('OPR','NONDIM', '', False, 'Overall Design Pressure Ratio').gen_standalone_dataline(self.Engine))
-        txt.write(OutVarCYAN('pr', 'NONDIM', '', False, 'Fan Design Pressure Ratio').gen_standalone_dataline(self.Engine.FAN))
-        txt.write(OutVarCYAN('pr', 'NONDIM', '', False, 'LPC Design Pressure Ratio').gen_standalone_dataline(self.Engine.LPC))
-        txt.write(OutVarCYAN('pr', 'NONDIM', '', False, 'HPC Design Pressure Ratio').gen_standalone_dataline(self.Engine.HPC))
 
 class OutVarCYAN:
     """ OutVarCYAN objects are used to track variables of interest. They hold info about whether the value is to be printed only when verbose as well as the original_units and name of the variable. """

@@ -1,5 +1,5 @@
-DATE: 2026-07-09                                USER:    zheng817                                
-TIME: 01:29:12                                  VERSION: 0.1.0                                   
+DATE: 2026-07-11                                USER:    zheng817                                
+TIME: 01:00:53                                  VERSION: 0.1.0                                   
 ENGINE MODEL FILE:  Turbofan_Main_CMYK.py    -> C:\Users\zheng\OneDrive\Documentos\Purdue\Clubs\PURPL\Turbofan\GitHub\Turbofan\src\CMYK\Run\Turbofan_Main_CMYK.py
 ENGINE CONFIG FILE: Config.yaml              -> C:\Users\zheng\OneDrive\Documentos\Purdue\Clubs\PURPL\Turbofan\GitHub\Turbofan\src\CMYK\Config_Files\Config.yaml
 
@@ -66,8 +66,22 @@ SPECIFIC THRUSTS ----------------------------------------
 EXIT VELOCITIES -----------------------------------------
 	Core Exit Velocity                     363.263 m/s
 	Bypass Exit Velocity                   313.718 m/s
-PRESSURE RATIOS -----------------------------------------
+
+PRESSURE RATIOS AND BYPASS RATIO ------------------------
 	Overall Design Pressure Ratio           22.100 
 	Fan Design Pressure Ratio                1.700 
 	LPC Design Pressure Ratio                2.600 
 	HPC Design Pressure Ratio                5.000 
+	Bypass Ratio                             2.890 
+COMPONENT EFFICIENCIES ----------------------------------
+	Inlet (Isentropic)                       0.940 
+	Fan (Isentropic)                         0.850 
+	Bypass Nozzle (Isentropic)               0.980 
+	LPC (Isentropic)                         0.850 
+	HPC (Isentropic)                         0.850 
+	Combustor (Isentropic)                   0.950 
+	HPT (Isentropic)                         0.920 
+	LPT (Isentropic)                         0.920 
+	Core Nozzle (Isentropic)                 0.980 
+	Low Pressure (Mechanical)                0.980 
+	High Pressure (Mechanical)               0.980 

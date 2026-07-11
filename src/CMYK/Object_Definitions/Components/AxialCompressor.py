@@ -78,4 +78,3 @@ class AxialCompressor(Compressor):
         for row in sequence:
             if row == 'R':
                 pass
-                

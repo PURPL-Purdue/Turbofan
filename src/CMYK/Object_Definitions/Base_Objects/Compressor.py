@@ -7,3 +7,6 @@ class Compressor(ComponentBase):
 
     def config(self):
         pass
+
+    def generate_meridional_grid(self):
+        pass

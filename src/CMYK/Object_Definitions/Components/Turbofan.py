@@ -29,7 +29,6 @@ class Turbofan(Engine):
         self.OPR = None
         self.delta_KE = None
         self.thermal_power = None
-        self.FAR = None
 
         self.thermal_eff = None
         self.propulsive_eff = None
@@ -38,7 +37,12 @@ class Turbofan(Engine):
 
         self.FAR = None
         self.LHV = None
+        self.bypass = None
+        self.total_design_thrust = None
 
+    # ----------------------------------------------------------------------------
+    #                         PERFORMANCE CALCULATIONS
+    # ----------------------------------------------------------------------------
 
     def performance(self):
         self.pull_attributes()
@@ -50,7 +54,18 @@ class Turbofan(Engine):
         self.calc_OPR()
 
     def pull_attributes(self):
-        pass # TODO: Pulls attributes up from components to the engine level for use in calculating performance parameters
+        # TODO: Pulls attributes up from components to the engine level for use in calculating performance parameters
+        burnerCounter = 0
+        for attributeValue in self.__dict__.values():
+            if isinstance(attributeValue, Burner):
+                if burnerCounter != 0:
+                    raise RuntimeError("Multiple burners found!")
+                burnerCounter += 1
+                self.FAR = attributeValue.FAR
+                self.LHV = attributeValue.LHV
+
+        self.bypass = self.cfg['FAN']['Bypass']
+        self.total_design_thrust = (self.cfg['CYCLE']['design_thrust'] * UR.lbf).to(UR.N).magnitude
 
     def calc_velocities(self):
         for attributeValue in self.__dict__.values():
@@ -63,16 +78,8 @@ class Turbofan(Engine):
         """Specific thrust calculated specific to core mass flow rate. Use total thrust target with normal specific thrust to get core mass flow rate"""
         self.specific_thrust_core = 0
         self.specific_thrust_bypass = 0
-        burnerCounter = 0
 
         for attributeValue in self.__dict__.values():
-            if isinstance(attributeValue, Burner):
-                if burnerCounter != 0:
-                    raise RuntimeError("Multiple burners found!")
-                burnerCounter += 1
-                self.FAR = attributeValue.FAR
-                self.LHV = attributeValue.LHV
-
             if isinstance(attributeValue, Start):
                 inlet = attributeValue
 
@@ -95,11 +102,8 @@ class Turbofan(Engine):
         self.specific_thrust_total = self.specific_thrust_core + self.specific_thrust_bypass
 
     def calc_mass_flows(self):
-        total_design_thrust = (self.cfg['CYCLE']['design_thrust'] * UR.lbf).to(UR.N).magnitude
-        bypass = self.cfg['FAN']['Bypass']
-
-        self.Wcore = total_design_thrust/self.specific_thrust_total
-        self.Wbypass = self.Wcore*bypass
+        self.Wcore = self.total_design_thrust/self.specific_thrust_total
+        self.Wbypass = self.Wcore * self.bypass
         self.Wtotal = self.Wcore + self.Wbypass
         self.Wfuel = self.Wcore * self.FAR
 
