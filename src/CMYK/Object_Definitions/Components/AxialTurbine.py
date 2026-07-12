@@ -46,24 +46,10 @@ class AxialTurbine(Turbine):
         eta_mech = self.Shaft.eta_mech
         h01 = self.FlowIn.h0
         s1 = self.FlowIn.s
-        consumers = self.Shaft.consumers
 
         # POWER BALANCE ----------------------------------
-        specific_req_power = 0
-        for consumer in consumers:
-            consumer_flows = [_ for _ in consumer.__dict__.keys() if _[0:4] == 'Flow']
-            num_flowouts = sum('FlowOut' in flow_name for flow_name in consumer_flows)
-            num_flowins = sum('FlowIn' in flow_name for flow_name in consumer_flows)
-
-            if num_flowins == 1 and num_flowouts == 1:
-                specific_req_power += consumer.Wfactor * (consumer.FlowOut.h0 - consumer.FlowIn.h0)
-            elif num_flowins > 1:
-                raise RuntimeError("AxialTurbine CYAN(): Multiple FlowIn objects, unable to know which one to query for upstream conditions.")
-            elif num_flowouts > 1:
-                try:
-                    specific_req_power += consumer.Wfactor * (consumer.FlowOut_COR.h0 - consumer.FlowIn.h0)
-                except:
-                    raise RuntimeError("AxialTurbine CYAN(): Multiple FlowIn objects without a 'FlowOut_COR' option.")
+        self.Shaft.calc_consumer_specific_required_power()
+        specific_req_power = self.Shaft.specific_required_power
 
         h02 = specific_req_power/(-Wfactor*eta_mech) + h01
         h02s = (h02-h01)/eta + h01

@@ -5,6 +5,7 @@ from CMYK.Object_Definitions.Base_Objects import Engine, Compressor, Flow
 from .Start import Start
 from .Burner import Burner
 from .End import End
+from CMYK.Object_Definitions.Components.Shaft import Shaft
 
 DEBUG_PATH = Path(__file__).resolve().parent.parent.parent /'Output'/'Debug.txt'
 UR = UnitRegistry()
@@ -114,6 +115,8 @@ class Turbofan(Engine):
             for flowName, flowObj in vars(compObj).items():
                 if isinstance(flowObj, Flow):
                     flowObj.W = flowObj.Wfactor * self.Wcore
+                if isinstance(flowObj, Shaft):
+                    flowObj.required_power = flowObj.specific_required_power * self.Wcore
 
     def calc_thrusts(self):
         self.total_thrust = self.Wcore * self.specific_thrust_total

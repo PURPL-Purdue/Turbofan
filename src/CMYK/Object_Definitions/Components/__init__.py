@@ -7,5 +7,5 @@ from .RadialCompressor import RadialCompressor
 from .Burner import Burner
 from .AxialTurbine import AxialTurbine
 from .Nozzle import Nozzle
-from .Shaft import Shaft
 from .End import End
+from .Shaft import Shaft

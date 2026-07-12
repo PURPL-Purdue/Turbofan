@@ -1,7 +1,7 @@
-DATE: 2026-07-11                                USER:    zheng817                                
-TIME: 01:00:53                                  VERSION: 0.1.0                                   
-ENGINE MODEL FILE:  Turbofan_Main_CMYK.py    -> C:\Users\zheng\OneDrive\Documentos\Purdue\Clubs\PURPL\Turbofan\GitHub\Turbofan\src\CMYK\Run\Turbofan_Main_CMYK.py
-ENGINE CONFIG FILE: Config.yaml              -> C:\Users\zheng\OneDrive\Documentos\Purdue\Clubs\PURPL\Turbofan\GitHub\Turbofan\src\CMYK\Config_Files\Config.yaml
+DATE: 2026-07-12                                USER:    zheng817                                
+TIME: 18:29:35                                  VERSION: 0.1.0                                   
+ENGINE MODEL FILE:  Turbofan_001.py          -> C:\Users\zheng\OneDrive\Documentos\Purdue\Clubs\PURPL\Turbofan\GitHub\Turbofan\src\CMYK\Run\Turbofan_001.py
+ENGINE CONFIG FILE: Config_001.yaml          -> C:\Users\zheng\OneDrive\Documentos\Purdue\Clubs\PURPL\Turbofan\GitHub\Turbofan\src\CMYK\Config_Files\Config_001.yaml
 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
                                         CYCLE ANALYSIS
@@ -64,24 +64,27 @@ SPECIFIC THRUSTS ----------------------------------------
 	Core Specific Thrust                   368.621 N*s/kg
 	Bypass Specific Thrust                 906.644 N*s/kg
 EXIT VELOCITIES -----------------------------------------
-	Core Exit Velocity                     363.263 m/s
-	Bypass Exit Velocity                   313.718 m/s
+	JET_BYP Exit Velocity                  313.718 m/s
+	JET_COR Exit Velocity                  363.263 m/s
+SPECIFIC REQUIRED POWER PER SHAFT -----------------------
+	LPS Required Power                       1.552 MW
+	HPS Required Power                       1.452 MW
 
 PRESSURE RATIOS AND BYPASS RATIO ------------------------
 	Overall Design Pressure Ratio           22.100 
-	Fan Design Pressure Ratio                1.700 
+	FAN Design Pressure Ratio                1.700 
 	LPC Design Pressure Ratio                2.600 
 	HPC Design Pressure Ratio                5.000 
 	Bypass Ratio                             2.890 
 COMPONENT EFFICIENCIES ----------------------------------
-	Inlet (Isentropic)                       0.940 
-	Fan (Isentropic)                         0.850 
-	Bypass Nozzle (Isentropic)               0.980 
-	LPC (Isentropic)                         0.850 
-	HPC (Isentropic)                         0.850 
-	Combustor (Isentropic)                   0.950 
-	HPT (Isentropic)                         0.920 
-	LPT (Isentropic)                         0.920 
-	Core Nozzle (Isentropic)                 0.980 
-	Low Pressure (Mechanical)                0.980 
-	High Pressure (Mechanical)               0.980 
+	INLET      (Isentropic)                  0.940 
+	FAN        (Isentropic)                  0.850 
+	NOZ_BYP    (Isentropic)                  0.980 
+	LPC        (Isentropic)                  0.850 
+	HPC        (Isentropic)                  0.850 
+	BURNER     (Isentropic)                  0.950 
+	HPT        (Isentropic)                  0.920 
+	LPT        (Isentropic)                  0.920 
+	NOZ_COR    (Isentropic)                  0.980 
+	LPS        (Mechanical)                  0.980 
+	HPS        (Mechanical)                  0.980 

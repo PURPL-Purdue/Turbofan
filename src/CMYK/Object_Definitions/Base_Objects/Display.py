@@ -6,6 +6,12 @@ import tomllib
 from pint import UnitRegistry, Quantity, UndefinedUnitError, DimensionalityError
 from .Flow import Flow
 
+from CMYK.Object_Definitions.Components.Shaft import Shaft
+from CMYK.Object_Definitions.Components.Start import Start
+from CMYK.Object_Definitions.Components.End import End
+from .Compressor import Compressor
+from .ComponentBase import ComponentBase
+
 UR = UnitRegistry()
 _NONDIM = 'dimensionless'
 
@@ -141,22 +147,17 @@ class Display:
         txt.write("\n")
         txt.write(self.standalone_block_header("PRESSURE RATIOS AND BYPASS RATIO"))
         txt.write(OutVarCYAN('OPR',    'NONDIM', '', False, 'Overall Design Pressure Ratio').gen_standalone_dataline(self.Engine))
-        txt.write(OutVarCYAN('pr',     'NONDIM', '', False, 'Fan Design Pressure Ratio').gen_standalone_dataline(self.Engine.FAN))
-        txt.write(OutVarCYAN('pr',     'NONDIM', '', False, 'LPC Design Pressure Ratio').gen_standalone_dataline(self.Engine.LPC))
-        txt.write(OutVarCYAN('pr',     'NONDIM', '', False, 'HPC Design Pressure Ratio').gen_standalone_dataline(self.Engine.HPC))
+        for component in self.Engine.__dict__.values():
+            if isinstance(component, Compressor):
+                txt.write(OutVarCYAN('pr',     'NONDIM', '', False, f'{component.name} Design Pressure Ratio').gen_standalone_dataline(component))
         txt.write(OutVarCYAN('bypass', 'NONDIM', '', False, 'Bypass Ratio').gen_standalone_dataline(self.Engine))
         txt.write(self.standalone_block_header("COMPONENT EFFICIENCIES"))
-        txt.write(OutVarCYAN('eta',      'NONDIM', '', False, 'Inlet (Isentropic)').gen_standalone_dataline(self.Engine.INLET))
-        txt.write(OutVarCYAN('eta',      'NONDIM', '', False, 'Fan (Isentropic) ').gen_standalone_dataline(self.Engine.FAN))
-        txt.write(OutVarCYAN('eta',      'NONDIM', '', False, 'Bypass Nozzle (Isentropic)').gen_standalone_dataline(self.Engine.NOZ_BYP))
-        txt.write(OutVarCYAN('eta',      'NONDIM', '', False, 'LPC (Isentropic)').gen_standalone_dataline(self.Engine.LPC))
-        txt.write(OutVarCYAN('eta',      'NONDIM', '', False, 'HPC (Isentropic)').gen_standalone_dataline(self.Engine.HPC))
-        txt.write(OutVarCYAN('eta',      'NONDIM', '', False, 'Combustor (Isentropic)').gen_standalone_dataline(self.Engine.BURNER))
-        txt.write(OutVarCYAN('eta',      'NONDIM', '', False, 'HPT (Isentropic)').gen_standalone_dataline(self.Engine.HPT))
-        txt.write(OutVarCYAN('eta',      'NONDIM', '', False, 'LPT (Isentropic)').gen_standalone_dataline(self.Engine.LPT))
-        txt.write(OutVarCYAN('eta',      'NONDIM', '', False, 'Core Nozzle (Isentropic)').gen_standalone_dataline(self.Engine.NOZ_COR))
-        txt.write(OutVarCYAN('eta_mech', 'NONDIM', '', False, 'Low Pressure (Mechanical)').gen_standalone_dataline(self.Engine.LPS))
-        txt.write(OutVarCYAN('eta_mech', 'NONDIM', '', False, 'High Pressure (Mechanical)').gen_standalone_dataline(self.Engine.HPS))
+        for component in self.Engine.__dict__.values():
+            if isinstance(component, ComponentBase):
+                if isinstance(component, Shaft):
+                    txt.write(OutVarCYAN('eta_mech', 'NONDIM', '', False, F'{component.name:10s} (Mechanical)').gen_standalone_dataline(component))
+                elif not (isinstance(component, Start) or isinstance(component, End)):
+                    txt.write(OutVarCYAN('eta',      'NONDIM', '', False, f'{component.name:10s} (Isentropic)').gen_standalone_dataline(component))
 
     def CYAN_performance(self, txt):
         txt.write("\n")
@@ -180,8 +181,14 @@ class Display:
         txt.write(OutVarCYAN('specific_thrust_core',   'm/s', 'N*s/kg', False, 'Core Specific Thrust').gen_standalone_dataline(self.Engine))
         txt.write(OutVarCYAN('specific_thrust_bypass', 'm/s', 'N*s/kg', False, 'Bypass Specific Thrust').gen_standalone_dataline(self.Engine))
         txt.write(self.standalone_block_header("EXIT VELOCITIES"))
-        txt.write(OutVarCYAN('u_out', 'm/s', '', False, 'Core Exit Velocity').gen_standalone_dataline(self.Engine.JET_COR))
-        txt.write(OutVarCYAN('u_out', 'm/s', '', False, 'Bypass Exit Velocity').gen_standalone_dataline(self.Engine.JET_BYP))
+        for component in self.Engine.__dict__.values():
+            if isinstance(component, End):
+                txt.write(OutVarCYAN('u_out', 'm/s', '', False, f'{component.name} Exit Velocity').gen_standalone_dataline(component))
+        txt.write(self.standalone_block_header("SPECIFIC REQUIRED POWER PER SHAFT"))
+        for component in self.Engine.__dict__.values():
+            if isinstance(component, Shaft):
+                txt.write(OutVarCYAN('required_power', 'W', 'MW', False, f'{component.name} Required Power').gen_standalone_dataline(component))
+
 
 class OutVarCYAN:
     """ OutVarCYAN objects are used to track variables of interest. They hold info about whether the value is to be printed only when verbose as well as the original_units and name of the variable. """
