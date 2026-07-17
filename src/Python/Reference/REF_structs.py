@@ -3,6 +3,38 @@ from dataclasses import dataclass, field
 ####################################################
 #                      Cycle                       #
 ####################################################
+@dataclass
+class Cycle_IN:
+    eta    : ByComponent = None
+    gamma  : ByComponent = None
+    Pr     : ByComponent = None
+    T_0    : float = None
+    P_0    : float = None
+    M_f    : float = None
+    Ra     : float = None
+    Rp     : float = None
+    QR     : float = None
+    bypass : float = None
+    thrust : float = None
+    combustion_temp: float = None
+
+@dataclass
+class Cycle_OUT:
+    T0P0            : StationThermo = None
+    Cps             : ByComponent = None
+    ST              : float = None
+    TSFC            : float = None
+    total_thrust    : float = None
+    core_thrust     : float = None
+    bypass_thrust   : float = None
+    eta_p           : float = None
+    eta_th          : float = None
+    eta_0           : float = None
+    m_dot_core      : float = None
+    m_dot_bypass    : float = None
+    m_dot_total     : float = None
+    u_ec            : float = None
+    u_ef            : float = None
 
 @dataclass
 class ByComponent:
@@ -223,6 +255,17 @@ class Combustor:
 ####################################################
 
 @dataclass
+class Turbine_Pitchline_Results:
+    multistage_velocity_triangles   : list
+    multistage_info                 : list
+    r_mean_vec                      : list
+
+    total_power_generated           : float
+    excess_power_margin             : float
+
+    num_stages_target               : float
+
+@dataclass
 class Turbine_IN:
     m_dot_t         : float
     m_dot_c         : float
@@ -233,7 +276,7 @@ class Turbine_IN:
     T0_4m           : float
     P0_4m           : float
 
-    r_mean_c        : float
+    r_mean_i        : float
 
     m_dot_cool      : float
     T0_cool         : float
@@ -262,16 +305,15 @@ class Turbine_IN:
 
     Mc_2m_default   : float
     Mw_3Rm_default  : float
+    degR_m          : float
 
 @dataclass
 class Turbine_OUT:
-    multistage_velocity_triangles:  list
-    multistage_info:                list
-    total_power_gen:                float
-    req_power:                      float
-    req_power_comp:                 float
-    req_power_fan:                  float
-    excess_power_margin:            float
+    initial_pitchline_res:  Turbine_Pitchline_Results
+    pitchline_res:          Turbine_Pitchline_Results
+    req_power:              float
+    req_power_comp:         float
+    req_power_fan:          float
 
 @dataclass
 class Turbine_Gen:
