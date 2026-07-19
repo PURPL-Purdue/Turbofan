@@ -7,26 +7,27 @@ sys.path.append(os.path.abspath(os.path.join(os.getcwd(), ".")))
 import CMB_Air_Distribution as air_dist
 import CEA.CEA_Runner as CEA
 
-def combustor_sizing(params):
-    t3              = params.t3 # K
-    t4              = params.t4 # K
-    tSecondary      = params.tSecondary # K
-    mDot3           = params.mDot3 # kg/s
-    fuelAirRatio    = params.fuelAirRatio
-    cp3             = params.cp3 # kJ/kg-
-    
-    print(f"t3: {t3} K")
+# def combustor_sizing(params):
+t3              = 600 #params.t3 # K
+t4              = 1000 #params.t4 # K
+tSecondary      = 1800 #params.tSecondary # K
+mDot3           = 7 #params.mDot3 # kg/s
+fuelAirRatio    = 0.06# params.fuelAirRatios
+cp3             = 0.06 #params.cp3 # kJ/kg-
 
-    data = CEA.Run_CEA(t3, tSecondary, cp3) # K
-    tPrim = data.t # temp of primary zone 
-    cpPrimary = data.cp 
+print(f"t3: {t3} K")
 
-    # Calculates the air distribution to each section of the combustor
-    # See CMB_Air_Distribution.py for more details on the function and its inputs/outputs
-    pzd, szd, dzd = air_dist.Calc_Air_Distribution(t3, t4, tSecondary, tPrim, mDot3, fuelAirRatio, cp3, cpPrimary)
+data = CEA.Run_CEA(t3, 300, 5.515806, 10) # K
+tPrim = data.t # temp of primary zone 
+cpPrimary = data.cp 
+print(f"{data.prod_c}")
 
-    print(f"Primary Zone Mass Flow Fraction: {pzd:.3f}")
-    print(f"Secondary Zone Mass Flow Fraction: {szd:.3f}")
-    print(f"Dilution Zone Mass Flow Fraction: {dzd:.3f}")
+# Calculates the air distribution to each section of the combustor
+# See CMB_Air_Distribution.py for more details on the function and its inputs/outputs
+pzd, szd, dzd = air_dist.Calc_Air_Distribution(t3, t4, tSecondary, tPrim, mDot3, fuelAirRatio, cp3, cpPrimary)
 
-    return
+print(f"Primary Zone Mass Flow Fraction: {pzd:.3f}")
+print(f"Secondary Zone Mass Flow Fraction: {szd:.3f}")
+print(f"Dilution Zone Mass Flow Fraction: {dzd:.3f}")
+
+#return
