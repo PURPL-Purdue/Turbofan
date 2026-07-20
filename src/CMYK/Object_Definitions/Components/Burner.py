@@ -2,6 +2,8 @@ from CoolProp.CoolProp import PropsSI
 from CMYK.Object_Definitions.Base_Objects import ComponentBase
 from pyfluids import Mixture, FluidsList, Input
 from Python.Combustor.CEA import CEA_Wrap as CEA
+from CMYK.Run.helper_functions import Secant_Method
+
 
 class Burner(ComponentBase):
 
@@ -43,45 +45,63 @@ class Burner(ComponentBase):
     def CYAN(self):
         """Refer to CycleAnalysis.md for explanation of the math"""
         # PREPARING REQUIRED VALUES ---------------------
-        h01 = self.FlowIn.h0
-        P01 = self.FlowIn.P0
+        h03 = self.FlowIn.h0
+        P03 = self.FlowIn.P0
         eta = self.eta
         pr = self.pr
         LHV = self.LHV
 
-        # T02 -------------------------------------------
-        T02 = self.T04
+        # T04 -------------------------------------------
+        T04 = self.T04
 
-        # P02 CALCULATION -------------------------------
-        P02 = pr * P01
+        # P04 CALCULATION -------------------------------
+        P04 = pr * P03
 
         # FAR CALCULATION -------------------------------
-        h02 = PropsSI('HMASS', 'T', T02, 'P', P02, self.FlowIn.WF)      # TODO: Start from here, replacing working fluid with post-combustion mixture
-        self.FAR = FAR = (h02 - h01) / (eta*LHV - h02)
+        h04 = PropsSI('HMASS', 'T', T04, 'P', P04, self.FlowIn.WF)      # TODO: Start from here, replacing working fluid with post-combustion mixture
+        self.FAR = FAR = (h04 - h03) / (eta * LHV - h04)
         self.Wfactor += FAR
+
+        oxid = CEA.Oxidizer(name = "Air", temp = self.FlowIn.T0, wt = 100) #Oxidizer Specs
+        fuel = CEA.Fuel(name = "Jet-A(L)", temp = self.FlowIn.T0, wt = 100) #Fuel Specs
+
+        def residual(FAR):
+            """Returns difference between CEA-predicted T04 and target T04"""
+            _, _, T_cea = self.Run_CEA(fuel, oxid, FAR)
+            return T_cea - T04
+    
+        # initial guesses for FAR - bracket a reasonable range
+        FAR_guess0 = 0.01
+        FAR_guess1 = 0.5
+
+        self.FAR = Secant_Method(residual, FAR_guess0, FAR_guess1, 1e-6, 50)
+
+        # get final species/pressure/temp at converged FAR
+        spec_pairs, P04, T04 = self.Run_CEA(fuel, oxid, FAR)
 
         # SET EXIT FLOW ---------------------------------
         self.FlowOut.setFlow(
-            T0=T02, P0=P02, FAR=FAR,
-            Wfactor=self.Wfactor, Wstream=self.Wstream
+            T0 = self.T04, P0 = self.P04, FAR = self.FAR,
+            Wfactor = self.Wfactor, Wstream = self.Wstream
         )
 
-    def CEA_run(self, phi, fuel, oxid):
-        """Run CEA and return the results"""
+    def Run_CEA(self, fuel, oxid, FAR):
+        """Run CEA and return the species list, pressure, and temperature"""
         problem = CEA.HPProblem(pressure = (self.FlowIn.P0 / 100), massf = True, pressure_units = "bar")
-        problem.set_phi(phi)
+        problem.set_phi(1 / FAR)
         data = problem.run(fuel, oxid)
 
-        spec = []
-        values = []
+        spec = [] # species list
+        masses = [] # mass fraction list
 
+        #create a list of the species and their corresponding mass fractions
         for element in sorted(data.prod_c):
             spec.append(element)
-            values.append(data.prod_c[element])
+            masses.append(data.prod_c[element])
 
-        pairs = sorted(zip(values, spec), reverse=True)
-
+        # zip the list of elements and their corresponding mass fractions, sort them in descending order of mass fraction, and return the sorted list along with pressure and temperature
+        spec_pairs = sorted(zip(masses, spec), reverse = True)
         pres = data.p
         temp = data.t
 
-        return pairs, pres, temp
+        return spec_pairs, pres, temp

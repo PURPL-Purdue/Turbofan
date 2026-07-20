@@ -35,3 +35,32 @@ def P02_P01_from_T02_T01(gamma: float, T02: float, T01: float) -> float:
 def A_Astar(gamma: float, M: float) -> float:
     """Calculates and returns A/Astar as per the isentropic state definition"""
     return ((gamma+1)/2) ** (-(gamma + 1)/(2*(gamma-1))) * ((1 + (gamma-1)/2*M**2) ** ((gamma + 1)/(2*(gamma-1)))) / M
+
+def Secant_Method(func, x0, x1, tol, max_iter, args=()):
+    """Computes the root of a function using the secant method."""
+    f0 = func(x0, *args)
+    f1 = func(x1, *args)
+
+    for i in range(max_iter):
+        if f1 == f0:
+            raise RuntimeError(
+                f"Secant_Method: zero denominator (f(x0) == f(x1)) at "
+                f"x0={x0}, x1={x1}, f={f1}"
+            )
+
+        # standard secant update
+        x2 = x1 - f1 * (x1 - x0) / (f1 - f0)
+        f2 = func(x2, *args)
+
+        # convergence check (on step size and residual)
+        if abs(x2 - x1) < tol or abs(f2) < tol:
+            return x2
+
+        # shift for next iteration
+        x0, f0 = x1, f1
+        x1, f1 = x2, f2
+
+    raise RuntimeError(
+        f"Secant_Method: failed to converge after {max_iter} iterations "
+        f"(last x={x1}, f={f1})"
+    )
