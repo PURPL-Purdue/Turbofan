@@ -1,5 +1,7 @@
 from CoolProp.CoolProp import PropsSI
 from CMYK.Object_Definitions.Base_Objects import ComponentBase
+from pyfluids import Mixture, FluidsList, Input
+from Python.Combustor.CEA import CEA_Wrap as CEA
 
 class Burner(ComponentBase):
 
@@ -63,3 +65,23 @@ class Burner(ComponentBase):
             T0=T02, P0=P02, FAR=FAR,
             Wfactor=self.Wfactor, Wstream=self.Wstream
         )
+
+    def CEA_run(self, phi, fuel, oxid):
+        """Run CEA and return the results"""
+        problem = CEA.HPProblem(pressure = (self.FlowIn.P0 / 100), massf = True, pressure_units = "bar")
+        problem.set_phi(phi)
+        data = problem.run(fuel, oxid)
+
+        spec = []
+        values = []
+
+        for element in sorted(data.prod_c):
+            spec.append(element)
+            values.append(data.prod_c[element])
+
+        pairs = sorted(zip(values, spec), reverse=True)
+
+        pres = data.p
+        temp = data.t
+
+        return pairs, pres, temp
