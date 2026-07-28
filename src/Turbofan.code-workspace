@@ -17,7 +17,7 @@
         "name": "Run Turbofan Main (CMYK)",
         "type": "debugpy",
         "request": "launch",
-        "module" : "CMYK.Run.Turbofan_Main_CMYK",
+        "module" : "CMYK.Run.Turbofan_001",
         "cwd": "${workspaceFolder:src}",
         "console": "integratedTerminal",
       },
