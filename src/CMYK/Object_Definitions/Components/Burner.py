@@ -55,9 +55,11 @@ class Burner(ComponentBase):
     #-----------------------------------------------------
 
     def far_to_phi(self, FAR, FAR_stoich):
+        """Convert FAR to equivalence ratio phi"""
         return FAR / FAR_stoich
 
     def phi_to_far(self, phi, FAR_stoich):
+        """Convert equivalence ratio phi to FAR"""
         return phi * FAR_stoich
 
     def Run_CEA(self, FAR):
@@ -84,8 +86,8 @@ class Burner(ComponentBase):
     
             # zip the list of elements and their corresponding mass fractions, sort them in descending order of mass fraction, and return the sorted list along with pressure and temperature
             spec_pairs = sorted(zip(masses, spec), reverse = True)
-            pres = data.p
-            temp = data.t
+            pres = data.p # bar
+            temp = data.t # K
     
             return spec_pairs, pres, temp
 
@@ -107,7 +109,6 @@ class Burner(ComponentBase):
         # FAR CALCULATION -------------------------------
         h02 = PropsSI('HMASS', 'T', T02, 'P', P02, self.FlowIn.WF)      # TODO: Start from here, replacing working fluid with post-combustion mixture
         self.FAR = FAR = (h02 - h01) / (eta * LHV - h02)
-        print(FAR)
         self.Wfactor += FAR
 
         def Residual(FAR):
@@ -121,11 +122,8 @@ class Burner(ComponentBase):
 
         self.FAR = FAR = Secant_Method(Residual, FAR_guess0, FAR_guess1, 1e-6, 50)
 
-        print(FAR)
-
         # get final species/pressure/temp at converged FAR
         spec_pairs, P02, T02 = self.Run_CEA(self.FAR)
-        print(P02, T02)
 
         # SET EXIT FLOW ---------------------------------
         self.FlowOut.setFlow(
