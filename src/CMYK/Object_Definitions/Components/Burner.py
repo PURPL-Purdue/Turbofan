@@ -86,10 +86,107 @@ class Burner(ComponentBase):
     
             # zip the list of elements and their corresponding mass fractions, sort them in descending order of mass fraction, and return the sorted list along with pressure and temperature
             spec_pairs = sorted(zip(masses, spec), reverse = True)
-            pres = data.p # bar
+            pres = data.p * 100# kPa
             temp = data.t # K
     
             return spec_pairs, pres, temp
+
+    def Convert_To_CoolProp(self, pairs, pres, temp):
+        """Convert CEA output to CoolProp mixture"""
+        
+        #converts products to be useable in coolflow
+        products = []
+        count = 0
+
+        coolpropLibrary = {
+                    # Major oxidizer species
+                    "N2": "Nitrogen",
+                    "O2": "Oxygen",
+                    "Ar": "Argon",
+                
+                    # Fuel and combustion products
+                    "H2O": "Water",
+                    "CO2": "CarbonDioxide",
+                    "CO": "CarbonMonoxide",
+                    "H2": "Hydrogen",
+                
+                    # Hydrocarbon fuels
+                    "CH4": "Methane",
+                    "C2H6": "Ethane",
+                    "C2H4": "Ethylene",
+                    "C3H8": "nPropane",
+                    "C3H6": "Propylene",
+                    "C4H10": "nButane",
+                    "C4H8": "Butene",
+                
+                    # Oxygenated fuels
+                    "CH3OH": "Methanol",
+                    "C2H5OH": "Ethanol",
+                    "CH3OCH3": "DimethylEther",
+                
+                    # Nitrogen-containing species
+                    "NH3": "Ammonia",
+                
+                    # Sulfur species
+                    "SO2": "SulfurDioxide",
+                    "H2S": "HydrogenSulfide",
+                
+                    # Halogens
+                    "HCl": "HydrogenChloride",
+                    "Cl2": "Chlorine",
+                    "F2": "Fluorine",
+                
+                    # Noble gases
+                    "He": "Helium",
+                    "Ne": "Neon",
+                    "Kr": "Krypton",
+                    "Xe": "Xenon",
+                }
+
+        for mf,spec in pairs: #this keeps the top 6 products and adds them to a list
+            if count < 6:
+                if spec in coolpropLibrary: #only uses species in coolprop (no NO, OH, C(cr), H, O)
+                    products.append((mf,coolpropLibrary[spec]))
+                    count += 1
+
+        # now this section is where it get questionable. Basically coolprop mass fractions have to add up 
+        # to exactly 100, and it made it much easier to convert the fab 5 to integers. Maybe floats can be 
+        # used, but i was not able to figure it out
+        mass_per = []
+        round_mass_per = []
+        species = []
+
+        for massf,spec in products: #makes separate list for products, and rounded and unrounded mass percents
+            round_mass_per.append(round(massf * 100))
+            mass_per.append(massf * 100)
+            species.append(spec)
+
+        error = [(per-round(per)) for per in mass_per] #calculate error from rounding
+
+        #if sum of mass fractions is under 100, 1 is added to the most rounded down number till it is 100
+        while sum(round_mass_per) < 100: 
+            max_error = error.index(max(error))
+            error[max_error] = 0
+            round_mass_per[max_error] +=1
+
+        #if sum of mass fractions is over 100, 1 is subtract to the most rounded down number till it is 100
+        while sum(round_mass_per) > 100:
+            min_error = error.index(min(error))
+            error[min_error] = 0
+            round_mass_per[min_error] -= 1
+
+        #converts all products from CEA into compounds usable for coolprop
+        fluid = []
+
+        for specy in species:
+            fluid.append(FluidsList(specy))
+
+        pressure = pres * 1e5 #bar to Pa
+        temperature = temp - 273.15 #K to C
+
+        #all of that for one stupid line of code
+        mixture = Mixture(fluid,round_mass_per).with_state(Input.pressure((pressure)),Input.temperature((temperature)))
+        return(mixture)
 
     def CYAN(self):
         """Refer to CycleAnalysis.md for explanation of the math"""
@@ -125,8 +222,10 @@ class Burner(ComponentBase):
         # get final species/pressure/temp at converged FAR
         spec_pairs, P02, T02 = self.Run_CEA(self.FAR)
 
+        # WF = self.Convert_To_CoolProp(spec_pairs, P02 / 100, T02)
+
         # SET EXIT FLOW ---------------------------------
         self.FlowOut.setFlow(
-            T0 = T02, P0 = (P02 * 100), FAR = FAR,
+            T0 = T02, P0 = (P02), FAR = FAR,
             Wfactor = self.Wfactor, Wstream = self.Wstream
         )
