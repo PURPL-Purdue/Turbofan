@@ -1,5 +1,5 @@
 DATE: 2026-09-09                                USER:    zheng817                                
-TIME: 00:50:44                                  VERSION: 0.1.0                                   
+TIME: 01:23:14                                  VERSION: 0.1.0                                   
 ENGINE MODEL FILE:  Turbofan_003.py          -> C:\Users\zheng\OneDrive\Documentos\Purdue\Clubs\PURPL\Turbofan\GitHub\Turbofan\src\CMYK\Run\Turbofan_003.py
 ENGINE CONFIG FILE: Config_003.yaml          -> C:\Users\zheng\OneDrive\Documentos\Purdue\Clubs\PURPL\Turbofan\GitHub\Turbofan\src\CMYK\Config_Files\Config_003.yaml
 
