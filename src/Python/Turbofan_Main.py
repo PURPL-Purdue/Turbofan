@@ -4,8 +4,15 @@ from Cycle     import Station_Thermo
 from Output    import Print_Results
 from Output    import Plotting
 
-# Initializing dataclasses for component efficiencies, specific heat ratios, and pressure ratios
 
+# ===============================================================================================
+#
+#                                       INITIALIZATION
+#
+# ===============================================================================================
+
+
+# Initializing dataclasses for component efficiencies, specific heat ratios, and pressure ratios
 TF = REF_structs.TF()
 
 TF.cycle.IN.eta = REF_structs.ByComponent(
@@ -38,11 +45,15 @@ TF.cycle.IN.Pr = REF_structs.ByComponent(
     b   = 1,            # Burner
 )
 
-# ======== Ambient Conditions and General Engine Parameters ========
+# ===============================================================================================
+#
+#                                       CYCLE ANALYSIS
+#
+# ===============================================================================================
 TF.cycle.IN = REF_structs.Cycle_IN(
     TF.cycle.IN.eta,    # eta               Efficiencies                       | nondimensional
-    TF.cycle.IN.gamma,  # gamma             Specific heat ratios               | nondimensional
-    TF.cycle.IN.Pr,     # Pr                Design pressure ratios             | nondimensional
+    TF.cycle.IN.gamma,  # gamma_avg             Specific heat ratios               | nondimensional
+    TF.cycle.IN.Pr,     # pr                Design pressure ratios             | nondimensional
     298,                # T_0               Freestream/ambient temperature     | K
     101300,             # P_0               Freestream pressure                | Pa
     0.0,                # M_f               Freestream/flight Mach number      | nondimensional
@@ -55,12 +66,17 @@ TF.cycle.IN = REF_structs.Cycle_IN(
 )
 TF.cycle.OUT = Station_Thermo.thermoCalcs(TF.cycle.IN)
 
+# ===============================================================================================
+#
+#                                LOW PRESSURE AXIAL COMPRESSOR - LPC
+#
+# ===============================================================================================
 TF.compressor.LP.IN = REF_structs.Compressor_IN(
-    TF.cycle.IN.gamma.cLP,      # gamma             Specific heat ratio                         | nondimensional
+    TF.cycle.IN.gamma.cLP,      # gamma_avg             Specific heat ratio                         | nondimensional
     TF.cycle.OUT.Cps.cLP,       # Cp_cLP            Specific heat capacity at constant volume   | TODO
     TF.cycle.OUT.T0P0.S2.T0,    # T0_1              Compressor inlet face total temperature     | Pa
     TF.cycle.OUT.T0P0.S2.P0,    # P0_1              Compressor inlet face total pressure        | K
-    TF.cycle.IN.Pr.cLP,         # Pr                Design pressure ratio                       | nondimensional
+    TF.cycle.IN.Pr.cLP,         # pr                Design pressure ratio                       | nondimensional
     0.99,                       # e_c               Polytropic Efficiency                       | nondimensional
     0.6,                        # httrr             Hub-to-tip radius ratio                     | nondimensional
     0.72,                       # deHaller          De Haller's Criterion value                 | nondimensional
@@ -74,7 +90,11 @@ TF.compressor.LP.IN = REF_structs.Compressor_IN(
 
 TF.compressor.LP.OUT = Component_Sizing.Axial_Compressor.Sizing(TF.compressor.LP.IN)
 
-# HP TUrbine
+# ===============================================================================================
+#
+#                                 HIGH PRESSURE TURBINE - HPT
+#
+# ===============================================================================================
 TF.turbine.HP.IN = REF_structs.Turbine_IN(
     TF.cycle.OUT.m_dot_core,        # m_dot_t           Turbine total mass flow TODO: add in fuel mass flow | kg/s
     TF.cycle.OUT.m_dot_core,        # m_dot_c           Compressor mass flow                                | kg/s
@@ -124,6 +144,11 @@ TF.turbine.HP.IN = REF_structs.Turbine_IN(
 
 TF.turbine.HP.OUT = Component_Sizing.Turbine.Sizing(TF.turbine.HP.IN)
 
+# ===============================================================================================
+#
+#                                 LOW PRESSURE tURBINE - LPT
+#
+# ===============================================================================================
 print(TF.turbine.HP.OUT.req_power/1e6)
 # LP TURBINE
 TF.turbine.LP.IN = REF_structs.Turbine_IN(

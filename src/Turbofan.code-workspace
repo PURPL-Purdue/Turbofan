@@ -7,14 +7,18 @@
       "path": "../Archive",
     },
   ],
-  "settings": {},
+  "settings": {
+    "markdown.validate.enabled": true,
+  },
   "launch": {
     "version": "0.2.0",
     "configurations": [
       {
-        "name": "Python: Current File",
-        "type": "node",
+        "name": "Run Turbofan Main (CMYK)",
+        "type": "debugpy",
         "request": "launch",
+        "module" : "CMYK.Run.Turbofan_001",
+        "cwd": "${workspaceFolder:src}",
         "console": "integratedTerminal",
       },
     ],
