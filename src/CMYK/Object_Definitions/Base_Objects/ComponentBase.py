@@ -28,9 +28,9 @@ class ComponentBase(ABC):
     def _set_Wfactor(self):
         self.Wstream = self.cfg[self.name]['Wstream']
         if self.Wstream == 'FULL':
-            self.Wfactor = 1 + self.cfg['FAN']['Bypass']
+            self.Wfactor = 1 + self.cfg['FAN']['bypass']
         elif self.Wstream == 'BYPASS':
-            self.Wfactor = self.cfg['FAN']['Bypass']
+            self.Wfactor = self.cfg['FAN']['bypass']
         else:
             self.Wfactor = 1
 

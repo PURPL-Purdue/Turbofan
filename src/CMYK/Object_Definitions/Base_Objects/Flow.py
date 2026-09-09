@@ -1,9 +1,12 @@
 from CoolProp.CoolProp import PropsSI
 from CMYK.Run import helper_functions as hf
+from .VelocityTriangle import VelocityTriangle
 
 class Flow:
     def __init__(self, name: str) -> None:
         self.name: str = name
+
+        self.VT = VelocityTriangle()
 
         self.WF = None          # Working fluid
         self.FAR = None         # Fuel-to-air ratio (mass-based)                        | kg_fuel/kg_air
@@ -46,7 +49,9 @@ class Flow:
 
         If a Mach number is not provided, only half (total or static) of the thermodynamic state can be initially specified depending on what other arguments are passed. If the remaining half of the state is already populated in the flow state, the Mach number will be (re)calculated, overriding the existing mach number if it exists.
 
-        If a Mach number is provided, the entire thermodynamic state will be defined, with the existing state overwritten entirely.
+        If a Mach number is provided in addition to the two independent intensive properties, the entire thermodynamic state will be defined, with the existing state overwritten entirely.
+
+        If ONLY a Mach number is provided AND the state is currently only half defined, the rest of the state will be set.
 
         A fuel-to-air ratio, FAR, may also be specified. If provided, the current existing/Nonetype will be overwritten with the new value. If not provided, the current existing/Nonetype will be overridden with a value of zero.
 
@@ -62,14 +67,16 @@ class Flow:
         self.Wfactor = Wfactor if Wfactor != -9999 else self.Wfactor
         self.Wstream = Wstream if Wstream != 'N/A' else self.Wstream
         self.WF = working_fluid
-        self.FAR = FAR if self.FAR !=0 else self.FAR
+        self.FAR = FAR if self.FAR !=0 else self.FAR # TODO: Check this line??? What is it doing???
 
         # INPUT VALIDATION -------------------------------------------------------------------------------------------------------------------------------
         ALLOWED_PROPERTIES = {'T0', 'P0', 'h0', 'T', 'P', 'h', 's'}
         if len(kwargs) == 0:
             raise RuntimeError("what are you doing lol")
         elif len(kwargs) == 1:
-            raise RuntimeError("Flow: underdefined thermodynamic state. Two independent, intensive properties must be provided.")
+            # Continue with one input only if the one input is Mach number
+            if 'M' not in set(kwargs.keys()):
+                raise RuntimeError("Flow: underdefined thermodynamic state. Unless you are providing Mach number by itself, two independent, intensive properties must be provided.")
         elif len(kwargs) == 2:
             # Continue only if both provided inputs are valid
             if not set(kwargs.keys()).issubset(ALLOWED_PROPERTIES):
@@ -83,7 +90,11 @@ class Flow:
 
         # SET FLOW STATE ------------------------------------------------------------------------------------------------------------------------------------
         # At this point, the only two cases that could have made it here are 1) two valid properties or 2) two valid properties and a Mach number
-        if len(kwargs) == 3:
+        prop1 = None
+        prop2 = None
+        if len(kwargs) == 1:
+            self.setFlowMach(kwargs['M'])
+        elif len(kwargs) == 3:
             prop1 = list(set(kwargs.keys()).difference({'M'}))[0]
             prop2 = list(set(kwargs.keys()).difference({'M'}))[1]
         else:
@@ -140,7 +151,6 @@ class Flow:
         """
         if self.T0 is None and self.P0 is None and self.T is not None and self.P is not None:
             self.M = M
-            # TODO: KNOWN INACCURACY: When using isentropic relations, static gamma should be used. However, in situations where setFlowMach is called, only total gamma is known, which is what we end up having to use. A iterative method could be implemented to converge on a solution, though that is rather :skull:
             self.T0 = self.T / hf.T_T0(self.gamma, M)
             self.P0 = self.P / hf.P_P0(self.gamma, M)
             self.setFlowTotalTP(self.T0, self.P0)
@@ -148,8 +158,9 @@ class Flow:
 
         elif self.T0 is not None and self.P0 is not None and self.T is None and self.P is None:
             self.M = M
-            self.T = hf.T_T0(self.gamma, M) * self.T0
-            self.P = hf.P_P0(self.gamma, M) * self.P0
+            # TODO: KNOWN INACCURACY: When using isentropic relations, static gamma should be used. However, in situations where setFlowMach is called and only T0 and P0 are known, only total gamma is known, which is what we end up having to use. A iterative method could be implemented to converge on a solution, though that is rather :skull:
+            self.T = hf.T_T0(self.gamma0, M) * self.T0
+            self.P = hf.P_P0(self.gamma0, M) * self.P0
             self.setFlowStaticTP(self.T, self.P)
             self.gamma_avg = (self.gamma0 + self.gamma) / 2
 

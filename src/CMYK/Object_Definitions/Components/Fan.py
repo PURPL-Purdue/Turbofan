@@ -32,8 +32,8 @@ class Fan(Compressor):
         super()._set_Wfactor()
 
         self.eta = cfg['eta']
-        self.pr  = cfg['Pr_Des']
-        self.bypass = cfg['Bypass']
+        self.pr  = cfg['pr_des']
+        self.bypass = cfg['bypass']
 
 
     #-----------------------------------------------------
@@ -68,3 +68,6 @@ class Fan(Compressor):
             T0=T02, P0=P02,
             Wfactor=self.bypass, Wstream='BYPASS'
         )
+
+    def MAGENTA(self):
+        pass

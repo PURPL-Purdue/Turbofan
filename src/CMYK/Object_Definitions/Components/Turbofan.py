@@ -65,7 +65,7 @@ class Turbofan(Engine):
                 self.FAR = attributeValue.FAR
                 self.LHV = attributeValue.LHV
 
-        self.bypass = self.cfg['FAN']['Bypass']
+        self.bypass = self.cfg['FAN']['bypass']
         self.total_design_thrust = (self.cfg['CYCLE']['design_thrust'] * UR.lbf).to(UR.N).magnitude
 
     def calc_velocities(self):

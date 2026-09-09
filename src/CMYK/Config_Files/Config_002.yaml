@@ -23,8 +23,8 @@ INLET:
 
 FAN:
   eta: 0.85         # Isentropic efficiency                     | nondim
-  Pr_Des: 1.7       # Design pressure ratio                     | nondim
-  Bypass: 2.89      # Bypass ratio                              | nondim
+  pr_des: 1.7       # Design pressure ratio                     | nondim
+  bypass: 2.89      # Bypass ratio                              | nondim
   e_c: 0.99         # Polytropic efficiency                     | nondim
   httrr: 0.2        # Hub-to-tip radius ratio                   | nondim
   deHaller: 0.72    # deHaller's criterion value                | nondim
@@ -41,7 +41,7 @@ NOZ_BYP:
 
 HPCA:
   eta: 0.85         # Isentropic efficiency                     | nondim
-  Pr_Des: 2.6       # Design pressure ratio                     | nondim
+  pr_des: 2.6       # Design pressure ratio                     | nondim
   e_c: 0.99         # Polytropic efficiency                     | nondim
   httrr: 0.2        # Hub-to-tip radius ratio                   | nondim
   deHaller: 0.72    # deHaller's criterion value                | nondim
@@ -53,14 +53,15 @@ HPCA:
 
 HPCR:
   eta: 0.85         # Isentropic efficiency                     | nondim
-  Pr_Des: 5         # Design pressure ratio                     | nondim
+  pr_des: 5         # Design pressure ratio                     | nondim
   Wstream: 'CORE'
 
 BURNER:
   eta: 0.95         # Isentropic efficiency                     | nondim
-  Pr_Des: 1         # Design pressure ratio                     | nondim
+  pr_des: 1         # Design pressure ratio                     | nondim
   LHV: 42800000     # Lower heating value of ExxonMobil Jet A   | J/kg
   Wstream: 'CORE'
+  fuel: 'JET-A'
 
 HPT:
   eta: 0.92         # Isentropic efficiency                     | nondim

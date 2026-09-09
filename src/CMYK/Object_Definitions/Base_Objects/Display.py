@@ -9,6 +9,7 @@ from .Flow import Flow
 from CMYK.Object_Definitions.Components.Shaft import Shaft
 from CMYK.Object_Definitions.Components.Start import Start
 from CMYK.Object_Definitions.Components.End import End
+from CMYK.Object_Definitions.Components.Burner import Burner
 from .Compressor import Compressor
 from .ComponentBase import ComponentBase
 
@@ -145,12 +146,17 @@ class Display:
 
     def CYAN_config_report(self, txt):
         txt.write("\n")
-        txt.write(self.standalone_block_header("PRESSURE RATIOS AND BYPASS RATIO"))
+        txt.write(self.standalone_block_header("PRESSURE RATIOS"))
         txt.write(OutVarCYAN('OPR',    'NONDIM', '', False, 'Overall Design Pressure Ratio').gen_standalone_dataline(self.Engine))
         for component in self.Engine.__dict__.values():
             if isinstance(component, Compressor):
                 txt.write(OutVarCYAN('pr',     'NONDIM', '', False, f'{component.name} Design Pressure Ratio').gen_standalone_dataline(component))
+        txt.write(self.standalone_block_header("MISC INFO"))
         txt.write(OutVarCYAN('bypass', 'NONDIM', '', False, 'Bypass Ratio').gen_standalone_dataline(self.Engine))
+        for component in self.Engine.__dict__.values():
+            if isinstance(component, Burner):
+                txt.write(OutVarCYAN('FAR', 'NONDIM', '%', False, f'{component.name} Fuel-to-Air Ratio').gen_standalone_dataline(component))
+
         txt.write(self.standalone_block_header("COMPONENT EFFICIENCIES"))
         for component in self.Engine.__dict__.values():
             if isinstance(component, ComponentBase):

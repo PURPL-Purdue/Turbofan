@@ -12,3 +12,6 @@ dependencies = [
     "pint>=0.25.3",
     "pyyaml>=6.0.3"
 ]
+
+[tool.pyfluids]
+units_system = "SI"

@@ -29,7 +29,7 @@ class RadialCompressor(Compressor):
         super()._set_Wfactor()
 
         self.eta = cfg['eta']
-        self.pr = cfg['Pr_Des']
+        self.pr = cfg['pr_des']
 
     #-----------------------------------------------------
     #                   CMYK Methods

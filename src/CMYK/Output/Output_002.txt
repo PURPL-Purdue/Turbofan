@@ -1,5 +1,5 @@
-DATE: 2026-07-12                                USER:    zheng817                                
-TIME: 18:29:36                                  VERSION: 0.1.0                                   
+DATE: 2026-09-09                                USER:    zheng817                                
+TIME: 00:50:43                                  VERSION: 0.1.0                                   
 ENGINE MODEL FILE:  Turbofan_002.py          -> C:\Users\zheng\OneDrive\Documentos\Purdue\Clubs\PURPL\Turbofan\GitHub\Turbofan\src\CMYK\Run\Turbofan_002.py
 ENGINE CONFIG FILE: Config_002.yaml          -> C:\Users\zheng\OneDrive\Documentos\Purdue\Clubs\PURPL\Turbofan\GitHub\Turbofan\src\CMYK\Config_Files\Config_002.yaml
 
@@ -70,12 +70,14 @@ SPECIFIC REQUIRED POWER PER SHAFT -----------------------
 	LPS Required Power                       0.978 MW
 	HPS Required Power                       2.027 MW
 
-PRESSURE RATIOS AND BYPASS RATIO ------------------------
+PRESSURE RATIOS -----------------------------------------
 	Overall Design Pressure Ratio           22.100 
 	FAN Design Pressure Ratio                1.700 
 	HPCA Design Pressure Ratio               2.600 
 	HPCR Design Pressure Ratio               5.000 
+MISC INFO -----------------------------------------------
 	Bypass Ratio                             2.890 
+	BURNER Fuel-to-Air Ratio                 1.475 %
 COMPONENT EFFICIENCIES ----------------------------------
 	INLET      (Isentropic)                  0.940 
 	FAN        (Isentropic)                  0.850 
