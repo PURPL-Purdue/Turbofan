@@ -28,11 +28,11 @@ class Burner(ComponentBase):
         self.Wfactor = None
         self.Wstream = None
 
-    def Get_Mixtures(fuel: str): #-> tuple[ceaMixture, ceaMixture, list]:
+    def Set_Reactants(fuel: str): #-> tuple[ceaMixture, ceaMixture, list]:
         if fuel == 'Jet-A':
             fuel_cea_name = 'Jet-A(L)'
         else:
-            raise RuntimeError(f"Fuel '{fuel}' not supported. Please check spelling or use a different fuel.")
+            raise RuntimeError(f"Fuel '{fuel}' is not supported. Please check spelling or use a different fuel.")
         
         reactant_names = [fuel_cea_name, 'Air']
         #product_ceaMixture = ceaMixture(reactant_names, products_from_reactants = True)
@@ -91,14 +91,14 @@ class Burner(ComponentBase):
     
             return spec_pairs, pres, temp
 
-    def Convert_To_CoolProp(self, pairs, pres, temp):
-        """Convert CEA output to CoolProp mixture"""
+    def Convert_To_PyFluids(self, pairs, pres, temp):
+        """Convert CEA output to PyFluids mixture"""
         
-        #converts products to be useable in coolflow
+        #converts products to be useable in pyfluids
         products = []
         count = 0
 
-        coolpropLibrary = {
+        pyfluidsLibrary = {
                     # Major oxidizer species
                     "N2": "Nitrogen",
                     "O2": "Oxygen",
@@ -145,11 +145,11 @@ class Burner(ComponentBase):
 
         for mf,spec in pairs: #this keeps the top 6 products and adds them to a list
             if count < 6:
-                if spec in coolpropLibrary: #only uses species in coolprop (no NO, OH, C(cr), H, O)
-                    products.append((mf,coolpropLibrary[spec]))
+                if spec in pyfluidsLibrary: #only uses species in pyfluids (no NO, OH, C(cr), H, O)
+                    products.append((mf,pyfluidsLibrary[spec]))
                     count += 1
 
-        # now this section is where it get questionable. Basically coolprop mass fractions have to add up 
+        # now this section is where it get questionable. Basically pyfluids mass fractions have to add up 
         # to exactly 100, and it made it much easier to convert the fab 5 to integers. Maybe floats can be 
         # used, but i was not able to figure it out
         mass_per = []
@@ -175,7 +175,7 @@ class Burner(ComponentBase):
             error[min_error] = 0
             round_mass_per[min_error] -= 1
 
-        #converts all products from CEA into compounds usable for coolprop
+        #converts all products from CEA into compounds usable for pyfluids
         fluid = []
 
         for specy in species:
@@ -222,7 +222,9 @@ class Burner(ComponentBase):
         # get final species/pressure/temp at converged FAR
         spec_pairs, P02, T02 = self.Run_CEA(self.FAR)
 
-        # WF = self.Convert_To_CoolProp(spec_pairs, P02 / 100, T02)
+        print(spec_pairs.length, "species found in CEA output")
+
+        # WF = self.Convert_To_PyFluids(spec_pairs, P02 / 100, T02)
 
         # SET EXIT FLOW ---------------------------------
         self.FlowOut.setFlow(
