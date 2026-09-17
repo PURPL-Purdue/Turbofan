@@ -8,6 +8,7 @@ from .ComponentBase import ComponentBase
 from .Compressor import Compressor
 from .Turbine import Turbine
 from .Display import Display
+from ..Components import AxialCompressor, AxialTurbine
 
 DEBUG_PATH = Path(__file__).resolve().parent.parent.parent / 'Output' / 'Debug.txt'
 
@@ -50,6 +51,19 @@ class Engine(ABC):
             except RuntimeError:
                 pass
             raise RuntimeError(error)
+
+    def MAGENTA(self) -> None:
+        try:
+            for component in self.flowpath.values():
+                component.MAGENTA()
+        except RuntimeError as error:
+            try:
+                Disp = Display(self)
+                Disp.textOutput(DEBUG_PATH, verbose=True)
+            except RuntimeError:
+                pass
+            raise RuntimeError(error)
+
 
     def interface(self, comp1: str, comp2: str, station_name: str) -> None:
         # Shaft interface

@@ -94,7 +94,7 @@ def Sizing(params):
 
         # Station 2 stuff
         U_2m = U_1m        # Initial Approximation, true if we adjust both hub and shroud
-        z_2m = z_1m        # Design chioce
+        z_2m = z_1m        # Design choice
 
         W_2m = W_1m*deHaller      # De Haller
         beta_2m = np.acos(z_2m/W_2m)

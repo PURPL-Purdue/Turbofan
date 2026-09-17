@@ -25,8 +25,7 @@ INLET   = Inlet('INLET')
 FAN     = Fan('FAN')
 NOZ_BYP = Nozzle('NOZ_BYP')
 JET_BYP = End('JET_BYP')
-HPCA    = AxialCompressor("HPCA")
-HPCR    = RadialCompressor("HPCR")
+HPC     = AxialCompressor("HPC")
 BURNER  = Burner('BURNER')
 HPT     = AxialTurbine('HPT')
 LPT     = AxialTurbine('LPT')
@@ -47,8 +46,7 @@ Turbofan.build(
     FAN,
     NOZ_BYP,
     JET_BYP,
-    HPCA,
-    HPCR,
+    HPC,
     BURNER,
     HPT,
     LPT,
@@ -67,9 +65,8 @@ Turbofan.interface(  "AMB_FS.FlowOut",        "INLET.FlowIn", "S1"  )
 Turbofan.interface(   "INLET.FlowOut",          "FAN.FlowIn", "S2"  )
 Turbofan.interface(     "FAN.FlowOut_BYP",  "NOZ_BYP.FlowIn", "S13" )
 Turbofan.interface( "NOZ_BYP.FlowOut",      "JET_BYP.FlowIn", "S19" )
-Turbofan.interface(     "FAN.FlowOut_COR",     "HPCA.FlowIn", "S21" )
-Turbofan.interface(    "HPCA.FlowOut",         "HPCR.FlowIn", "S25" )
-Turbofan.interface(    "HPCR.FlowOut",       "BURNER.FlowIn", "S25" )
+Turbofan.interface(     "FAN.FlowOut_COR",      "HPC.FlowIn", "S21" )
+Turbofan.interface(     "HPC.FlowOut",       "BURNER.FlowIn", "S25" )
 Turbofan.interface(  "BURNER.FlowOut",          "HPT.FlowIn", "S4"  )
 Turbofan.interface(     "HPT.FlowOut",          "LPT.FlowIn", "S45" )
 Turbofan.interface(     "LPT.FlowOut",      "NOZ_COR.FlowIn", "S5"  )
@@ -80,15 +77,13 @@ Turbofan.interface( "FAN.Shaft", "LPS", "FAN_ShaftLink" )
 Turbofan.interface( "LPT.Shaft", "LPS", "LPT_ShaftLink" )
 
 # High Pressure Spool Shaft Connections
-Turbofan.interface( "HPCA.Shaft", "HPS","HPCA_ShaftLink" )
-Turbofan.interface( "HPCR.Shaft", "HPS","HPCR_ShaftLink" )
+Turbofan.interface(  "HPC.Shaft", "HPS", "HPC_ShaftLink" )
 Turbofan.interface(  "HPT.Shaft", "HPS", "HPT_ShaftLink"  )
 
 #----------------------------------------------------------------------------
 #                             CYCLE ANALYSIS
 #----------------------------------------------------------------------------
 Turbofan.CYAN()
-Turbofan.MAGENTA()
 
 #----------------------------------------------------------------------------
 #                                 OUTPUT

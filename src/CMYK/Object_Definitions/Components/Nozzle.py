@@ -72,7 +72,7 @@ class Nozzle(ComponentBase):
         eta = self.eta
 
         # CHECK FOR INVALID NOZZLE PRESSURE RATIO
-        if P01 / P2 < 1:
+        if (P01 / P2) < 1:
             raise RuntimeError("Nozzle CYAN(): Nozzle inlet total pressure less than ambient static pressure.")
         # T2 CALCULATION ----------------------------------
         P2s = P2
@@ -89,3 +89,5 @@ class Nozzle(ComponentBase):
             Wfactor=self.Wfactor, Wstream=self.Wstream
         )
 
+    def MAGENTA(self) -> None:
+        pass

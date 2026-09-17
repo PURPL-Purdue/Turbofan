@@ -30,3 +30,6 @@ class End(ComponentBase):
     def CYAN(self) -> None:
         self.Wfactor = self.FlowIn.Wfactor
         self.Wstream = self.FlowIn.Wstream
+
+    def MAGENTA(self) -> None:
+        pass

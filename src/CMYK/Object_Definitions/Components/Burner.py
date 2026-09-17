@@ -1,5 +1,6 @@
 from CoolProp.CoolProp import PropsSI
 from CMYK.Object_Definitions.Base_Objects import ComponentBase
+import cea
 
 class Burner(ComponentBase):
 

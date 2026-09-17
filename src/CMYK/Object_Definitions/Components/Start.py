@@ -39,3 +39,6 @@ class Start(ComponentBase):
             T=self.T, P=self.P, M=self.M_f,
             Wfactor=self.Wfactor, Wstream=self.Wstream
         )  # It's ambient! There's literally nothing to do lol.
+
+    def MAGENTA(self) -> None:
+        pass
