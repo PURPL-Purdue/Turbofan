@@ -1,0 +1,17 @@
+[project]
+name = "CMYK"
+version = "0.1.0"
+description = "Turbofan cycle analysis and component sizing tool"
+requires-python = ">=3.12"
+
+# Your core mathematical and operational packages
+dependencies = [
+    "numpy>=2.5.1",
+    "matplotlib>=3.11.0",
+    "coolprop>=8.0.0",
+    "pint>=0.25.3",
+    "pyyaml>=6.0.3"
+]
+
+[tool.pyfluids]
+units_system = "SI"

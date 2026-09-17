@@ -26,7 +26,7 @@ def Sizing(params):
     Outputs:
     - Determination of inlet nacelle type
     - Inlet and nacelle geometric design
-        - Flow path profile defined mathematically and geometrically
+        - Flow path profile constant_defined mathematically and geometrically
         - Inlet lip geometry (thickness, bluntness)
     - Thermodynamic calculation for inlet exit conditions
         - T0, P0, T, P, rho
