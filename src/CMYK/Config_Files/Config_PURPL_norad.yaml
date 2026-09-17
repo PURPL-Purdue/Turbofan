@@ -12,46 +12,36 @@ CYCLE:
 # component it is trying to configure
 
 AMB_FS:
-  # CYAN
   P_0: 101300       # Freestream/ambient pressure               | Pa
   M_f: 0.0          # Freestream/flight Mach number             | nondim
   T_0: 298          # Freestream/ambient temperature            | K
   Wstream: 'FULL'
 
 INLET:
-  # CYAN
   eta: 0.99         # Isentropic efficiency                     | nondim
   Wstream: 'FULL'
 
 FAN:
-  # CYAN
   eta: 0.79         # Isentropic efficiency                     | nondim
   pr_des: 1.4       # Design pressure ratio                     | nondim
   bypass: 3         # Bypass ratio                              | nondim
   e_c: 0.79         # Polytropic efficiency                     | nondim
-  Wstream: 'FULL'
-
-  # MAGENTA
   httrr: 0.2        # Hub-to-tip radius ratio                   | nondim
   deHaller: 0.72    # deHaller's criterion value                | nondim
   min_Re: 300000    # Minimum blade Reynold's number            | nondim
   alpha_1m: 30      # Inlet absolute flow angle                 | deg
   Mz_1m: 0.45       # Inlet axial mach number                   | nondim
   Mu_1t_max: 0.95   # Inlet tip maximum tangential mach number  | nondim
+  Wstream: 'FULL'
 
 NOZ_BYP:
-  # CYAN
   eta: 0.98         # Isentropic efficiency                     | nondim
   design_mode: 'PERFECTLY_EXPANDED'
   Wstream: 'BYPASS'
 
-HPCA:
-  # CYAN
+HPC:
   eta: 0.79         # Isentropic efficiency                     | nondim
-  pr_des: 3         # Design pressure ratio                     | nondim
-  Wstream: 'CORE'
-
-  # MAGENTA
+  pr_des: 3.6         # Design pressure ratio                     | nondim
   e_c: 0.79         # Polytropic efficiency                     | nondim
   httrr: 0.2        # Hub-to-tip radius ratio                   | nondim
   deHaller: 0.72    # deHaller's criterion value                | nondim
@@ -59,38 +49,25 @@ HPCA:
   alpha_1m: 30      # Inlet absolute flow angle                 | deg
   Mz_1m: 0.45       # Inlet axial mach number                   | nondim
   Mu_1t_max: 0.95   # Inlet tip maximum tangential mach number  | nondim
-  solidity_R: 1.0   # Rotor blade solidity                      | nondim
-  solidity_S: 1.25   # Stator blade solidity                     | nondim
-
-HPCR:
-  # CYAN
-  eta: 0.74         # Isentropic efficiency                     | nondim
-  pr_des: 3         # Design pressure ratio                     | nondim
   Wstream: 'CORE'
 
 BURNER:
-  # CYAN
   eta: 0.95         # Isentropic efficiency                     | nondim
   pr_des: 1         # Design pressure ratio                     | nondim
   LHV: 42800000     # Lower heating value of ExxonMobil Jet A   | J/kg
-  fuel: 'JET-A'
   Wstream: 'CORE'
-
-  # MAGENTA
+  fuel: 'JET-A'
   M_inlet: 0.1
 
 HPT:
-  # CYAN
   eta: 0.89         # Isentropic efficiency                     | nondim
   Wstream: 'CORE'
 
 LPT:
-  # CYAN
   eta: 0.89         # Isentropic efficiency                     | nondim
   Wstream: 'CORE'
 
 NOZ_COR:
-  # CYAN
   eta: 0.98         # Isentropic efficiency                     | nondim
   design_mode: 'PERFECTLY_EXPANDED'
   Wstream: 'CORE'

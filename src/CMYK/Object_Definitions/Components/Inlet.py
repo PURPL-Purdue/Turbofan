@@ -56,3 +56,6 @@ class Inlet(ComponentBase):
             T0=T02, P0=P02,
             Wfactor=self.Wfactor, Wstream=self.Wstream
         )
+
+    def MAGENTA(self) -> None:
+        pass
