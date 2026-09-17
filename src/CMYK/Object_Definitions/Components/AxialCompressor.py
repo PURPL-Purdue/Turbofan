@@ -317,6 +317,11 @@ class AxialCompressor(Compressor):
         for row in sequence:
             if row == 'R':
                 pass
+
+    def 2D_geometry_MCA(self) -> None:
+        pass
+        """Mario and Josie, do your MCA code here"""
+
     @staticmethod
     def D_factor(W1, W2, Ctheta_1, Ctheta_2, sigma):
         # Diffusion factor, generally should be greater than 0.55 to prevent boundary layer separation
@@ -337,3 +342,4 @@ class AxialCompressor(Compressor):
         r_tip = r_mean + h
 
         return [r_hub, r_tip, rho_m]
+
