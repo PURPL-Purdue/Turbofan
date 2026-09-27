@@ -14,6 +14,7 @@ def thermoCalcs(params):
     Rp     = params.Rp                       # Gas constant of combustion products
     QR     = params.QR                       # Heat of reaction for combustion
     bypass = params.bypass                   # Bypass ratio
+    thrust = params.thrust                   # Target Thrust
     combustion_temp = params.combustion_temp # Combustion temperature
 
     # lmao who cares about station 1 am i right (???)
@@ -57,7 +58,7 @@ def thermoCalcs(params):
     # ======== Station 5: LP Turbine Outlet/Nozzle Inlet ========
     Cp_tLP = (Rp*gamma.tLP)/(gamma.tLP-1)     # Specific heat of turbine
 
-    T0_5 = ((1+fr)*T0_45*Cp_tLP - Cp_cLP*(T0_25-T0_2) - bypass*Cp_f*(T0_2-T0_15)) / ((1+fr)*Cp_tLP)
+    T0_5 = ((1+fr)*T0_45*Cp_tLP - Cp_cLP*(T0_25-T0_2) - (bypass+1)*Cp_f*(T0_2-T0_15)) / ((1+fr)*Cp_tLP)
     # T0_5 = (Cp_cLP*(T0_25-T0_3) + bypass*Cp_f*(T0_15-T0_2))/((1+fr)*Cp_tLP) + T0_45
     P0_5 = P0_45*(1 - 1/eta.tLP*(1 - T0_5/T0_45))**(gamma.tLP/(gamma.tLP-1))
     
@@ -112,10 +113,12 @@ def thermoCalcs(params):
         tLP = Cp_tLP
     )
 
-    thrust_target = 2500*4.44822
+    thrust_target = thrust*4.44822          # lbf to N
+
     m_dot_core = thrust_target/ST
     m_dot_bypass = m_dot_core*bypass
     m_dot_total = m_dot_core + m_dot_bypass
+    
     total_thrust = m_dot_core*ST / 4.44822
     core_thrust = m_dot_core * ST_core / 4.44822
     bypass_thrust = m_dot_core * ST_bypass / 4.44822
