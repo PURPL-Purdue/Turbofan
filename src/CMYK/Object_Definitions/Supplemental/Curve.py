@@ -151,7 +151,7 @@ def points_to_arrays(points):
     y = np.array(y)
     return x,y
 
-def BuildBlade(P_1, P_2, P_3, P_4, P_5):
+def build_blade(P_1, P_2, P_3, P_4, P_5):
     C12 = Curve(P_1, P_2)
     C23 = Curve(P_2, P_3)
     C34 = Curve(P_3, P_4)

@@ -50,7 +50,7 @@ def BuildBlade(Points):
     P4 = Points[3]
     P5 = Points[4]
     
-    X,Y = Curve.BuildBlade(P1, P2, P3, P4, P5)
+    X,Y = build_blade(P1, P2, P3, P4, P5)
 
     return X, Y
 
