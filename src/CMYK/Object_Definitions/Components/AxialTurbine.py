@@ -40,6 +40,15 @@ class AxialTurbine(Turbine):
 
         self.eta = cfg['eta']
 
+        # MAGENTA Config ---------------
+        self.alpha_1m        = np.radians(cfg['alpha_1m'])
+        self.alpha_2m        = np.radians(cfg['alpha_2m'])
+        self.Mc_2m           = cfg['Mc_2m']
+        self.Mw_3Rm          = cfg['Mw_3Rm']                    
+        self.Mc_2m_default   = cfg['Mc_2m_default']             
+        self.Mw_3Rm_default  = cfg['Mw_3Rm_default']             
+        self.degR_m          = cfg['degR_m']
+
     #-----------------------------------------------------
     #                   CMYK Methods
     #-----------------------------------------------------
@@ -78,13 +87,21 @@ class AxialTurbine(Turbine):
         P0_1m   = self.FlowIn.P0        # Turbine inlet total pressure,    Pa 
         m_dot   = self.FlowIn.W         # Turbine total mass flow, kg/s, air plus fuel
 
-        eta_mech = self.Shaft.eta_mech
         req_power = self.Shaft.required_power
 
+        # First stage design decisions
+        alpha_1m        = self.alpha_1m
+        alpha_2m        = self.alpha_2m
+        Mc_2m           = self.Mc_2m                      # Slightly supersonic stator nozzle exit
+        Mw_3Rm          = self.Mw_3Rm                     # TODO find justification for this
+
+        # Multistage design decisions
+        Mc_2m_default   = self.Mc_2m_default              # Just barely not choking the flow at stator nozzle exit
+        Mw_3Rm_default  = self.Mw_3Rm_default             # TODO find justification for this
+        degR_m          = self.degR_m
 
         # ================= OLD CODE VARIABLE INPUTS =================
 
-        m_dot_c         = params.m_dot_c    # Compressor mass flow, just air
         rpm             = params.RPM        # RPM
 
         T0_2            = params.T0_2comp   # Compressor inlet total temp
@@ -96,26 +113,7 @@ class AxialTurbine(Turbine):
         T0_cool         = params.T0_cool    # Cooling air temperature, kelvin
         P0_cool         = params.P0_cool    # Cooling air pressure, Pa
 
-        Cp_c            = params.Cp_c
-        Cp_t            = params.Cp_t
-
         ep              = params.ep
-
-        # Fan stuff
-        m_dot_f         = params.m_dot_f
-        Cp_f            = params.Cp_f
-        T0_15           = params.T0_15
-
-        # First stage design decisions
-        alpha_1m        = np.radians(params.alpha_1m)
-        alpha_2m        = np.radians(params.alpha_2m)
-        Mc_2m           = params.Mc_2m                      # Slightly supersonic stator nozzle exit
-        Mw_3Rm          = params.Mw_3Rm                     # TODO find justification for this
-
-        # Multistage design decisions
-        Mc_2m_default   = params.Mc_2m_default              # Just barely not choking the flow at stator nozzle exit
-        Mw_3Rm_default  = params.Mw_3Rm_default             # TODO find justification for this
-        degR_m          = params.degR_m
 
         # ================= END OLD CODE VARIABLE INPUTS =================
         
@@ -123,18 +121,24 @@ class AxialTurbine(Turbine):
 
         ang_vel = rpm * 2*np.pi / 60 # Angular velocity, rad/s
 
+
+        # Old code power calculations :
+        # removed since power is now calculated by shaft
+        #
         # ======== Whole Turbine Calcs (absolute station numbers) ========
         #power_c = m_dot_c * Cp_c * (T0_3-T0_2)          # Power required by compressor          | TODO get exact power equation, this is just an approximation
         #power_f = 0 if m_dot_f == None else m_dot_f * Cp_f * (T0_2-T0_15)
         #req_power_t = power_c + power_f/eta_mech                          # Turbine power generation requirement  | Accounts for mechanical losses
 
+        # Old code something, not used at all later so commented out for now :
+        #
         # Using symbolic equations to solve for the exit temperature of the whole turbine
-        T0_5_cooled_sym = sympy.symbols("T0_5_cooled_sym")                                                                  # Creating symbolic variable
-        eqn1 = sympy.Eq(m_dot_c * ((1-ep)*Cp_t*(T0_1m-T0_5_cooled_sym) + ep*Cp_c*(T0_cool-T0_5_cooled_sym)), req_power)     # Defining equation
-        T0_5m_cooled = sympy.solve(eqn1, T0_5_cooled_sym)[0]                                                                # Solving
-
+        #T0_5_cooled_sym = sympy.symbols("T0_5_cooled_sym")                                                                  # Creating symbolic variable
+        #eqn1 = sympy.Eq(m_dot_c * ((1-ep)*Cp_t*(T0_1m-T0_5_cooled_sym) + ep*Cp_c*(T0_cool-T0_5_cooled_sym)), req_power)     # Defining equation
+        #T0_5m_cooled = sympy.solve(eqn1, T0_5_cooled_sym)[0]                                                                # Solving
         # Total temperature drop across entire turbine
-        deltaT_total = T0_1m - T0_5m_cooled
+        #deltaT_total = T0_1m - T0_5m_cooled
+
 
         # ======== Pitchline Staging ========
         # Setting up lists to contain staging data
@@ -153,7 +157,7 @@ class AxialTurbine(Turbine):
             ang_vel,
             gamma,
             R,
-            Cp_t,
+            Cp,
             m_dot,
             degR_m,
             req_power
@@ -180,7 +184,7 @@ class AxialTurbine(Turbine):
                     ang_vel,
                     gamma,
                     R,
-                    Cp_t,
+                    Cp,
                     m_dot,
                     degR_m,
                     req_power,
@@ -207,7 +211,7 @@ class AxialTurbine(Turbine):
                     ang_vel,
                     gamma,
                     R,
-                    Cp_t,
+                    Cp,
                     m_dot,
                     degR_m,
                     req_power,
@@ -230,15 +234,7 @@ class AxialTurbine(Turbine):
             pitchline_res.r_mean_vec
         )
 
-        AT_OUT = REF_structs.Turbine_OUT(
-            initial_pitchline_res,
-            pitchline_res,
-            req_power,
-            power_c,
-            power_f,
-        )
-
-        return AT_OUT
+        return
 
 
 
@@ -264,73 +260,51 @@ class AxialTurbine(Turbine):
         # target_power  | Power generation target
         
         # ======== Pitchline Calcs (turbine-specific station numbers) ========
+        # Stator stuff
+        T0_2m = T0_1m   # No total temp drop over stator, assume adiabatic
+        T_2m = hf.T_T0(gamma_t, Mc_2m)*T0_2m  
+        a_2m = hf.a(gamma_t, R_t, T_2m)
 
-        # turbine station flows
-        Flow_1m = Flow('Meanline_Stator_Inlet')
-        Flow_2m = Flow('Meanline_Stator_Exit')
-        Flow_3m = Flow('Meanline_Rotor_Exit')
-
-        VelTri_1m = VelocityTriangle()
-        VelTri_2m = VelocityTriangle()
-        VelTri_3m = VelocityTriangle()
-
-        Flow_1m.T0 = T0_1m
-        Flow_1m.P0 = P0_1m
-        Flow_2m.T0 = T0_1m  # No total temp drop over stator, assume adiabatic
-
-        # figure this shit out man
-        Flow_1m.setFlow('Air', T0 = 30, P0 = 101300, M = 0.5)
-
-        Flow_1m.Cp = Cp_t
-        Flow_1m.R = R_t
-        Flow_1m.gamma = gamma_t
-
-        VelTri_2m.Mc = Mc_2m
-        VelTri_3m.Mw = Mw_3Rm
-
-        Flow_2m.T = hf.T_T0(gamma_t, VelTri_2m.Mc)*Flow_2m.T0
-        Flow_2m.A = hf.a(gamma_t, R_t, Flow_2m.T)
-        
-        VelTri_2m.C = VelTri_2m.Mc*Flow_2m.A
+        C_2m = Mc_2m*a_2m
         
         if initial:
-            VelTri_2m.alpha = schrodinkler
-            VelTri_2m.Ctheta = VelTri_2m.C*np.sin(VelTri_2m.alpha)
-            VelTri_1m.z = VelTri_2m.z = VelTri_3m.z = VelTri_2m.C*np.cos(VelTri_2m.alpha)
+            alpha_2m = schrodinkler
+            Ctheta_2m = C_2m*np.sin(alpha_2m)
+            z_1m = z_2m = z_3m = C_2m*np.cos(alpha_2m)
         else:
-            VelTri_1m.z = VelTri_2m.z = VelTri_3m.z = schrodinkler
-            VelTri_2m.alpha = np.acos(VelTri_2m.z/VelTri_2m.C)
-            VelTri_2m.Ctheta = VelTri_2m.C*np.sin(VelTri_2m.alpha)
+            z_1m = z_2m = z_3m = schrodinkler
+            alpha_2m = np.acos(z_2m/C_2m)
+            Ctheta_2m = C_2m*np.sin(alpha_2m)
 
-        VelTri_1m.C = Flow_1m.z/np.cos(alpha_1m)
-        Ctheta_1m = VelTri_1m.C*np.sin(alpha_1m)
+        C_1m = z_1m/np.cos(alpha_1m)
+        Ctheta_1m = C_1m*np.sin(alpha_1m)
 
-        Flow_1m.T = Flow_1m.T0 - VelTri_1m.C**2/(2*Cp_t)
-        Flow_1m.A = hf.a(gamma_t, R_t, Flow_1m.T)
-        VelTri_1m.Mc = VelTri_1m.C/Flow_1m.A
+        T_1m = T0_1m - C_1m**2/(2*Cp_t)
+        a_1m = hf.a(gamma_t, R_t, T_1m)
+        Mc_1m = C_1m/a_1m
         
         # Stator Solidity
         optimal_zweifel = 1
-        fake_optimal_stator_solidity = REF_AEQ.sigXzweif(alpha_1m, VelTri_2m.alpha) / optimal_zweifel
-        Ctheta_mean = (VelTri_1m.Ctheta + VelTri_2m.Ctheta)/2
-        alpha_2_stagger = np.atan(Ctheta_mean/VelTri_2m.z)
+        fake_optimal_stator_solidity = hf.sigXzweif(alpha_1m, alpha_2m) / optimal_zweifel
+        Ctheta_mean = (Ctheta_1m + Ctheta_2m)/2
+        alpha_2_stagger = np.atan(Ctheta_mean/z_2m)
         real_optimal_stator_solidity = fake_optimal_stator_solidity/np.cos(alpha_2_stagger)
 
         # Stator deviation angle and throat/spacing ratio
-        if VelTri_2m.Mc <= 1:
-            stator_dev = (VelTri_2m.alpha - VelTri_1m.alpha) / (8 * real_optimal_stator_solidity)
-            o_s = np.cos(VelTri_2m.alpha)
+        if Mc_2m <= 1:
+            stator_dev = (alpha_2m - alpha_1m) / (8 * real_optimal_stator_solidity)
+            o_s = np.cos(alpha_2m)
         else:
             stator_dev = 0
-            o_s = np.cos(VelTri_2m.alpha) / hf.A_Astar(gamma_t, VelTri_2m.Mc)
+            o_s = np.cos(alpha_2m) / hf.A_Astar(gamma_t, Mc_2m)
 
         # ======== Have you tried spinning? It's a great trick ========
         # Calculating pitchline reference frame tangential velocity U
-        VelTri_1m.U = VelTri_2m.U = VelTri_3m.U = ang_vel * r_mean
+        U_1m = U_2m = U_3m = ang_vel * r_mean
         
         # Converting to rotating reference frame
-        VelTri_2m.Wtheta = VelTri_2m.Ctheta - VelTri_2m.U
-        VelTri_1m.Wtheta = VelTri_1m.Ctheta - VelTri_1m.U
+        Wtheta_2m = Ctheta_2m - U_2m
+        Wtheta_1m = Ctheta_1m - U_1m
         
         # Rotor exit relative and absolute tangential speed
 
@@ -339,37 +313,37 @@ class AxialTurbine(Turbine):
         # Ctheta_3m = U_2m + Wtheta_3m
 
         # This section below is for when we specify degree of reaction as a design variable
-        VelTri_3m.Ctheta = (1 - degR_m)*2*VelTri_2m.U - VelTri_2m.Ctheta
-        VelTri_3m.Wtheta = VelTri_3m.Ctheta-VelTri_3m.U
+        Ctheta_3m = (1 - degR_m)*2*U_2m - Ctheta_2m
+        Wtheta_3m = Ctheta_3m-U_3m
 
         # Calculating miscellaneous velocities and angles
         # Pythagoreas
-        VelTri_2m.W = np.sqrt(VelTri_2m.z**2 + VelTri_2m.Wtheta**2)
-        VelTri_3m.W = np.sqrt(VelTri_3m.z**2 + VelTri_3m.Wtheta**2)
-        VelTri_3m.C = np.sqrt(VelTri_3m.z**2 + VelTri_3m.Ctheta**2)
-        VelTri_1m.W = np.sqrt(VelTri_1m.z**2 + VelTri_1m.Wtheta**2)
+        W_2m = np.sqrt(z_2m**2 + Wtheta_2m**2)
+        W_3m = np.sqrt(z_3m**2 + Wtheta_3m**2)
+        C_3m = np.sqrt(z_3m**2 + Ctheta_3m**2)
+        W_1m = np.sqrt(z_1m**2 + Wtheta_1m**2)
         
         # Trig
-        VelTri_1m.beta = -np.acos(VelTri_1m.z/VelTri_1m.W)
-        VelTri_2m.beta = np.acos(VelTri_2m.z/VelTri_2m.W)
-        VelTri_3m.beta = -np.acos(VelTri_3m.z/VelTri_3m.W)
-        VelTri_3m.alpha = np.atan(VelTri_3m.Ctheta/VelTri_3m.z)
+        beta_1m = -np.acos(z_1m/W_1m)
+        beta_2m = np.acos(z_2m/W_2m)
+        beta_3m = -np.acos(z_3m/W_3m)
+        alpha_3m = np.atan(Ctheta_3m/z_3m)
 
         # Miscellaneous temps n' stuff
-        VelTri_3m.A = VelTri_3m.W/VelTri_3m.Mw                  # Station 3 (rotor exit) speed of sound
-        VelTri_2m.Mw = VelTri_2m.W/VelTri_2m.A                   # Station 2 (rotor inlet) relative mach number
-        VelTri_1m.Mw = VelTri_1m.W/VelTri_1m.A                   # Station 1 (stator inlet) relative mach number
+        a_3m = W_3m/Mw_3Rm                  # Station 3 (rotor exit) speed of sound
+        Mw_2m = W_2m/a_2m                   # Station 2 (rotor inlet) relative mach number
+        Mw_1m = W_1m/a_1m                   # Station 1 (stator inlet) relative mach number
         T0_2Rm = T_2m + W_2m**2/(2*Cp_t)    # Station 2 (Rotor inlet) relative total temperature 
 
-        VelTri_1m.Mz = z_1m/a_1m                   # Station 1 axial mach number
-        VelTri_2m.Mz = z_2m/a_2m                   # Station 2 axial mach number
-        VelTri_3m.Mz = z_3m/a_3m                   # Station 3 axial mach number
+        Mz_1m = z_1m/a_1m                   # Station 1 axial mach number
+        Mz_2m = z_2m/a_2m                   # Station 2 axial mach number
+        Mz_3m = z_3m/a_3m                   # Station 3 axial mach number
         
         profileLoss_s = 0.06                # Assumed stator pressure loss coefficient
         
         # A lot of random temperatures and pressures, have fun reading through them lol
-        VelTri_1m.P = P0_1m * hf.P_P0(gamma_t, Mc_1m)
-        P0_2m = -profileLoss_s*(P0_1m - VelTri_1m.P)+P0_1m
+        P_1m = P0_1m * hf.P_P0(gamma_t, Mc_1m)
+        P0_2m = -profileLoss_s*(P0_1m - P_1m)+P0_1m
         P_2m = P0_2m * hf.P_P0(gamma_t, Mc_2m)
         P0_2Rm = P_2m / hf.P_P0(gamma_t, Mw_2m)
         T0_3m = T0_2m + U_2m*(Ctheta_3m-Ctheta_2m)/Cp_t
@@ -380,12 +354,12 @@ class AxialTurbine(Turbine):
         
         profileLoss_r = 0.08                # Assumed rotor pressure loss coefficient
         P0_3Rm = -profileLoss_r*(P0_2Rm - P_2m)+P0_2Rm
-        P_3m = P0_3Rm * REF_AEQ.P_P0(gamma_t, Mw_3Rm)
-        P0_3m = P_3m / REF_AEQ.P_P0(gamma_t, Mc_3m)
+        P_3m = P0_3Rm * hf.P_P0(gamma_t, Mw_3Rm)
+        P0_3m = P_3m / hf.P_P0(gamma_t, Mc_3m)
         
         # Rotor solidity
         optimal_zweifel = 1
-        fake_optimal_rotor_solidity = REF_AEQ.sigXzweif(beta_2m, beta_3m) / optimal_zweifel     # "Optimal" solidity based on Zweifel
+        fake_optimal_rotor_solidity = hf.sigXzweif(beta_2m, beta_3m) / optimal_zweifel     # "Optimal" solidity based on Zweifel
         Wtheta_mean = (Wtheta_2m + Wtheta_3m)/2                                             # Average relative swirl
         beta_stagger = np.atan(Wtheta_mean/z_3m)                                            # Stagger angle
         real_optimal_stator_solidity = fake_optimal_rotor_solidity/np.cos(beta_stagger)     # Actual optimal solidity
