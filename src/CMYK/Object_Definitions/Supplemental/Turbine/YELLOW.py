@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-
+from scipy.optimize import minimize_scalar
 import numpy as np
 
 from ..Curve import *
@@ -7,16 +7,18 @@ from ..Curve import *
 # TODO: check if faulty logic is present or inputs in YELLOW_TEST.py are bad
 
 def YELLOW(R, Cx, Ct, zeta, beta_in, eps, R_LE, beta_out, R_TE, N_B, o):
-    params = getPritchardParams(R, Cx, Ct, zeta, beta_in, eps, R_LE, beta_out, R_TE, N_B, o)
+    params = getPritchardParams(R, Cx, Ct, zeta, beta_in, eps, R_LE, beta_out, R_TE, N_B, o, 0.5 * zeta)
+    #params.eps_out = optimize_exit_half_wedge_angle(params)
+    print(params.eps_out, 0.5 * params.zeta)
     Points = getPritchardPoints(params)
     X,Y = BuildBlade(Points)
 
 
-def getPritchardParams(R, Cx, Ct, zeta, beta_in, eps, R_LE, beta_out, R_TE, N_B, o):
+def getPritchardParams(R, Cx, Ct, zeta, beta_in, eps, R_LE, beta_out, R_TE, N_B, o, eps_out):
 
     return PritchardParams(
         R, Cx, Ct, zeta, beta_in, eps,
-        R_LE, beta_out, R_TE, N_B, o
+        R_LE, beta_out, R_TE, N_B, o, eps_out
     )
 
 def getPritchardPoints(params):
@@ -41,7 +43,7 @@ def BuildBlade(Points):
 
 
 def get_point_1(params):
-    beta_1 = params.beta_out - (0.5 * params.zeta)
+    beta_1 = params.beta_out - params.eps_out
     # convert degree to radians for trig functions to work
     beta_1_rad = np.radians(beta_1)
 
@@ -52,7 +54,7 @@ def get_point_1(params):
     return x1, y1, m1
 
 def get_point_2(params):
-    beta_2 = params.beta_out - (0.5 * params.zeta) + params.zeta
+    beta_2 = params.beta_out - params.eps_out + params.zeta
     # convert degree to radians for trig functions to work
     beta_2_rad = np.radians(beta_2)
 
@@ -85,7 +87,7 @@ def get_point_4(params):
     return x4, y4, m4
 
 def get_point_5(params):
-    beta_5 = params.beta_out + (0.5 * params.zeta)
+    beta_5 = params.beta_out + params.eps_out
     # convert degree to radians for trig functions to work
     beta_5_rad = np.radians(beta_5)
 
@@ -95,16 +97,66 @@ def get_point_5(params):
 
     return x5, y5, m5
 
+def optimize_exit_half_wedge_angle(params):
+    """
+
+    :param params:
+    :return:
+    """
+    # initial condition for exit half wedge angle
+    # given by ...
+    result = minimize_scalar(lambda eps_out: get_throat_y_error(params.R,
+                                                                params.Cx,
+                                                                params.Ct,
+                                                                params.zeta,
+                                                                params.beta_in,
+                                                                params.eps,
+                                                                params.R_LE,
+                                                                params.beta_out,
+                                                                params.R_TE,
+                                                                params.N_B,
+                                                                params.o,
+                                                                eps_out))
+
+    eps_out = result.x
+    print(result.fun)
+    return eps_out
+
+def get_throat_y_error(R, Cx, Ct, zeta, beta_in, eps, R_LE, beta_out, R_TE, N_B, o, eps_out):
+    """
+
+    :param params:
+    :return:
+    """
+    params = getPritchardParams(R, Cx, Ct, zeta, beta_in, eps, R_LE, beta_out, R_TE, N_B, o, eps_out)
+    P_1 = ReferencePoint(*get_point_1(params))
+    P_2 = ReferencePoint(*get_point_2(params))
+    P_3 = ReferencePoint(*get_point_3(params))
+
+    C12 = Curve(P_1, P_2)
+    C23 = Curve(P_2, P_3)
+
+    C12.build_circularArc()
+    C23.build_quadraticBezier()
+
+    x12, y12 = points_to_arrays(C12.curve)
+    x23, y23 = points_to_arrays(C23.curve)
+
+    throat_y_error = abs(y23[0] - y12[-1])
+
+    return throat_y_error
+
 @dataclass
 class PritchardParams:
-    R: float# radius
-    Cx: float# axial chord
-    Ct: float# tangential chord
-    zeta: float# unguided turning
-    beta_in: float# inlet blade angle
-    eps: float# inlet wedge angle
-    R_LE: float# leading edge radius
-    beta_out: float# exit blade angle
-    R_TE: float# trailing edge radius
+    R: float # radius
+    Cx: float # axial chord
+    Ct: float # tangential chord
+    zeta: float # unguided turning
+    beta_in: float # inlet blade angle
+    eps: float # inlet wedge angle
+    R_LE: float # leading edge radius
+    beta_out: float # exit blade angle
+    R_TE: float # trailing edge radius
     N_B: int # number of blades
-    o: float# throat
+    o: float # throat
+    eps_out: float # ADD COMMENTS
