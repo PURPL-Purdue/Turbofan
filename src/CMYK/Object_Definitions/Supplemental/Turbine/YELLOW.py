@@ -4,20 +4,7 @@ import numpy as np
 
 from ..Curve import *
 
-
-# class Blade:
-#     # initializes "private" instance variables for the 11 parameters
-#     R = None
-#     Cx = None
-#     Ct = None
-#     zeta = None
-#     beta_in = None
-#     eps = None
-#     R_LE = None
-#     beta_out = None
-#     R_TE = None
-#     N_B = None
-#     o = None
+# TODO: check if faulty logic is present or inputs in YELLOW_TEST.py are bad
 
 def YELLOW(R, Cx, Ct, zeta, beta_in, eps, R_LE, beta_out, R_TE, N_B, o):
     params = getPritchardParams(R, Cx, Ct, zeta, beta_in, eps, R_LE, beta_out, R_TE, N_B, o)
@@ -25,8 +12,6 @@ def YELLOW(R, Cx, Ct, zeta, beta_in, eps, R_LE, beta_out, R_TE, N_B, o):
     X,Y = BuildBlade(Points)
 
 
-
-    
 def getPritchardParams(R, Cx, Ct, zeta, beta_in, eps, R_LE, beta_out, R_TE, N_B, o):
 
     return PritchardParams(
@@ -112,14 +97,14 @@ def get_point_5(params):
 
 @dataclass
 class PritchardParams:
-    R: float
-    Cx: float
-    Ct: float
-    zeta: float
-    beta_in: float
-    eps: float
-    R_LE: float
-    beta_out: float
-    R_TE: float
-    N_B: int
-    o: float
+    R: float# radius
+    Cx: float# axial chord
+    Ct: float# tangential chord
+    zeta: float# unguided turning
+    beta_in: float# inlet blade angle
+    eps: float# inlet wedge angle
+    R_LE: float# leading edge radius
+    beta_out: float# exit blade angle
+    R_TE: float# trailing edge radius
+    N_B: int # number of blades
+    o: float# throat
