@@ -8,11 +8,11 @@ from Turbine    import HELP_Turbine
 
 def Sizing(params):
     '''
-    Design Criteria:
-    - Constant axial velocity
-    - Cooled with compressor bleed air (set "ep" to 0 for uncooled turbine)
-    - Choked first stator exit (M_2m = 1.1)
-    - First stator alpha2 = 60 degrees
+    Notes/TODO
+    - For power matching, the final decision as to whether we increase meanline radius for all stages at once, linearly per stage, or both, is still to be decided.
+      Right now it does both, leading to the kind of wacky geometry that is output.
+    - Might want to consider using an iterative approach to switch to having a constant hub radius model for the annulus geometry
+    - Finish annulus sizing/spanwise analysis of the turbine by implementing radial equilibrium.
     '''
 
     m_dot_t         = params.m_dot_t    # Turbine total mass flow, kg/s, air plus fuel
@@ -24,7 +24,7 @@ def Sizing(params):
     T0_4m           = params.T0_4m        # Turbine inlet total temperature, K
     P0_4m           = params.P0_4m     # Turbine inlet total pressure,    Pa 
 
-    r_mean_c        = params.r_mean_c      # Comrpessor pitchline radius, meters
+    r_mean_i        = params.r_mean_i      # Inlet pitchline radius, meters
 
     m_dot_cool      = params.m_dot_cool     # Cooling air bleedoff mass flow, kg/s
     T0_cool         = params.T0_cool       # Cooling air temperature, kelvin
@@ -56,7 +56,9 @@ def Sizing(params):
     # Multistage design decisions
     Mc_2m_default   = params.Mc_2m_default               # Just barely not choking the flow at stator nozzle exit
     Mw_3Rm_default  = params.Mw_3Rm_default               # TODO find justification for this
-    r_mean = r_mean_c
+    degR_m          = params.degR_m
+    
+    r_mean = r_mean_i
 
     ang_vel = rpm * 2*np.pi / 60 # Angular velocity, rad/s
     R_t = (gamma_t-1)*Cp_t/gamma_t
@@ -76,82 +78,103 @@ def Sizing(params):
 
     # ======== Pitchline Staging ========
     # Setting up lists to contain staging data
-    multistage_velocity_triangles = []
-    multistage_info = []
 
-    # Initial stage
-    velocity_triangles_s1, info_s1, powerReqMet = HELP_Turbine.Turbine_Stage_Pitchline(
-        True,
+    initial_pitchline_res = HELP_Turbine.pitchline_staging(
+        True,   # initial
         Mc_2m,
         Mw_3Rm,
+        Mc_2m_default,
+        Mw_3Rm_default,
         alpha_1m,
         alpha_2m,
         T0_4m,
         P0_4m,
-        r_mean_c,
+        r_mean_i,
         ang_vel,
         gamma_t,
         R_t,
         Cp_t,
         m_dot_t,
-        0,
+        degR_m,
         req_power_t
-        )
-    multistage_velocity_triangles.append(velocity_triangles_s1)
-    multistage_info.append(info_s1)
-    
-    total_power_generated = multistage_info[0].power
+    )
 
-    # Subsequent staging
-    stage_idx = 1
-    while not powerReqMet:
-        # Calculate triangles and info for new stage
-        velocity_triangles, info, powerReqMet = HELP_Turbine.Turbine_Stage_Pitchline(
-            False,
-            Mc_2m_default,
-            Mw_3Rm_default,
-            multistage_velocity_triangles[stage_idx-1].alpha_3m,
-            multistage_velocity_triangles[stage_idx-1].z_3m,
-            multistage_info[stage_idx-1].T0_3m,
-            multistage_info[stage_idx-1].P0_3m,
-            r_mean,
-            ang_vel,
-            gamma_t,
-            R_t,
-            Cp_t,
-            m_dot_t,
-            total_power_generated,
-            req_power_t
+    num_stages_target = initial_pitchline_res.num_stages_target
+
+    total_power_generated = 0
+    r_inc_factor = 0
+
+    if num_stages_target > 1:
+        while total_power_generated < req_power_t:
+            pitchline_res = HELP_Turbine.pitchline_staging(
+                False,   # initial
+                Mc_2m,
+                Mw_3Rm,
+                Mc_2m_default,
+                Mw_3Rm_default,
+                alpha_1m,
+                alpha_2m,
+                T0_4m,
+                P0_4m,
+                r_mean_i,
+                ang_vel,
+                gamma_t,
+                R_t,
+                Cp_t,
+                m_dot_t,
+                degR_m,
+                req_power_t,
+                r_inc_factor = r_inc_factor,
+                num_stages_target = num_stages_target
             )
-        
-        # Keep track of total power generated up to this point
-        total_power_generated += info.power
-        # Add to info lists
-        multistage_velocity_triangles.append(velocity_triangles)
-        multistage_info.append(info)
-        # Updating loop
-        stage_idx += 1
-    
-    stage_powers = [stage_info.power for stage_info in multistage_info]
-    excess_power_margin = (total_power_generated - req_power_t)/req_power_t * 100
-    R = Cp_t * (gamma_t-1)/gamma_t
+            total_power_generated = pitchline_res.total_power_generated
+            r_mean_i += 0.01
+            r_inc_factor += 0.01
+    else:
+        percent_error = 5
+        while percent_error > 2 or percent_error < 0:
+            pitchline_res = HELP_Turbine.pitchline_staging(
+                False,   # initial
+                Mc_2m,
+                Mw_3Rm,
+                Mc_2m_default,
+                Mw_3Rm_default,
+                alpha_1m,
+                alpha_2m,
+                T0_4m,
+                P0_4m,
+                r_mean_i,
+                ang_vel,
+                gamma_t,
+                R_t,
+                Cp_t,
+                m_dot_t,
+                degR_m,
+                req_power_t,
+                r_inc_factor = r_inc_factor,
+                num_stages_target = num_stages_target
+            )
+            total_power_generated = pitchline_res.total_power_generated
+            percent_error = (total_power_generated-req_power_t)/req_power_t * 100
+            if percent_error < 0:
+                degR_m += 0.005
+            else:
+                degR_m -= 0.005
 
     HELP_Turbine.Turbine_Annulus_Sizing(
-        multistage_velocity_triangles,
-        multistage_info,
+        pitchline_res.multistage_velocity_triangles,
+        pitchline_res.multistage_info,
         m_dot_t,
         gamma_t,
-        R,
-        r_mean_c)
+        R_t,
+        pitchline_res.r_mean_vec)
 
     AT_OUT = REF_structs.Turbine_OUT(
-        multistage_velocity_triangles,
-        multistage_info,
-        total_power_generated,
+        initial_pitchline_res,
+        pitchline_res,
         req_power_t,
         power_c,
         power_f,
-        excess_power_margin
     )
 
     return AT_OUT

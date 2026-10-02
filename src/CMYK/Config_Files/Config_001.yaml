@@ -1,0 +1,87 @@
+#---------------------------------------------------------------------------------#
+#                                  CYCLE TARGETS                                  #
+#---------------------------------------------------------------------------------#
+CYCLE:
+  design_thrust: 1250      # Target thrust                             | lbf
+  T0_4: 1300        # Turbine Inlet Temperature                 | K
+
+#---------------------------------------------------------------------------------#
+#                              COMPONENT CONFIGS                                  #
+#---------------------------------------------------------------------------------#
+# Each top level component config key value must exactly the name attribute of the
+# component it is trying to configure
+
+AMB_FS:
+  P_0: 101300       # Freestream/ambient pressure               | Pa
+  M_f: 0.0          # Freestream/flight Mach number             | nondim
+  T_0: 298          # Freestream/ambient temperature            | K
+  Wstream: 'FULL'
+
+INLET:
+  eta: 0.94         # Isentropic efficiency                     | nondim
+  Wstream: 'FULL'
+
+FAN:
+  eta: 0.85         # Isentropic efficiency                     | nondim
+  pr_des: 1.7       # Design pressure ratio                     | nondim
+  bypass: 2.89      # Bypass ratio                              | nondim
+  e_c: 0.99         # Polytropic efficiency                     | nondim
+  httrr: 0.2        # Hub-to-tip radius ratio                   | nondim
+  deHaller: 0.72    # deHaller's criterion value                | nondim
+  min_Re: 300000    # Minimum blade Reynold's number            | nondim
+  alpha_1m: 30      # Inlet absolute flow angle                 | deg
+  Mz_1m: 0.45       # Inlet axial mach number                   | nondim
+  Mu_1t_max: 0.95   # Inlet tip maximum tangential mach number  | nondim
+  Wstream: 'FULL'
+
+NOZ_BYP:
+  eta: 0.98         # Isentropic efficiency                     | nondim
+  design_mode: 'PERFECTLY_EXPANDED'
+  Wstream: 'BYPASS'
+
+LPC:
+  eta: 0.85         # Isentropic efficiency                     | nondim
+  pr_des: 2.6       # Design pressure ratio                     | nondim
+  e_c: 0.99         # Polytropic efficiency                     | nondim
+  httrr: 0.2        # Hub-to-tip radius ratio                   | nondim
+  deHaller: 0.72    # deHaller's criterion value                | nondim
+  min_Re: 300000    # Minimum blade Reynold's number            | nondim
+  alpha_1m: 30      # Inlet absolute flow angle                 | deg
+  Mz_1m: 0.45       # Inlet axial mach number                   | nondim
+  Mu_1t_max: 0.95   # Inlet tip maximum tangential mach number  | nondim
+  Wstream: 'CORE'
+
+HPC:
+  eta: 0.85         # Isentropic efficiency                     | nondim
+  pr_des: 5         # Design pressure ratio                     | nondim
+  Wstream: 'CORE'
+
+BURNER:
+  eta: 0.95         # Isentropic efficiency                     | nondim
+  pr_des: 1         # Design pressure ratio                     | nondim
+  LHV: 42800000     # Lower heating value of ExxonMobil Jet A   | J/kg
+  Wstream: 'CORE'
+  fuel: 'JET-A'
+  M_inlet: 0.1
+
+HPT:
+  eta: 0.92         # Isentropic efficiency                     | nondim
+  Wstream: 'CORE'
+
+LPT:
+  eta: 0.92         # Isentropic efficiency                     | nondim
+  Wstream: 'CORE'
+
+NOZ_COR:
+  eta: 0.98         # Isentropic efficiency                     | nondim
+  design_mode: 'PERFECTLY_EXPANDED'
+  Wstream: 'CORE'
+
+
+#---------------------------------------------------------------------------------#
+#                                  SHAFT CONFIG                                   #
+#---------------------------------------------------------------------------------#
+LPS:
+  eta_mech: 0.98    # Mechanical efficiency                     | nondim
+HPS:
+  eta_mech: 0.98    # Mechanical efficiency                     | nondim
