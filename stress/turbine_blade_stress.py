@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 
 
 # finds area of shape from a set of points using shoelace theorem
-def contour_area(pts):
+def contourArea(pts):
     x, y = zip(*pts)
     return 0.5 * np.abs(np.dot(x, np.roll(y, -1)) - np.dot(y, np.roll(x, -1)))
 
@@ -23,10 +23,10 @@ def stress_centrifugal(slices, rpm, rho):
     areas = []
     # separate into radii and areas for each slice
     for slice in slices:
-        areas.append(contour_area(slice[0]))
+        areas.append(contourArea(slice[0]))
         radii.append(slice[1])
     w = rpm * 2 * np.pi / 60  # rad/s
-    a_h = contour_area(slices[0][0])  # area of hub
+    a_h = contourArea(slices[0][0])  # area of hub
     integrand = [A * r for A, r in zip(areas, radii)]  # according to farokhi 10.101
     return 1 / a_h * rho * w ** 2 * np.trapezoid(integrand, radii) * 1e-6  # also farokhi 10.101, in MPa
 
@@ -46,7 +46,7 @@ def uniform_stress_gas_bending(slice, mfr, v_in, v_out, n_b, l):
 def blade_slice_properties(slice):
     pts = np.asarray(slice, dtype=float)
     x, y = pts[:, 0], pts[:, 1]  # separate into pts array
-    area = contour_area(slice)  # get area of slice
+    area = contourArea(slice)  # get area of slice
     x0, y0 = x[:-1], y[:-1]  # first pt
     x1, y1, = x[1:], y[1:]  # last pt
     cross = x0 * y1 - x1 * y0  # cross product
