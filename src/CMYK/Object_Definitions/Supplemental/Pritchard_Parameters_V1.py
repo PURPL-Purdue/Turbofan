@@ -14,6 +14,7 @@ beta1, beta2 in Aungier's (tangential) convention by default and converts
 internally for the stagger fit:  beta_axial = 90 - beta_tangential.
 Pass angle_ref="axial" if your inputs are measured from axial.
 """
+# TODO: Fix erroneous outputs
 
 import math
 import warnings
