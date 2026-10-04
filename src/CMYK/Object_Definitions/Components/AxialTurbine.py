@@ -6,6 +6,7 @@ from Supplemental.Turbine import MAGENTA as mag
 import numpy as np
 import math as m
 import sympy
+import AxialCompressor
 
 class AxialTurbine(Turbine):
 
@@ -60,7 +61,6 @@ class AxialTurbine(Turbine):
         eta_mech = self.Shaft.eta_mech
         h01 = self.FlowIn.h0
         s1 = self.FlowIn.s
-
         # POWER BALANCE ----------------------------------
         self.Shaft.calc_consumer_specific_required_power()
         specific_req_power = self.Shaft.specific_required_power
@@ -80,6 +80,14 @@ class AxialTurbine(Turbine):
         )
 
     def MAGENTA(self) -> None:
+        '''
+        Notes/TODO
+        - For power matching, the final decision as to whether we increase meanline radius for all stages at once, linearly per stage, or both, is still to be decided.
+        Right now it does both, leading to the kind of wacky geometry that is output.
+        - Might want to consider using an iterative approach to switch to having a constant hub radius model for the annulus geometry
+        - Finish annulus sizing/spanwise analysis of the turbine by implementing radial equilibrium.
+        '''
+
         gamma   = self.FlowIn.gamma0
         Cp      = self.FlowIn.Cp0
         R       = self.FlowIn.R
@@ -102,12 +110,9 @@ class AxialTurbine(Turbine):
 
         # ================= OLD CODE VARIABLE INPUTS =================
 
-        rpm             = params.RPM        # RPM
+        rpm             = params.RPM        # RPM          TODO get rpm/ang_vel from HPC
 
-        T0_2            = params.T0_2comp   # Compressor inlet total temp
-        T0_3            = params.T0_3comp   # Compressor outlet total temp
-
-        r_mean_i        = params.r_mean_i   # Inlet pitchline radius, meters
+        r_mean_i        = params.r_mean_i   # Inlet pitchline radius, meters    TODO get new formulation for r_mean_i (originally comes from LPC)
 
         m_dot_cool      = params.m_dot_cool # Cooling air bleedoff mass flow, kg/s
         T0_cool         = params.T0_cool    # Cooling air temperature, kelvin
@@ -117,10 +122,7 @@ class AxialTurbine(Turbine):
 
         # ================= END OLD CODE VARIABLE INPUTS =================
         
-        r_mean = r_mean_i
-
         ang_vel = rpm * 2*np.pi / 60 # Angular velocity, rad/s
-
 
         # Old code power calculations :
         # removed since power is now calculated by shaft
