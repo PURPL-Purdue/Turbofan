@@ -22,7 +22,7 @@ def Fan_Sizing(params):
     '''
     pass
 
-def Axial_Compressor_Sizing(params):
+def Sizing(params):
     gamma           = params.gamma
     Cp              = params.Cp_cLP
     T0_1m           = params.T0_1
@@ -109,7 +109,7 @@ def Axial_Compressor_Sizing(params):
 
         # Station 2 stuff
         U_2m = U_1m        # Initial Approximation, true if we adjust both hub and shroud
-        z_2m = z_1m        # Design chioce
+        z_2m = z_1m        # Design choice
 
         W_2m = W_1m*deHaller      # De Haller
         beta_2m = np.acos(z_2m/W_2m)
@@ -223,29 +223,48 @@ def Axial_Compressor_Sizing(params):
     '''
     Blade Design
 
-    Places to look and get started:
-    Start by reading through Farokhi 8.14 and 8.14.1. I want us to implement as much of the stuff listed in 8.14 as possible.
-    A lot of it already is included in the code, so please first try to fully understand what is already here before adding new stuff.
-    Notable things I would like you to include in your section on blade design include:
-    - 1D blade root stress calcs and the blade taper calcs [5-7]
-    - 1D Bending stress calcs [15]
-    - Subsonic blade geometry generation [Section 8.14.1]
-        - I know this section is very cursory and not very in-depth. I would like us to focus on just subsonic blades for now, which ig the book
+    Assignee(s): Josie and Nishan
+
+    Intro/Objective
+        Sizing of the compressor blade main dimensions and generation of the compressor blade geometry. Also includes determinatinon of blade taper ratios and includes a calculation of
+        blade root and bending stresses. The intent is for these blade stress functions to act as a quick automatic check during the compressor sizing process to make sure that the
+        blades are structurally sound.
+
+    Resources:
+    - Farokhi 8.14 (blade stress)
+        - I want us to implement as much of the stuff listed in 8.14 as possible.
+        - A lot of it already is included in the code, so please first try to fully understand what is already here before adding new stuff.
+        - This section has a cursory introduction to simple blade stress calculations. Let me know if it's not enough and you want more stuff to read into.
+    - Farokhi 8.14.1 (blade design)
+        - I know this section of the book is very surface level and not very in-depth. I would like us to focus on just subsonic blades for now, which ig the book
           only has like one sentence about, and it just talks about NACA-65. This lack of detail is understandable given the intent of the book,
-          but is unfortunate regardless, so I would you like to do some additional reading into compressor blade design. Please go to the reading
-          folder of the turbojet Google Drive, find "Axial Compressor Book" (also by le goat Aungier lmao) and read Chapter 4. Before you start
-          implementing blade geometry code, please talk to me first and explain what approach you have chosen and why, as well as what your plan is.
+          but is unfortunate regardless, so I would you like to do some additional reading into compressor blade design outside of this book.
+    - Aungier, Axial Compressor Design, Chapter 4 (blade design)
+        - Go to the reading folder of the turbojet Google Drive, find "Axial Compressor Book"
+        - This chapter has a lot more detail about blade geometry design, and I encourage you to read all of it before choosing a path to go down
+        - Before you start implementing blade geometry code, please talk to me first and explain what approach you have chosen and why, as well as what your plan is.
     
-    Please start with the 1D blade root stress and bending stress calcs, as it should be an easier, more introductory gateway into the whole sizing code.
+    Note: As of now, the task list only reflects current actionable items for blade stress stuff
+    Direct Tasks 
+    - 1D blade root stress calcs and the blade taper calcs (Points 5-7 in Farokhi 8.14)     | Josie
+    - 1D Bending stress calcs (Points 5-7 in Farokhi 8.14)                                  | Nishan
+    
+    Note 1: Please start with the 1D blade root stress and bending stress calcs, as it should be an easier, more introductory gateway into the whole sizing code.
     I would encourage the use of separate functions for the blade root stress and bending stress calculations. I've already put definitions for them in
     HELP_Compressor, though feel free to add more if it works better.
 
-    The stuff on the lines below until line 260 are the very beginnings of blade design I put in way at the beginning. You might see some familiar things
-    that are mentioned in the numbered list in Farokhi 8.14, and that's cuz that's where I got them from.
+    Note 2: The stuff on the lines below until the long line of dashes are the very beginnings of blade design I put into the code a long time ago. You might see some familiar things
+    that are mentioned in the numbered list in Farokhi 8.14, and that's cuz the book is where I got these numbers from.
 
-    Whatever you end up doing in this code, please try to keep other existing work as unmodified as possible, and if you do end up changing things, that's ok,
-    just please communicate with whoever wrote it first before making big changes. That said, feel free to mess with whatever is in here until Line 260 as you wish,
+    Note 3: Whatever you end up doing in this code, please try to keep other existing work above and below this little chunk as unmodified as possible, and if you do end up changing things, that's ok,
+    just please communicate with whoever wrote it first before making big changes. That said, feel free to mess with whatever is in here until the dashed lined as you wish,
     with the exception of the three lines labeled PLEASE DON'T TOUCH.
+
+    Reminders:
+        - If you have helper functions (I'm guessing there will be some), put add them to HELP_Axial_Compressor,py, which can be found in the Compressor folder. It doesn't really matter where you put them, ig just add them to the end of the file
+        - One input, one output
+        - If you're ever stuck, try asking the other people working on this for help first, and if this doesn't work out, please don't hesitate to talk to me so that we can figure something out
+        - AI should not be generating code that ends up in this repository. Please don't do it, or I'll just give your task to someone else who actually wants to learn.
     '''
     some_output = HELP_Axial_Compressor.Blade_Root_Stress()
     some_output = HELP_Axial_Compressor.Blade_Bending_Stress()
@@ -460,7 +479,7 @@ def Nozzle_Sizing(params):
     # T0_5          | Stagnation temperature at stage 5
     # P0_5          | Stagnation pressure at stage 5
     # T0_15         | Stagnation temperature at stage 15
-    # P0_15         | Stagnation pressure at stage 15    
+    # P0_15         | Stagnation pressure at stage 15
     # P_a           | Ambient pressure
     # T_a           | Ambient temperature
     # gamma_n       | Specific heat ratio of nozzle
@@ -468,11 +487,11 @@ def Nozzle_Sizing(params):
     # gamma_fn      | Specific heat ratio of fan nozzle
     # eta_fn        | Fan nozzle efficiency
     # ======== OUTPUTS ========
-    # V_e_c         | Core exit velocity 
+    # V_e_c         | Core exit velocity
     # M_e_c         | Core exit mach
     # A_e_c         | Core exit area
     # V_e_b         | Bypass exit velocity
-    # M_e_b         | Bypass exit mach 
+    # M_e_b         | Bypass exit mach
     # A_e_c         | Bypass exit area
 
     # INPUTS
@@ -482,8 +501,8 @@ def Nozzle_Sizing(params):
     P0_5            = params.P05
     T0_15           = params.T015
     P0_15           = params.P015
-    T_a             = params.T_a 
-    P_a             = params.P_a   
+    T_a             = params.T_a
+    P_a             = params.P_a
     gamma_n         = params.gamma_n
     gamma_fn        = params.gamma_fn
     eta_n           = params.eta_n
@@ -492,14 +511,14 @@ def Nozzle_Sizing(params):
     R = 287   # Specific gas constant for air [J/(kg*K)]     | TODO: ACCOUNT FOR COMBUSTION PRODUCTS
 
     # Check if choked
-    if (P_a / P0_5) < (2 / (gamma_n+1))**(gamma_n/(gamma_n - 1)):     
+    if (P_a / P0_5) < (2 / (gamma_n+1))**(gamma_n/(gamma_n - 1)):
         # Choked flow -> C-D nozzle
         # Mach 9 iterated using Newton-Rhapson Method
         # until nozzle is perfectly expanded
         M_guess1 = 2
         M_guess2 = 1.2
-        while abs(M_diff) > 0.001:  
-            P_guess1 = P0_5 * REF_AEQ.P_P0(gamma_n, M_guess1) - P_a 
+        while abs(M_diff) > 0.001:
+            P_guess1 = P0_5 * REF_AEQ.P_P0(gamma_n, M_guess1) - P_a
             P_guess2 = P0_5 * REF_AEQ.P_P0(gamma_n, M_guess2) - P_a
 
             M_new -= P_guess2*(M_guess2 - M_guess1)/(P_guess2 - P_guess1)
@@ -507,8 +526,8 @@ def Nozzle_Sizing(params):
             M_guess2 = M_new
             M_diff = M_guess2 - M_guess1
 
-        M_9 = M_guess2        
-    else:   
+        M_9 = M_guess2
+    else:
         # Unchoked flow -> converging nozzle
         M_9 = 0.9
 
@@ -534,11 +553,11 @@ def Nozzle_Sizing(params):
 
     N_OUT = REF_structs.Nozzle_OUT(
         exit_velocity_c,
-        exit_mach_c,             
-        exit_area_c,                     
-        exit_velocity_b,                  
-        exit_mach_b,                  
-        exit_area_b 
+        exit_mach_c,
+        exit_area_c,
+        exit_velocity_b,
+        exit_mach_b,
+        exit_area_b
     )
 
     return N_OUT
