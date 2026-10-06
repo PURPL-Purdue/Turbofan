@@ -4,9 +4,7 @@ from Base_Objects import Flow, VelocityTriangle
 from Run import helper_functions as hf 
 from Supplemental.Turbine import MAGENTA as mag
 import numpy as np
-import math as m
 import sympy
-import AxialCompressor
 
 class AxialTurbine(Turbine):
 
