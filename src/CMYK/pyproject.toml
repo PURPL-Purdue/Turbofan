@@ -10,7 +10,9 @@ dependencies = [
     "matplotlib>=3.11.0",
     "coolprop>=8.0.0",
     "pint>=0.25.3",
-    "pyyaml>=6.0.3"
+    "pyyaml>=6.0.3",
+    "scipy>=1.18.1",
+    "scipy-stubs~=1.18.1",
 ]
 
 [tool.pyfluids]
