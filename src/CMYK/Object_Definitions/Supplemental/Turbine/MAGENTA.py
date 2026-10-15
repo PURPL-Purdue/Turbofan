@@ -142,6 +142,8 @@ def Turbine_Stage_Pitchline(initial, Mc_2m, Mw_3Rm, alpha_1m, schrodinkler, T0_1
     # degR_m = 1 - (Ctheta_2m + Ctheta_3m)/(2*U_2m)     # Stage degree of reaction
 
     # ======== OUTPUT ========
+
+    # TODO change REF_structs out for velocity traingle instances
     velocityTriangle = REF_structs.FullVelTriInfo(
         C_1m, C_2m, C_3m,
         W_1m, W_2m, W_3m,
@@ -158,7 +160,8 @@ def Turbine_Stage_Pitchline(initial, Mc_2m, Mw_3Rm, alpha_1m, schrodinkler, T0_1
         alpha_1m, alpha_2m, alpha_3m,
         beta_1m,  beta_2m,  beta_3m
         )
-    
+
+    # TODO delete REF_structs and use AxialTurbine object instead
     turbineStageInfo = REF_structs.Turbine_Stage_Info(
         degR_m,
         power,
@@ -367,4 +370,5 @@ def pitchline_staging(initial, Mc_2m, Mw_3Rm, Mc_2m_default, Mw_3Rm_default, alp
     if initial:
         r_mean_vec = [r_mean_i for _ in range(0, num_stages)]
 
+    # TODO replace REF_structs, velocity triangle data already known, store the rest in AxialTurbine 
     return REF_structs.Turbine_Pitchline_Results(multistage_velocity_triangles, multistage_info, r_mean_vec, total_power_generated, excess_power_margin, num_stages_target)
