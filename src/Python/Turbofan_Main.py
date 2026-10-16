@@ -103,7 +103,7 @@ TF.turbine.HP.IN = REF_structs.Turbine_IN(
     TF.cycle.OUT.T0P0.S25.T0,       # T0_2comp          Compressor inlet total temp                         | K
     TF.cycle.OUT.T0P0.S3.T0,        # T0_3comp          Compressor outlet total temp                        | K
     TF.cycle.OUT.T0P0.S4.T0,        # T0_4m             Turbine inlet total temperature                     | K
-    TF.cycle.OUT.T0P0.S4.P0,        # P0_4m             Turbine inlet total pressure                        | Pa 
+    TF.cycle.OUT.T0P0.S4.P0,        # P0_4m             Turbine inlet total pressure                        | Pa
 
     TF.compressor.LP.OUT.r_mean_1,  # r_mean_i          Inlet pitchline radius                         | m
 
@@ -199,6 +199,25 @@ TF.turbine.LP.IN = REF_structs.Turbine_IN(
 )
 
 print(TF.turbine.HP.OUT.req_power/1e6)
+
+TF.nozzle.IN = REF_structs.Nozzle_IN(
+    TF.cycle.OUT.m_dot_core,        # mclear_dot_c           Core total mass flow TODO: add in fuel mass flow    | kg/s
+    TF.cycle.OUT.m_dot_bypass,      # m_dot_b           Bypass mass flow                                    | kg/s
+
+    TF.cycle.OUT.T0P0.S5.T0,        # T0_5              Turbine outlet total temperature                    | K
+    TF.cycle.OUT.T0P0.S5.P0,        # P0_5              Turbine outlet total pressure                       | Pa
+    TF.cycle.OUT.T0P0.S15.T0,       # T0_15             Bypass duct total temperature                       | K
+    TF.cycle.OUT.T0P0.S15.P0,       # P0_15             Bypass duct total pressure                          | Pa
+    TF.cycle.IN.T_0,                # P0_0m             Ambient total pressure                              | Pa
+    TF.cycle.IN.P_0,                # T0_0m             Ambient total temperature                           | K
+
+    TF.cycle.IN.gamma.n,            # gamma_n           Nozzle specific heat ratio                          | nondimensional
+    TF.cycle.IN.gamma.fn,           # gamma_fn          Fan nozzle specific heat ratio                      | nondimensional
+    TF.cycle.IN.eta.n,              # eta_n             Nozzle efficiency                                   | nondimensional
+    TF.cycle.IN.eta.fn,             # eta_fn            Fan nozzle efficiency                               | nondimensional
+)
+
+TF.nozzle.OUT = Component_Sizing.Nozzle_Sizing(TF.nozzle.IN)
 
 # TF.turbine.LP.OUT = Component_Sizing.Turbine.Sizing(TF.turbine.LP.IN)
 

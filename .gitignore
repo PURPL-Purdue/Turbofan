@@ -2,6 +2,7 @@
 # Python Core & Bytecode (Crucial)
 # ==========================================
 __pycache__/
+*.py[cod]
 *.pyc
 *.pyo
 *.pyd
