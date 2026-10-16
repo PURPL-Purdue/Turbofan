@@ -368,4 +368,5 @@ def pitchline_staging(initial, Mc_2m, Mw_3Rm, Mc_2m_default, Mw_3Rm_default, alp
     if initial:
         r_mean_vec = [r_mean_i for _ in range(0, num_stages)]
 
+    # TODO replace REF_structs, velocity triangle data already known, store the rest in AxialTurbine
     return Turbine_REF_structs.Turbine_Pitchline_Results(multistage_velocity_triangles, multistage_info, r_mean_vec, total_power_generated, excess_power_margin, num_stages_target)
