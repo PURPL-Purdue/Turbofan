@@ -1,4 +1,5 @@
-from Base_Objects import Flow, VelocityTriangle
+from Object_Definitions.Base_Objects import Flow, VelocityTriangle
+import Turbine_REF_structs
 from Run import helper_functions as hf
 import numpy as np
 import matplotlib as plt
@@ -142,7 +143,7 @@ def Turbine_Stage_Pitchline(initial, Mc_2m, Mw_3Rm, alpha_1m, schrodinkler, T0_1
     # degR_m = 1 - (Ctheta_2m + Ctheta_3m)/(2*U_2m)     # Stage degree of reaction
 
     # ======== OUTPUT ========
-    velocityTriangle = REF_structs.FullVelTriInfo(
+    velocityTriangle = Turbine_REF_structs.FullVelTriInfo(
         C_1m, C_2m, C_3m,
         W_1m, W_2m, W_3m,
         U_1m, U_2m, U_3m,
@@ -159,7 +160,7 @@ def Turbine_Stage_Pitchline(initial, Mc_2m, Mw_3Rm, alpha_1m, schrodinkler, T0_1
         beta_1m,  beta_2m,  beta_3m
         )
     
-    turbineStageInfo = REF_structs.Turbine_Stage_Info(
+    turbineStageInfo = Turbine_REF_structs.Turbine_Stage_Info(
         degR_m,
         power,
         T0_1m,
@@ -367,4 +368,4 @@ def pitchline_staging(initial, Mc_2m, Mw_3Rm, Mc_2m_default, Mw_3Rm_default, alp
     if initial:
         r_mean_vec = [r_mean_i for _ in range(0, num_stages)]
 
-    return REF_structs.Turbine_Pitchline_Results(multistage_velocity_triangles, multistage_info, r_mean_vec, total_power_generated, excess_power_margin, num_stages_target)
+    return Turbine_REF_structs.Turbine_Pitchline_Results(multistage_velocity_triangles, multistage_info, r_mean_vec, total_power_generated, excess_power_margin, num_stages_target)

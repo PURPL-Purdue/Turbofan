@@ -1,6 +1,6 @@
 from CoolProp.CoolProp import PropsSI
-from CMYK.Object_Definitions.Base_Objects import Turbine
-from Supplemental.Turbine import MAGENTA as mag
+from Object_Definitions.Base_Objects import Turbine
+from Object_Definitions.Supplemental.Turbine.MAGENTA import MAGENTA as mag
 import numpy as np
 
 class AxialTurbine(Turbine):
