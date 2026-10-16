@@ -1,6 +1,9 @@
-from CoolProp.CoolProp import PropsSI
+import CoolProp
+import numpy as np 
+import cea
 from CMYK.Run import helper_functions as hf
 from .VelocityTriangle import VelocityTriangle
+from CoolProp.CoolProp import PropsSI
 
 class Flow:
     def __init__(self, name: str) -> None:
@@ -39,7 +42,7 @@ class Flow:
         self.Wfactor = None
         self.Wstream = None
 
-    def setFlow(self, working_fluid: str = 'Air', FAR: float = 0, Wfactor: float = -9999, Wstream: str = 'N/A', **kwargs: float) -> None:
+    def setFlow(self, working_fluid: cea.Mixture = cea.Mixture(["Air"]), FAR: float = 0, Wfactor: float = -9999, Wstream: str = 'N/A', **kwargs: float) -> None:
         """
         Sets flow thermodynamic properties.
 
@@ -90,6 +93,7 @@ class Flow:
 
         # SET FLOW STATE ------------------------------------------------------------------------------------------------------------------------------------
         # At this point, the only two cases that could have made it here are 1) two valid properties or 2) two valid properties and a Mach number
+                
         prop1 = None
         prop2 = None
         if len(kwargs) == 1:
@@ -101,7 +105,10 @@ class Flow:
             prop1 = list(kwargs.keys())[0]
             prop2 = list(kwargs.keys())[1]
 
-        self.R = PropsSI('GAS_CONSTANT', working_fluid) / PropsSI('MOLAR_MASS', working_fluid)
+        CV = self.WF.calc_property(cea.FROZEN_CV, np.atleast_1d([1.0]), np.atleast_1d(kwargs["T"]))
+        CP = self.WF.calc_property(cea.FROZEN_CP, np.atleast_1d([1.0]), np.atleast_1d(kwargs["T"]))
+        self.R = CP - CV
+        print(self.R)
 
         if {prop1, prop2} == {'T0', 'P0'}:
             self.setFlowTotalTP(kwargs['T0'], kwargs['P0'])
@@ -117,31 +124,36 @@ class Flow:
                 self.calcMach()
 
     def setFlowTotalTP(self, T0: float, P0: float) -> None:
-        self.T0 = T0
-        self.P0 = P0
+        self.T0 = float(T0)
+        self.P0 = float(P0)
 
-        self.h0     = PropsSI('HMASS', 'T', T0, 'P', P0, self.WF)
+        self.h0     = self.WF.calc_property(cea.ENTHALPY, np.atleast_1d([1.0]), self.T0)
 
-        self.Cp0    = PropsSI('CPMASS', 'T', T0, 'P', P0, self.WF)
-        self.Cv0    = PropsSI('CVMASS', 'T', T0, 'P', P0, self.WF)
+        self.Cv0 = self.WF.calc_property(cea.FROZEN_CV, np.atleast_1d([1.0]), self.T0)
+        self.Cp0 = self.WF.calc_property(cea.FROZEN_CP, np.atleast_1d([1.0]), self.T0)
         self.gamma0 = self.Cp0 / self.Cv0
 
-        self.s      = PropsSI('SMASS', 'T', T0, 'P', P0, self.WF)
+        self.s      = self.WF.calc_property(cea.ENTROPY, np.atleast_1d([1.0]), self.T0, self.P0)
 
         self.totally_defined = True
 
     def setFlowStaticTP(self, T: float, P: float) -> None:
-        self.T = T
-        self.P = P
+        self.T = float(T)
+        self.P = float(P)
 
-        self.h      = PropsSI('HMASS', 'T', T, 'P', P, self.WF)
+        self.h     = self.WF.calc_property(cea.ENTHALPY, np.array([1.0]), self.T)
+        print(self.h)
+        self.h     = PropsSI('H', 'T', 298.15, 'P', 101325, "Air")
+        print(self.h)
+        
 
-        self.Cp     = PropsSI('CPMASS', 'T', T, 'P', P, self.WF)
-        self.Cv     = PropsSI('CVMASS', 'T', T, 'P', P, self.WF)
+        self.Cv = self.WF.calc_property(cea.FROZEN_CV, np.atleast_1d([1.0]), self.T)
+        self.Cp = self.WF.calc_property(cea.FROZEN_CP, np.atleast_1d([1.0]), self.T)
         self.gamma  = self.Cp / self.Cv
 
-        self.s      = PropsSI('SMASS', 'T', T, 'P', P, self.WF)
-        self.A      = PropsSI('A', 'T', T, 'P', P, self.WF)
+        self.s      = self.WF.calc_property(cea.ENTROPY, np.atleast_1d([1.0]), self.T, self.P)
+        self.A      = PropsSI('A', 'T', T, 'P', P, "Air")
+        print(self.A)
 
         self.statically_defined = True
 

@@ -37,41 +37,7 @@ def A_Astar(gamma: float, M: float) -> float:
     return ((gamma+1)/2) ** (-(gamma + 1)/(2*(gamma-1))) * ((1 + (gamma-1)/2*M**2) ** ((gamma + 1)/(2*(gamma-1)))) / M
 
 def Secant_Method(func, x0, x1, tol=1e-6, max_iter=100, args=()):
-    """
-    Find the root of `func` using a bracketed secant method.
-
-    Requires func(x0) and func(x1) to have opposite signs (i.e. x0 and x1
-    bracket a root). On each iteration, a secant step is attempted; if it
-    would fall outside the current bracket, a bisection step is used instead.
-    This guarantees the root estimate always stays inside the original
-    bracket, avoiding the classic secant-method failure mode of diverging
-    or converging to a spurious root outside the physically valid range.
-
-    Parameters
-    ----------
-    func : callable
-        Function of one variable (plus optional extra args) whose root is sought.
-    x0, x1 : float
-        Bracket endpoints. func(x0) and func(x1) must have opposite signs.
-    tol : float
-        Convergence tolerance on |f(x)|.
-    max_iter : int
-        Maximum number of iterations before giving up.
-    args : tuple
-        Extra positional arguments passed to func, i.e. func(x, *args).
-
-    Returns
-    -------
-    float
-        The converged root estimate.
-
-    Raises
-    ------
-    ValueError
-        If f(x0) and f(x1) do not have opposite signs (no bracketed root).
-    RuntimeError
-        If the method fails to converge within max_iter iterations.
-    """
+    """Find the root of `func` using a bracketed secant method"""
     f0 = func(x0, *args)
     f1 = func(x1, *args)
 
