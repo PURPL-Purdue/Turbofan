@@ -1,16 +1,22 @@
 from dataclasses import dataclass
 from scipy.optimize import minimize_scalar
+import Pritchard_Parameters_V1
 #import numpy as np
 
 from Object_Definitions.Supplemental.Turbine.YELLOW.Curve import *
 
-def YELLOW(R, Cx, Ct, zeta, beta_in, eps, R_LE, beta_out, R_TE, N_B, o):
-    params = getPritchardParams(R, Cx, Ct, zeta, beta_in, eps, R_LE, beta_out, R_TE, N_B, o, 0.5 * zeta)
+def YELLOW(R, beta_in, beta_out, N_B, mach_out):
+    params_dictionary, extra_params = Pritchard_Parameters_V1.get_pritchard_params(beta_in, beta_out, N_B, R, mach_out)
+    params_values = list(params_dictionary.values())
+    print(params_values)
+    params = getPritchardParams(*params_values, eps_out=None)
 
     params.eps_out = optimize_exit_wedge_angle(params)
-
+    print(params)
     Points = getPritchardPoints(params)
     X,Y = BuildBlade(Points)
+
+    return X, Y
 
 
 def getPritchardParams(R, Cx, Ct, zeta, beta_in, eps, R_LE, beta_out, R_TE, N_B, o, eps_out):
@@ -176,3 +182,5 @@ class PritchardParams:
     N_B: int # number of blades
     o: float # throat
     eps_out: float # exit wedge angle, NOT an independent parameter
+
+YELLOW(R=45, beta_in=64.4869, beta_out=-23.6712, N_B=29, mach_out=0.7)

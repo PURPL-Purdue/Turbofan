@@ -78,8 +78,8 @@ def solve_gauging(beta2, s, M2, tol=1e-8, max_iter=200):
 # ---------------------------------------------------------------------------
 # Main function
 # ---------------------------------------------------------------------------
-def pritchard_params(beta1, beta2, N, R, M2, *,
-                     R_LE=None, R_TE=None, wedge_in=None, ugt=None,
+def get_pritchard_params(beta1, beta2, N, R, M2, *,
+                     R_LE=None, R_TE=None, wedge_in=None, ugt=5,
                      angle_ref="tangential"):
     """
     beta1, beta2 : inlet / exit blade angles [deg]
@@ -143,14 +143,14 @@ def pritchard_params(beta1, beta2, N, R, M2, *,
         "R (radius)":               R,
         "Cx (axial chord)":         ACL,
         "Ct (tangential chord)":    TCL,
+        "unguided turning [deg]":   ugt,
         "beta_in [deg]":            beta1,
         "inlet half-wedge [deg]":   wedge_in,
-        "R_LE":                     R_LE,
+        "R_LE":                     abs(R_LE),
         "beta_out [deg]":           beta2,
-        "R_TE":                     R_TE,
+        "R_TE":                     abs(R_TE),
         "N (blades)":               N,
         "O (throat)":               O,
-        "unguided turning [deg]":   ugt,
     }
     extra = {
         "pitch s":                  s,
@@ -180,5 +180,5 @@ def print_results(pritchard, extra):
 if __name__ == "__main__":
     # Example stator: axial inlet (90 deg from tangential), exit 20 deg from
     # tangential (70 deg from axial), 30 blades, R = 0.05 m, M2 = 0.7
-    p, e = pritchard_params(beta1=45, beta2=-25, N=30, R=75, M2=0.7)
+    p, e = get_pritchard_params(beta1=0, beta2=-20, N=30, R=75, M2=0.7)
     print_results(p, e)

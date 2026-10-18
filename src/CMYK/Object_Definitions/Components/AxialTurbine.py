@@ -1,6 +1,7 @@
 from CoolProp.CoolProp import PropsSI
 from Object_Definitions.Base_Objects import Turbine
 from Object_Definitions.Supplemental.Turbine.MAGENTA import MAGENTA as mag
+from Object_Definitions.Supplemental.Stress import Stress
 import numpy as np
 
 class AxialTurbine(Turbine):
@@ -107,15 +108,16 @@ class AxialTurbine(Turbine):
         # TODO Finish finding values for old variables or delete unused ones
         # ================= OLD CODE VARIABLE INPUTS =================
 
-        rpm             = params.RPM        # RPM          TODO get rpm/ang_vel from 1d stress function for HPT
+        rpm             = Stress.get_max_rpm()        # RPM          TODO get rpm/ang_vel from 1d stress function for HPT
 
-        r_mean_i        = params.r_mean_i   # Inlet pitchline radius, meters    TODO get new formulation for r_mean_i (originally comes from LPC)
+        r_mean_i        = 0.075   # Inlet pitchline radius, meters    TODO get new formulation for r_mean_i (originally comes from LPC)
 
-        m_dot_cool      = params.m_dot_cool # Cooling air bleedoff mass flow, kg/s
-        T0_cool         = params.T0_cool    # Cooling air temperature, kelvin
-        P0_cool         = params.P0_cool    # Cooling air pressure, Pa
-
-        ep              = params.ep
+        # TODO: Verify if m_dot_cool, T0_cool, P0_cool, and ep are actually not needed
+        # m_dot_cool      = params.m_dot_cool # Cooling air bleedoff mass flow, kg/s
+        # T0_cool         = params.T0_cool    # Cooling air temperature, kelvin
+        # P0_cool         = params.P0_cool    # Cooling air pressure, Pa
+        #
+        # ep              = params.ep
 
         # ================= END OLD CODE VARIABLE INPUTS =================
         
@@ -234,3 +236,5 @@ class AxialTurbine(Turbine):
         )
 
         return
+
+    def YELLOW(self):
