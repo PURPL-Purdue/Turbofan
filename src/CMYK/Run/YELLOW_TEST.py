@@ -1,4 +1,4 @@
-from Object_Definitions.Supplemental.Turbine.YELLOW import YELLOW
+from Object_Definitions.Supplemental.Turbine.YELLOW.YELLOW import YELLOW
 
 R = 100
 Cx = 45

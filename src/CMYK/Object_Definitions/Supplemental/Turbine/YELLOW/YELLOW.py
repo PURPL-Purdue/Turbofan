@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from scipy.optimize import minimize_scalar
 #import numpy as np
 
-from ..Curve import *
+from Object_Definitions.Supplemental.Turbine.YELLOW.Curve import *
 
 def YELLOW(R, Cx, Ct, zeta, beta_in, eps, R_LE, beta_out, R_TE, N_B, o):
     params = getPritchardParams(R, Cx, Ct, zeta, beta_in, eps, R_LE, beta_out, R_TE, N_B, o, 0.5 * zeta)
