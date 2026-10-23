@@ -65,11 +65,25 @@ BURNER:
   M_inlet: 0.1
 
 HPT:
-  eta: 0.92         # Isentropic efficiency                     | nondim
+  eta: 0.92             # Isentropic efficiency                               | nondim
+  alpha_1m: 0.0         # alpha_1m                                            | radians
+  alpha_2m: 60          # alpha_2                                             | radians
+  Mc_2m: 1.1            # First stator nozzle Mach number, choked flow        | nondimensional
+  Mw_3Rm: 0.8           # First rotor relative exit Mach number               | nondimensional
+  Mc_2m_default: 0.964  # Subsequent stator nozzle Mach number, keep <1       | nondimensional
+  Mw_3Rm_default: 0.85  # Subsequent rotor relative exit Mach number          | nondimensional
+  degR_m: 0.5           # Stage degree of reaction                            | nondimensional                    
   Wstream: 'CORE'
 
 LPT:
-  eta: 0.92         # Isentropic efficiency                     | nondim
+  eta: 0.92             # Isentropic efficiency                               | nondim
+  alpha_1m: 0.0         # alpha_1m                                            | radians
+  alpha_2m: 60          # alpha_2                                             | radians
+  Mc_2m: 1.1            # First stator nozzle Mach number, choked flow        | nondimensional
+  Mw_3Rm: 0.8           # First rotor relative exit Mach number               | nondimensional
+  Mc_2m_default: 0.964  # Subsequent stator nozzle Mach number, keep <1       | nondimensional
+  Mw_3Rm_default: 0.85  # Subsequent rotor relative exit Mach number          | nondimensional
+  degR_m: 0.5           # Stage degree of reaction                            | nondimensional  
   Wstream: 'CORE'
 
 NOZ_COR:

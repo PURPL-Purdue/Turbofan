@@ -36,6 +36,9 @@ def A_Astar(gamma: float, M: float) -> float:
     """Calculates and returns A/Astar as per the isentropic state definition"""
     return ((gamma+1)/2) ** (-(gamma + 1)/(2*(gamma-1))) * ((1 + (gamma-1)/2*M**2) ** ((gamma + 1)/(2*(gamma-1)))) / M
 
+def sigXzweif(beta1, beta2):
+    return abs((2*np.cos(beta2))/np.cos(beta1) * np.sin(beta1-beta2))
+
 def Secant_Method(func, x0, x1, tol=1e-6, max_iter=100, args=()):
     """
     Find the root of `func` using a bracketed secant method.

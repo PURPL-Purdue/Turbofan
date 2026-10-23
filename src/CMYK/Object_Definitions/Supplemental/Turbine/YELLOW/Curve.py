@@ -28,16 +28,12 @@ class Curve(object):
 
         return self.curve
 
-
     def build_circularArc(self):
         P_0 = self.P_0
         P_2 = self.P_2
 
         self.endpoints = [P_0, P_2]
         self.curve = get_circularArc(P_0, P_2)
-
-
-
 
 class Point(object):
     """docstring for Point"""
@@ -94,7 +90,7 @@ def get_circularArc(P_0, P_2):
     R_c = get_arcRadius(P_0, P_c)
     (a1, a2) = get_theta_bounds(P_0, P_c, P_2)
 
-    if(a2<a1):
+    if(a2 < a1):
         a2 += 2 * math.pi
 
     t = np.linspace(a1, a2, 1000)

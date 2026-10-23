@@ -1,4 +1,4 @@
-from Object_Definitions.Supplemental.Turbine.YELLOW import YELLOW
+from Object_Definitions.Supplemental.Turbine.YELLOW.YELLOW import YELLOW
 
 R = 100
 Cx = 45
@@ -12,4 +12,4 @@ R_TE = 0.75
 N_B = 30
 o = 16
 
-YELLOW(R, Cx, Ct, zeta, beta_in, eps, R_LE, beta_out, R_TE, N_B, o)
+YELLOW(R=75, beta_in=90, beta_out=30, N_B=30, mach_out=0.7)
