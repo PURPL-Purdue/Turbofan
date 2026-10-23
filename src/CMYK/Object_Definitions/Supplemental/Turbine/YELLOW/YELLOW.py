@@ -1,18 +1,15 @@
 from dataclasses import dataclass
 from scipy.optimize import minimize_scalar
-import Pritchard_Parameters_V1
-#import numpy as np
+import Pritchard_Parameters
 
 from Object_Definitions.Supplemental.Turbine.YELLOW.Curve import *
 
 def YELLOW(R, beta_in, beta_out, N_B, mach_out):
-    params_dictionary, extra_params = Pritchard_Parameters_V1.get_pritchard_params(beta_in, beta_out, N_B, R, mach_out)
+    params_dictionary, extra_params = Pritchard_Parameters.get_pritchard_params(beta_in, beta_out, N_B, R, mach_out)
     params_values = list(params_dictionary.values())
-    print(params_values)
     params = getPritchardParams(*params_values, eps_out=None)
 
     params.eps_out = optimize_exit_wedge_angle(params)
-    print(params)
     Points = getPritchardPoints(params)
     X,Y = BuildBlade(Points)
 

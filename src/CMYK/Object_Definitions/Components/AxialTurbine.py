@@ -1,7 +1,9 @@
 from CoolProp.CoolProp import PropsSI
 from Object_Definitions.Base_Objects import Turbine
 from Object_Definitions.Supplemental.Turbine.MAGENTA import MAGENTA as mag
-from Object_Definitions.Supplemental.Stress import Stress
+from Object_Definitions.Supplemental.Turbine.YELLOW import YELLOW as yel
+from Object_Definitions.Base_Objects import BladeCoords
+from Object_Definitions.Supplemental.Turbine.MAGENTA import Stress
 import numpy as np
 
 class AxialTurbine(Turbine):
@@ -30,6 +32,13 @@ class AxialTurbine(Turbine):
 
         self.Wfactor = None
         self.Wstream = None
+
+        # -----------------------------------------------------
+        #          Used in YELLOW
+        # -----------------------------------------------------
+        self.pitchline_res = None
+        self.blade_profiles = None
+        self.N_Blades = 29 # Don't know if number of blades should be hardcoded or not
 
     def config(self) -> None:
         cfg = self.cfg[self.name]
@@ -226,6 +235,8 @@ class AxialTurbine(Turbine):
                 else:
                     degR_m -= 0.005
 
+        self.pitchline_res = pitchline_res
+
         mag.Turbine_Annulus_Sizing(
             pitchline_res.multistage_velocity_triangles,
             pitchline_res.multistage_info,
@@ -237,4 +248,47 @@ class AxialTurbine(Turbine):
 
         return
 
-    def YELLOW(self):
+    # TODO: Add comments and improve on OOP practices
+    def YELLOW(self) -> None:
+
+        vel_triangles = self.pitchline_res.multistage_velocity_triangles
+        stage_info = self.pitchline_res.multistage_info
+        r_mean_vec = self.pitchline_res.r_mean_vec
+
+        num_stages = self.pitchline_res.num_stages_target
+
+        self.blade_profiles = []
+
+        for i in range(num_stages):
+            vt = vel_triangles[i]
+            info = stage_info[i]
+
+            R_stator = r_mean_vec[i]
+            R_rotor = r_mean_vec[i]
+
+            stator_params = list([
+                R_stator,
+                vt.alpha_1m,  # Stator inlet angle
+                vt.alpha_2m,  # Stator exit angle
+                self.N_Blades,
+                info.Mc_2m  # Stator absolute exit Mach
+            ])
+
+            rotor_params = list([
+                R_rotor,
+                vt.beta_2m,  # Rotor relative inlet angle
+                vt.beta_3m,  # Rotor relative exit angle
+                self.N_Blades,
+                info.Mw_3Rm  # Rotor relative exit Mach
+            ])
+
+            stator_geom = yel.YELLOW(*stator_params)
+            rotor_geom = yel.YELLOW(*rotor_params)
+
+            self.blade_profiles.append({
+                'stage': i + 1,
+                'stator': stator_geom,
+                'rotor': rotor_geom
+            })
+
+        return
