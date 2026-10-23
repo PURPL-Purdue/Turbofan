@@ -3,10 +3,34 @@ revision = 3
 requires-python = ">=3.12"
 
 [[package]]
+name = "cea"
+version = "3.3.4"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "numpy" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/bf/58/6027521345f853b9f5ae87f9c6fcd672bc8b09b1e06178ab2dbfe1e133be/cea-3.3.4.tar.gz", hash = "sha256:6e744f3eb82b56f6034c2a571c0f5ec886622ebff3d8bad630ad0fd523be057f", size = 946667, upload-time = "2026-08-28T14:55:33.443Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/db/18/29d90602ed8b22f2c189f6235747a40b0f6bb60f988b5b4d2860add13180/cea-3.3.4-cp312-cp312-macosx_14_0_arm64.whl", hash = "sha256:b3e4b20756ba3236f4973e25f69122e9960745577af3b26654ea15ea014fe9fe", size = 2495906, upload-time = "2026-08-28T14:55:07.994Z" },
+    { url = "https://files.pythonhosted.org/packages/b7/dd/32985e4efdcb1757da6f1cafa21e9a2848fab49d6a45ae8346e00852fa06/cea-3.3.4-cp312-cp312-macosx_15_0_x86_64.whl", hash = "sha256:cb34d4618725ab66e1fbb4203d4ad15375cd6d6846c8ee89a24f2845e4b51046", size = 3241534, upload-time = "2026-08-28T14:55:10.711Z" },
+    { url = "https://files.pythonhosted.org/packages/10/b3/a61e6a97b6d505b2be0e3008346b7ef7062e9ed702e1c8bcc72ae49ae6ed/cea-3.3.4-cp312-cp312-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:9ec5bcb2badfd97699ac8184c8338b2e5e170ebba54b32453aa7e1c15840aa3a", size = 3181662, upload-time = "2026-08-28T14:55:12.839Z" },
+    { url = "https://files.pythonhosted.org/packages/fc/60/86d2d741a60a2f191cd7f3be83000884ae95e5017d525bbbfe3399a34b18/cea-3.3.4-cp312-cp312-win_amd64.whl", hash = "sha256:fb933db40a119289d7e4fca1fbfce479d7b2a6209312f650f3dc32639ad3dce9", size = 4409270, upload-time = "2026-08-28T14:55:14.89Z" },
+    { url = "https://files.pythonhosted.org/packages/d9/b2/ce065bac63da9c91660bacfa1d4c9ead5e593f1cd7df2b0ea925c3b00919/cea-3.3.4-cp313-cp313-macosx_14_0_arm64.whl", hash = "sha256:3f7fe39f30c30f3c03114a1eb9e712eedfb3bff885632114f3bad3251cf57fd9", size = 2492722, upload-time = "2026-08-28T14:55:16.888Z" },
+    { url = "https://files.pythonhosted.org/packages/79/57/0f8d510b9505664d61b06c9f81c9bc827422e120db9754f0b20f0c2708f4/cea-3.3.4-cp313-cp313-macosx_15_0_x86_64.whl", hash = "sha256:c1ec388ab6241ad93dca8d16ceea25b398a1f9af61adaace88dabe8e8df88e4f", size = 3244423, upload-time = "2026-08-28T14:55:18.851Z" },
+    { url = "https://files.pythonhosted.org/packages/98/a0/b7b5f6f216deac77f101cc8ee378cd84f032cf6aae0672cf921bd17f240a/cea-3.3.4-cp313-cp313-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:c9d08c0a00fcc642db5c86e9fae79d5553f4be2c9d1efb7944490c20345fb0be", size = 3187895, upload-time = "2026-08-28T14:55:21.067Z" },
+    { url = "https://files.pythonhosted.org/packages/f3/d1/a94831302af459a42ea0aaf7475420828033d37e5f10faaa16307bb4eb34/cea-3.3.4-cp313-cp313-win_amd64.whl", hash = "sha256:2bafff74d978a5e07fd89685e7a15c449a0e9cd62cceb6ec268403c9c79ec633", size = 4408973, upload-time = "2026-08-28T14:55:23.175Z" },
+    { url = "https://files.pythonhosted.org/packages/1a/97/3e9bd1fcf1fd190996a55b50e4aa4d2c56cc7e4c914bd802475e36ef2f53/cea-3.3.4-cp314-cp314-macosx_14_0_arm64.whl", hash = "sha256:894ce42a0e58587ff2a1bcb20f7f5fe04f546037a0b37a6ea255ff9adde5d575", size = 2495087, upload-time = "2026-08-28T14:55:25.355Z" },
+    { url = "https://files.pythonhosted.org/packages/fc/1b/8a84cb75882818431cd7fbe49a1a07e48d08cca6813057e053d473a3b128/cea-3.3.4-cp314-cp314-macosx_15_0_x86_64.whl", hash = "sha256:a6eda381946234dc521662d3a8e8e0964e8e8b62c8431cb5651308adf3b11307", size = 3245055, upload-time = "2026-08-28T14:55:27.549Z" },
+    { url = "https://files.pythonhosted.org/packages/04/1c/c8d22bc58b66940e195f97c53b98462e14e854b9168d7428564097c389aa/cea-3.3.4-cp314-cp314-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:f5a6397b78457c5cede543aaab4d3a2b1769abaaaa5c2515cae229fa5077def8", size = 3186263, upload-time = "2026-08-28T14:55:29.523Z" },
+    { url = "https://files.pythonhosted.org/packages/1b/ae/dc60d6560d22060e5de20a31ebdff2fcbcf2b26b053b0b44d828b57b29d8/cea-3.3.4-cp314-cp314-win_amd64.whl", hash = "sha256:b84da3e0c3caf4f03c31293d8714c81e25469f64a799ed73bcc22f0979acb906", size = 4515867, upload-time = "2026-08-28T14:55:31.614Z" },
+]
+
+[[package]]
 name = "cmyk"
 version = "0.1.0"
 source = { virtual = "." }
 dependencies = [
+    { name = "cea" },
     { name = "coolprop" },
     { name = "matplotlib" },
     { name = "numpy" },
@@ -18,6 +42,7 @@ dependencies = [
 
 [package.metadata]
 requires-dist = [
+    { name = "cea", specifier = ">=3.3.4" },
     { name = "coolprop", specifier = ">=8.0.0" },
     { name = "matplotlib", specifier = ">=3.11.0" },
     { name = "numpy", specifier = ">=2.5.1" },

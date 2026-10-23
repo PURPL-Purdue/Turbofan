@@ -171,7 +171,7 @@ class Flow:
         self.gamma_avg = (self.gamma0 + self.gamma) / 2
         self.M = hf.M_fromTT0(self.gamma, self.T, self.T0)
 
-    def copyFrom(self, target_station: Flow) -> None:
+    def copyFrom(self, target_station) -> None:
         self.__dict__.update({k: v for k, v in target_station.__dict__.items() if k != 'name'})
 
 

@@ -1,7 +1,7 @@
-DATE: 2026-09-09                                USER:    zheng817                                
-TIME: 01:23:11                                  VERSION: 0.1.0                                   
-ENGINE MODEL FILE:  Turbofan_001.py          -> C:\Users\zheng\OneDrive\Documentos\Purdue\Clubs\PURPL\Turbofan\GitHub\Turbofan\src\CMYK\Run\Turbofan_001.py
-ENGINE CONFIG FILE: Config_001.yaml          -> C:\Users\zheng\OneDrive\Documentos\Purdue\Clubs\PURPL\Turbofan\GitHub\Turbofan\src\CMYK\Config_Files\Config_001.yaml
+DATE: 2026-10-22                                USER:    aksan                                   
+TIME: 20:08:53                                  VERSION: 0.1.0                                   
+ENGINE MODEL FILE:  Turbofan_001.py          -> C:\Users\aksan\PycharmProjects\Turbofan\src\CMYK\Run\Turbofan_001.py
+ENGINE CONFIG FILE: Config_001.yaml          -> C:\Users\aksan\PycharmProjects\Turbofan\src\CMYK\Config_Files\Config_001.yaml
 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
                                         CYCLE ANALYSIS

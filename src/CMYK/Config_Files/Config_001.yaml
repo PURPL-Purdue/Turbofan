@@ -63,6 +63,7 @@ BURNER:
   Wstream: 'CORE'
   fuel: 'JET-A'
   M_inlet: 0.1
+  num_injectors: 7
 
 HPT:
   eta: 0.92         # Isentropic efficiency                     | nondim

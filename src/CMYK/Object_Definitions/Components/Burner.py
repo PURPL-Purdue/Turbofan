@@ -1,5 +1,6 @@
 from CoolProp.CoolProp import PropsSI
 from CMYK.Object_Definitions.Base_Objects import ComponentBase
+from Object_Definitions.Supplemental.Combustor import MAGENTA as mag
 import cea
 
 class Burner(ComponentBase):
@@ -33,6 +34,7 @@ class Burner(ComponentBase):
         self.LHV = cfg['LHV']
         self.pr = cfg['pr_des']
         self.T04 = self.cfg['CYCLE']['T0_4']
+        self.num_injectors = cfg['num_injectors']
 
 
     #-----------------------------------------------------
@@ -64,3 +66,11 @@ class Burner(ComponentBase):
             T0=T02, P0=P02, FAR=FAR,
             Wfactor=self.Wfactor, Wstream=self.Wstream
         )
+
+    def MAGENTA(self):
+
+        T3 = self.FlowIn.T
+        P3 = self.FlowIn.P
+
+
+
