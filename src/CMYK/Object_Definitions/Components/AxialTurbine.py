@@ -116,11 +116,6 @@ class AxialTurbine(Turbine):
 
         # TODO Finish finding values for old variables or delete unused ones
         # ================= OLD CODE VARIABLE INPUTS =================
-
-        rpm             = Stress.get_max_rpm()        # RPM          TODO get rpm/ang_vel from 1d stress function for HPT
-
-        r_mean_i        = 0.075   # Inlet pitchline radius, meters    TODO get new formulation for r_mean_i (originally comes from LPC)
-
         # TODO: Verify if m_dot_cool, T0_cool, P0_cool, and ep are actually not needed
         # m_dot_cool      = params.m_dot_cool # Cooling air bleedoff mass flow, kg/s
         # T0_cool         = params.T0_cool    # Cooling air temperature, kelvin
@@ -129,114 +124,150 @@ class AxialTurbine(Turbine):
         # ep              = params.ep
 
         # ================= END OLD CODE VARIABLE INPUTS =================
-        
-        ang_vel = rpm * 2*np.pi / 60 # Angular velocity, rad/s
 
-        # Old code power calculations :
-        # removed since power is now calculated by shaft
-        #
-        # ======== Whole Turbine Calcs (absolute station numbers) ========
-        #power_c = m_dot_c * Cp_c * (T0_3-T0_2)          # Power required by compressor          | TODO get exact power equation, this is just an approximation
-        #power_f = 0 if m_dot_f == None else m_dot_f * Cp_f * (T0_2-T0_15)
-        #req_power_t = power_c + power_f/eta_mech                          # Turbine power generation requirement  | Accounts for mechanical losses
+        # ================= VARIABLES FOR ITERATION =================
+        rpm_i = 15000  # initial RPM
+        max_passes = 10000 # arbitrary number for now TODO: Measure runtime of a single loop pass and update max_passes
+        rpm_derivative_lim = 0.001 # sets the secondary condition for when the loop iteration will stop
+        damping_factor = 0.5 # damping factor to prevent oscillation between small and large RPMs by the solver
 
-        # Old code something, not used at all later so commented out for now :
-        #
-        # Using symbolic equations to solve for the exit temperature of the whole turbine
-        #T0_5_cooled_sym = sympy.symbols("T0_5_cooled_sym")                                                                  # Creating symbolic variable
-        #eqn1 = sympy.Eq(m_dot_c * ((1-ep)*Cp_t*(T0_1m-T0_5_cooled_sym) + ep*Cp_c*(T0_cool-T0_5_cooled_sym)), req_power)     # Defining equation
-        #T0_5m_cooled = sympy.solve(eqn1, T0_5_cooled_sym)[0]                                                                # Solving
-        # Total temperature drop across entire turbine
-        #deltaT_total = T0_1m - T0_5m_cooled
+        # ======== Stress variables ========
+        # TODO: Verify which variables come from where
+        density = 8190  # inconel, kg/m^3
+        yield_stress = 800  # inconel, MPa
+        radius_hub = 0.05  # hub radius, m
+        mfr = 100  # mass flow rate, kg/s
+        v_in = 100  # velo air in, m/s
+        v_out = 500  # velo air out, m/s
+        n_b = self.N_Blades  # number of blades
+        start = 0.005  # start blade length, m
+        end = 0.05  # end blade length, m
+        num = 50  # num of test points
+        blade_length = # m
+
+        for i in range(max_passes):
+            # These variables need to be reinitialized between every pass TODO: Figure out if degreeR_m needs to changed after the initial pass
+            r_mean_i = 0.075 # Inlet pitchline radius, meters    TODO get new formulation for r_mean_i (originally comes from LPC)
+            ang_vel = rpm * 2 * np.pi / 60 # Angular velocity, rad/s
+            total_power_generated = 0
+            r_inc_factor = 0
+            degR_m = self.degR_m
+
+            # Old code power calculations :
+            # removed since power is now calculated by shaft
+            #
+            # ======== Whole Turbine Calcs (absolute station numbers) ========
+            #power_c = m_dot_c * Cp_c * (T0_3-T0_2)          # Power required by compressor
+            #power_f = 0 if m_dot_f == None else m_dot_f * Cp_f * (T0_2-T0_15)
+            #req_power_t = power_c + power_f/eta_mech                          # Turbine power generation requirement  | Accounts for mechanical losses
+
+            # Old code something, not used at all later so commented out for now :
+            #
+            # Using symbolic equations to solve for the exit temperature of the whole turbine
+            #T0_5_cooled_sym = sympy.symbols("T0_5_cooled_sym")                                                                  # Creating symbolic variable
+            #eqn1 = sympy.Eq(m_dot_c * ((1-ep)*Cp_t*(T0_1m-T0_5_cooled_sym) + ep*Cp_c*(T0_cool-T0_5_cooled_sym)), req_power)     # Defining equation
+            #T0_5m_cooled = sympy.solve(eqn1, T0_5_cooled_sym)[0]                                                                # Solving
+            # Total temperature drop across entire turbine
+            #deltaT_total = T0_1m - T0_5m_cooled
 
 
-        # ======== Pitchline Staging ========
-        # Setting up lists to contain staging data
+            # ======== Pitchline Staging ========
+            # Setting up lists to contain staging data
 
-        initial_pitchline_res = mag.pitchline_staging(
-            True,   # initial
-            Mc_2m,
-            Mw_3Rm,
-            Mc_2m_default,
-            Mw_3Rm_default,
-            alpha_1m,
-            alpha_2m,
-            T0_1m,
-            P0_1m,
-            r_mean_i,
-            ang_vel,
-            gamma,
-            R,
-            Cp,
-            m_dot,
-            degR_m,
-            req_power
-        )
+            initial_pitchline_res = mag.pitchline_staging(
+                True,   # initial
+                Mc_2m,
+                Mw_3Rm,
+                Mc_2m_default,
+                Mw_3Rm_default,
+                alpha_1m,
+                alpha_2m,
+                T0_1m,
+                P0_1m,
+                r_mean_i,
+                ang_vel,
+                gamma,
+                R,
+                Cp,
+                m_dot,
+                degR_m,
+                req_power
+            )
 
-        num_stages_target = initial_pitchline_res.num_stages_target
+            num_stages_target = initial_pitchline_res.num_stages_target
 
-        total_power_generated = 0
-        r_inc_factor = 0
+            if num_stages_target > 1:
+                while total_power_generated < req_power:
+                    pitchline_res = mag.pitchline_staging(
+                        False,   # initial
+                        Mc_2m,
+                        Mw_3Rm,
+                        Mc_2m_default,
+                        Mw_3Rm_default,
+                        alpha_1m,
+                        alpha_2m,
+                        T0_1m,
+                        P0_1m,
+                        r_mean_i,
+                        ang_vel,
+                        gamma,
+                        R,
+                        Cp,
+                        m_dot,
+                        degR_m,
+                        req_power,
+                        r_inc_factor = r_inc_factor,
+                        num_stages_target = num_stages_target
+                    )
+                    total_power_generated = pitchline_res.total_power_generated
+                    r_mean_i += 0.01
+                    r_inc_factor += 0.01
+            else:
+                percent_error = 5
+                while percent_error > 2 or percent_error < 0:
+                    pitchline_res = mag.pitchline_staging(
+                        False,   # initial
+                        Mc_2m,
+                        Mw_3Rm,
+                        Mc_2m_default,
+                        Mw_3Rm_default,
+                        alpha_1m,
+                        alpha_2m,
+                        T0_1m,
+                        P0_1m,
+                        r_mean_i,
+                        ang_vel,
+                        gamma,
+                        R,
+                        Cp,
+                        m_dot,
+                        degR_m,
+                        req_power,
+                        r_inc_factor = r_inc_factor,
+                        num_stages_target = num_stages_target
+                    )
+                    total_power_generated = pitchline_res.total_power_generated
+                    percent_error = (total_power_generated-req_power)/req_power * 100
+                    if percent_error < 0:
+                        degR_m += 0.005
+                    else:
+                        degR_m -= 0.005
 
-        if num_stages_target > 1:
-            while total_power_generated < req_power:
-                pitchline_res = mag.pitchline_staging(
-                    False,   # initial
-                    Mc_2m,
-                    Mw_3Rm,
-                    Mc_2m_default,
-                    Mw_3Rm_default,
-                    alpha_1m,
-                    alpha_2m,
-                    T0_1m,
-                    P0_1m,
-                    r_mean_i,
-                    ang_vel,
-                    gamma,
-                    R,
-                    Cp,
-                    m_dot,
-                    degR_m,
-                    req_power,
-                    r_inc_factor = r_inc_factor,
-                    num_stages_target = num_stages_target
-                )
-                total_power_generated = pitchline_res.total_power_generated
-                r_mean_i += 0.01
-                r_inc_factor += 0.01
-        else:
-            percent_error = 5
-            while percent_error > 2 or percent_error < 0:
-                pitchline_res = mag.pitchline_staging(
-                    False,   # initial
-                    Mc_2m,
-                    Mw_3Rm,
-                    Mc_2m_default,
-                    Mw_3Rm_default,
-                    alpha_1m,
-                    alpha_2m,
-                    T0_1m,
-                    P0_1m,
-                    r_mean_i,
-                    ang_vel,
-                    gamma,
-                    R,
-                    Cp,
-                    m_dot,
-                    degR_m,
-                    req_power,
-                    r_inc_factor = r_inc_factor,
-                    num_stages_target = num_stages_target
-                )
-                total_power_generated = pitchline_res.total_power_generated
-                percent_error = (total_power_generated-req_power)/req_power * 100
-                if percent_error < 0:
-                    degR_m += 0.005
-                else:
-                    degR_m -= 0.005
+            # ======== Preliminary mean line blade coord generation========
+            meanline_slice = YELLOW
+
+            # ======== Stress calculation ========
+
+            rpm_safety_factor = 0.85 # this is just a guess, change as needed
+            rpm = rpm_safety_factor * Stress.get_max_rpm(meanline_slice, density, yield_stress, radius_hub, mfr, v_in, v_out, n_b, blade_length)
+            rpm_derivative = abs(rpm - rpm_i) / rpm_i
+            if rpm_derivative > rpm_safety_factor < rpm_derivative_lim:
+                print(f"Converged at {float(rpm):.1f} RPM!")
+                break
+
+            rpm_i = (1.0 - damping_factor) * rpm_i + damping_factor * rpm
 
         self.pitchline_res = pitchline_res
-
         mag.Turbine_Annulus_Sizing(
             pitchline_res.multistage_velocity_triangles,
             pitchline_res.multistage_info,
@@ -250,6 +281,10 @@ class AxialTurbine(Turbine):
 
     # TODO: Add comments and improve on OOP practices
     def YELLOW(self) -> None:
+        """
+        After getting the final mean line velocity triangles from MAGENTA, use radial equilibrium function to get spanwise velocity triangles
+        :return: does note explicitly return anything but makes the whole 3D blade profile
+        """
 
         vel_triangles = self.pitchline_res.multistage_velocity_triangles
         stage_info = self.pitchline_res.multistage_info
