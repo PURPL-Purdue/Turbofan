@@ -2,6 +2,7 @@ import Turbine_REF_structs
 import helper_functions as hf
 import numpy as np
 import matplotlib.pyplot as plt
+import math
 
 # HELPER FUNCTIONS
 def Turbine_Stage_Pitchline(initial, Mc_2m, Mw_3Rm, alpha_1m, schrodinkler, T0_1m, P0_1m, r_mean, ang_vel, gamma_t, R_t, Cp_t, m_dot_t, degR_m, current_power, target_power):
@@ -215,8 +216,7 @@ def Turbine_Annulus_Sizing(triangles, info, m_dot_target, gamma, R, r_mean_vec):
     # TODO: add labels and titles
     # Plotting the hub and tip radii
     plt.plot(stations, r_tip_stations, 'k')
-    plt.plot(stations, r_hub_stations, 'k')
-    plt.show()
+    plt.plot(stations, r_hub_stations, 'k', label='Annulus')
 
 
     # Plotting the meanline
@@ -224,16 +224,19 @@ def Turbine_Annulus_Sizing(triangles, info, m_dot_target, gamma, R, r_mean_vec):
     r_mean_plot_stages.append(r_mean_plot_stages[-1]+2)
     r_mean_vec_plot = r_mean_vec
     r_mean_vec_plot.append(r_mean_vec[-1])
-    plt.plot(r_mean_plot_stages, r_mean_vec_plot, "--r")
+    plt.plot(r_mean_plot_stages, r_mean_vec_plot, "--r", label='Meanline')
 
     # Plotting the horizontal inlet radius line (to make the real meanline easier to see)
-    plt.hlines(r_mean_vec[0], 1, stations[-1], linestyles='--', colors='gray')
+    plt.hlines(r_mean_vec[0], 1, stations[-1], linestyles='--', colors='gray', label='Horizontal Inlet Radius')
+    plt.legend()
 
     # Mirrored
     plt.plot(stations, [-_ for _ in r_tip_stations], 'k')
     plt.plot(stations, [-_ for _ in r_hub_stations], 'k')
     plt.plot(r_mean_plot_stages, [-_ for _ in r_mean_vec_plot], "--r")
     plt.hlines(-r_mean_vec[0], 1, stations[-1], linestyles='--', colors='gray')
+    plt.show()
+
 
 
     # print(rho_m_stations)
@@ -252,14 +255,55 @@ def Turbine_Annulus_Sizing(triangles, info, m_dot_target, gamma, R, r_mean_vec):
     # Print relevant data
     print(f"Number of Stages    = {num_stages}")
     for i in range(0, num_stages):
-        print(f"Inner Radius (S{i})  = {r_hub_stations(i)}")
-        print(f"Outer Radius (S{i})  = {r_tip_stations(i)}")
-    
-    #print(f"U_2m       = {U_2m:.4f}")
-    #print(f"Ctheta_2m  = {Ctheta_2m:.4f}")
-    #print(f"Ctheta_3m  = {Ctheta_3m:.4f}")
-    #print(f"degR_m     = {degR_m:.4f}")
-    #print(f"m_dot_t    = {m_dot_t:.4f}")
+        print(f"Inner Radius (S{i})  = {r_hub_stations[i]:.6f} m")
+        print(f"Outer Radius (S{i})  = {r_tip_stations[i]:.6f} m")
+    for i in range(0, num_stages):
+        print(f"C_1m       = {triangles[i].C_1m:.3f} m/s")
+        print(f"C_2m       = {triangles[i].C_2m:.3f} m/s")
+        print(f"C_3m       = {triangles[i].C_3m:.3f} m/s")
+
+        print(f"W_1m       = {triangles[i].W_1m:.3f} m/s")
+        print(f"W_2m       = {triangles[i].W_2m:.3f} m/s")
+        print(f"W_3m       = {triangles[i].W_3m:.3f} m/s")
+
+        print(f"U_1m       = {triangles[i].U_1m:.3f} m/s")
+        print(f"U_2m       = {triangles[i].U_2m:.3f} m/s")
+        print(f"U_3m       = {triangles[i].U_3m:.3f} m/s")
+
+        print(f"z_1m       = {triangles[i].z_1m:.3f} m/s")
+        print(f"z_2m       = {triangles[i].z_2m:.3f} m/s")
+        print(f"z_3m       = {triangles[i].z_3m:.3f} m/s")
+
+        print(f"Mc_1m      = {triangles[i].Mc_1m:.3f}")
+        print(f"Mc_2m      = {triangles[i].Mc_2m:.3f}")
+        print(f"Mc_3m      = {triangles[i].Mc_3m:.3f}")
+
+        print(f"Mw_1m      = {triangles[i].Mw_1m:.3f}")
+        print(f"Mw_2m      = {triangles[i].Mw_2m:.3f}")
+        print(f"Mw_3m      = {triangles[i].Mw_3m:.3f}")
+
+        print(f"Mz_1m      = {triangles[i].Mz_1m:.3f}")
+        print(f"Mz_2m      = {triangles[i].Mz_2m:.3f}")
+        print(f"Mz_3m      = {triangles[i].Mz_3m:.3f}")
+
+        print(f"Ctheta_1m  = {triangles[i].Ctheta_1m:.3f} m/s")
+        print(f"Ctheta_2m  = {triangles[i].Ctheta_2m:.3f} m/s")
+        print(f"Ctheta_3m  = {triangles[i].Ctheta_3m:.3f} m/s")
+
+        print(f"Wtheta_1m  = {triangles[i].Wtheta_1m:.3f} m/s")
+        print(f"Wtheta_2m  = {triangles[i].Wtheta_2m:.3f} m/s")
+        print(f"Wtheta_3m  = {triangles[i].Wtheta_3m:.3f} m/s")
+
+        print(f"alpha_1m   = {math.degrees(triangles[i].alpha_1m):.3f} deg")
+        print(f"alpha_2m   = {math.degrees(triangles[i].alpha_2m):.3f} deg")
+        print(f"alpha_3m   = {math.degrees(triangles[i].alpha_3m):.3f} deg")
+
+        print(f"beta_1m    = {math.degrees(triangles[i].beta_1m):.3f} deg")
+        print(f"beta_2m    = {math.degrees(triangles[i].beta_2m):.3f} deg")
+        print(f"beta_3m    = {math.degrees(triangles[i].beta_3m):.3f} deg")
+
+        print("-" * 40)
+
 
 def annulus_adjust(T0, P0, R, gamma, m_dot, z, Mc, r_mean):
         T = T0 * hf.T_T0(gamma, Mc) # | spanwise constant (design choice i think)
