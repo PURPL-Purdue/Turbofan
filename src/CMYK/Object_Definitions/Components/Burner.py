@@ -1,3 +1,5 @@
+from typing import cast
+
 from CoolProp.CoolProp import PropsSI
 from CMYK.Object_Definitions.Base_Objects import ComponentBase
 from Object_Definitions.Supplemental.Combustor import MAGENTA as mag
@@ -22,6 +24,7 @@ class Burner(ComponentBase):
         self.FAR = None
         self.T04 = None
         self.pr = None
+        self.turbine_diameter = None # Diameter of the turbine for sizing purposes (m)
 
         self.Wfactor = None
         self.Wstream = None
@@ -71,6 +74,33 @@ class Burner(ComponentBase):
 
         T3 = self.FlowIn.T
         P3 = self.FlowIn.P
+        m = self.FlowIn.W
+        turbine_size = self.turbine_diameter
+
+        dp34 = (0.06 * P3) * 101325
+        qref = dp34 / 20
+
+        reference_area = mag.mm_aref_equation_1(T3, P3,dp34, qref,m)
+        reference_diameter = mag.mm_dref_equation(reference_area)
+        axial_length_ann = mag.mm_length_calculation(reference_diameter)
+
+        combustor_area = 0.7 * reference_area
+        combustor_diameter = 0.7 * reference_diameter
+
+        outer_diameter_casing = mag.outer_diameter_reverse_flow(turbine_size, reference_area)
+        outer_diameter_flame_tube = mag.outer_diameter_reverse_flow(turbine_size, combustor_area)
+
+        with open ("combustor_geo_outputs", "w") as f:
+            f.write(mag.format_values(outer_diameter_casing,axial_length_ann,reference_area))
+
+
+
+
+
+
+
+
+
 
 
 

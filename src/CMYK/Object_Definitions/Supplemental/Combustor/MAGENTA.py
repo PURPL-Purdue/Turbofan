@@ -63,3 +63,30 @@ def mm_length_calculation(dref):
     dilution_zone_length = 1.3 * dref
     calculation = primary_zone_length + secondary_zone_length + dilution_zone_length
     return calculation
+
+def outer_diameter_reverse_flow(turbine_diameter, reference_area):
+    """
+    Calculates the outer diameter (R) of the combustor given the interior diameter of the sum turbine components (assuming perfect geometry)
+    :param turbine_diameter: Diameter of the turbine components (m)
+    :param reference_area: Reference area (m^2)
+    :return: Outer Diameter (R) of the casing of the combustor
+    """
+    outer_diameter = ((reference_area / math.pi) + (turbine_diameter ** 2)) ** 0.5
+    return outer_diameter
+
+def format_values(outer_diameter, axial_length, reference_area):
+    """
+    Format the output values ( TEMP )
+    :param outer_diameter: Outer diameter of the combustor (m)
+    :param axial_length: Length of the combustor (m)
+    :param reference_area: Reference Area (m^2)
+    :return: String of the combined inputs.
+    """
+    outer_diameter = str(f'{outer_diameter:.2f}')
+    axial_length = str(f'{axial_length:.2f}')
+    reference_area = str(f'{reference_area:.2f}')
+    bar = "----------------------------------------------------------"
+
+    end_string = bar + "\n" + "Axial Length: " + axial_length + "\n" + "Reference Area: " + reference_area + "\n" + "Outer Diameter: " + outer_diameter + "\n" + bar
+
+    return end_string
