@@ -83,6 +83,24 @@ def get_max_rpm(slice, rho, stress_yield, r_b, mfr, v_in, v_out, n_b, b_l):
             break
     return rpm
 
+def get_max_rpm_light(rho_mat, stress_yield, r_mean, blade_length) -> float:
+    """
+    Calculates the maximum rpm analytically from the simple stress formula:
+    sigma = F / A = 0.5 * rho * l * (2r_hub * l) * omega^2
+
+    :param rho_mat: density of blade material (g/cm^3)
+    :param stress_yield: yield stress of blade material (mPa)
+    :param r_mean: radius of mean line blade slice (m)
+    :param blade_length: length of blade (m)
+    :return: maximum rpm (factoring in missing gas bending)
+    """
+    # Use 90% of yield stress to safely account for missing gas bending
+    allowable_stress_pa = 0.9 * (stress_yield * 1e6)
+
+    omega_max = np.sqrt(allowable_stress_pa / (rho_mat * blade_length * r_mean))
+    max_rpm = omega_max * 60.0 / (2.0 * np.pi)
+
+    return max_rpm
 
 # useful plot function
 # stress vs length of constant blade area

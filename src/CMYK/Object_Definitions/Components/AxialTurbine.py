@@ -92,15 +92,18 @@ class AxialTurbine(Turbine):
         - Might want to consider using an iterative approach to switch to having a constant hub radius model for the annulus geometry
         - Finish annulus sizing/spanwise analysis of the turbine by implementing radial equilibrium.
         '''
-
+        # First stage stater is chosen by us based on previus stuff
+        # Max rpm will be based on first stage, where it is the hottest
         gamma   = self.FlowIn.gamma0
         Cp      = self.FlowIn.Cp0
         R       = self.FlowIn.R
-        T0_1m   = self.FlowIn.T0        # Turbine inlet total temperature, K
-        P0_1m   = self.FlowIn.P0        # Turbine inlet total pressure,    Pa 
+        T0_1m   = self.FlowIn.T0        # HPT inlet total temperature, K
+        P0_1m   = self.FlowIn.P0        # HPT inlet total pressure,    Pa
         m_dot   = self.FlowIn.W         # Turbine total mass flow, kg/s, air plus fuel
 
-        req_power = self.Shaft.required_power
+        # TODO: Get actual required power by HPC and LPC
+        req_power_HPT = self.Shaft.required_power
+        req_power_LPT = self.Shaft.required_power
 
         # First stage design decisions
         alpha_1m        = self.alpha_1m
@@ -111,95 +114,108 @@ class AxialTurbine(Turbine):
         # Multistage design decisions
         Mc_2m_default   = self.Mc_2m_default              # Just barely not choking the flow at stator nozzle exit
         Mw_3Rm_default  = self.Mw_3Rm_default             # TODO find justification for this
-        degR_m          = self.degR_m
 
-
-        # TODO Finish finding values for old variables or delete unused ones
-        # ================= OLD CODE VARIABLE INPUTS =================
-        # TODO: Verify if m_dot_cool, T0_cool, P0_cool, and ep are actually not needed
-        # m_dot_cool      = params.m_dot_cool # Cooling air bleedoff mass flow, kg/s
-        # T0_cool         = params.T0_cool    # Cooling air temperature, kelvin
-        # P0_cool         = params.P0_cool    # Cooling air pressure, Pa
-        #
-        # ep              = params.ep
-
-        # ================= END OLD CODE VARIABLE INPUTS =================
 
         # ================= VARIABLES FOR ITERATION =================
-        rpm_i = 15000  # initial RPM
-        max_passes = 10000 # arbitrary number for now TODO: Measure runtime of a single loop pass and update max_passes
-        rpm_derivative_lim = 0.001 # sets the secondary condition for when the loop iteration will stop
-        damping_factor = 0.5 # damping factor to prevent oscillation between small and large RPMs by the solver
-
+        max_passes = 100
+        rpm_derivative_lim = 0.001  # 0.1% relative convergence tolerance
+        damping_factor = 0.5
+        rpm_safety_factor = 0.85  # Operating RPM = 85% of max structural RPM
         # ======== Stress variables ========
-        # TODO: Verify which variables come from where
-        density = 8190  # inconel, kg/m^3
-        yield_stress = 800  # inconel, MPa
-        radius_hub = 0.05  # hub radius, m
-        mfr = 100  # mass flow rate, kg/s
-        v_in = 100  # velo air in, m/s
-        v_out = 500  # velo air out, m/s
-        n_b = self.N_Blades  # number of blades
-        start = 0.005  # start blade length, m
-        end = 0.05  # end blade length, m
-        num = 50  # num of test points
-        blade_length = # m
+        r_mean_inlet = 0.075  # HPT inlet mean radius, m
+        rho_mat = 8190.0  # Inconel density, kg/m^3
+        yield_stress_mpa = 800.0  # Inconel yield stress, MPa
 
+        # -----------------------------------------------------
+        #  PART 1: HIGH-PRESSURE TURBINE (HPT) - 1-Stage Loop
+        # -----------------------------------------------------
+        rpm_HPT = 15000  # Initial RPM for HPT
+        # implement
         for i in range(max_passes):
             # These variables need to be reinitialized between every pass TODO: Figure out if degreeR_m needs to changed after the initial pass
-            r_mean_i = 0.075 # Inlet pitchline radius, meters    TODO get new formulation for r_mean_i (originally comes from LPC)
-            ang_vel = rpm * 2 * np.pi / 60 # Angular velocity, rad/s
-            total_power_generated = 0
-            r_inc_factor = 0
-            degR_m = self.degR_m
+            ang_vel_HPT = rpm_HPT * 2 * np.pi / 60 # Angular velocity, rad/s
+            degR_HPT = self.degR_m
+            r_mean_HPT = r_mean_inlet
 
-            # Old code power calculations :
-            # removed since power is now calculated by shaft
-            #
-            # ======== Whole Turbine Calcs (absolute station numbers) ========
-            #power_c = m_dot_c * Cp_c * (T0_3-T0_2)          # Power required by compressor
-            #power_f = 0 if m_dot_f == None else m_dot_f * Cp_f * (T0_2-T0_15)
-            #req_power_t = power_c + power_f/eta_mech                          # Turbine power generation requirement  | Accounts for mechanical losses
+            percent_error = 5
+            while percent_error > 2 or percent_error < 0:
+                hpt_res = mag.pitchline_staging(
+                    False,  # initial
+                    Mc_2m,
+                    Mw_3Rm,
+                    Mc_2m_default,
+                    Mw_3Rm_default,
+                    alpha_1m,
+                    alpha_2m,
+                    T0_1m,
+                    P0_1m,
+                    r_mean_HPT,
+                    ang_vel_HPT,
+                    gamma,
+                    R,
+                    Cp,
+                    m_dot,
+                    degR_HPT,
+                    req_power_HPT,
+                    r_inc_factor=0.0,
+                    num_stages_target=1 # HPT has 1 stage per the design decision
+                )
+                total_power_HPT = hpt_res.total_power_generated
+                percent_error = (total_power_HPT - req_power_HPT) / req_power_HPT * 100
+                if percent_error < 0:
+                    degR_HPT += 0.005
+                else:
+                    degR_HPT -= 0.005
 
-            # Old code something, not used at all later so commented out for now :
-            #
-            # Using symbolic equations to solve for the exit temperature of the whole turbine
-            #T0_5_cooled_sym = sympy.symbols("T0_5_cooled_sym")                                                                  # Creating symbolic variable
-            #eqn1 = sympy.Eq(m_dot_c * ((1-ep)*Cp_t*(T0_1m-T0_5_cooled_sym) + ep*Cp_c*(T0_cool-T0_5_cooled_sym)), req_power)     # Defining equation
-            #T0_5m_cooled = sympy.solve(eqn1, T0_5_cooled_sym)[0]                                                                # Solving
-            # Total temperature drop across entire turbine
-            #deltaT_total = T0_1m - T0_5m_cooled
-
-
-            # ======== Pitchline Staging ========
-            # Setting up lists to contain staging data
-
-            initial_pitchline_res = mag.pitchline_staging(
-                True,   # initial
-                Mc_2m,
-                Mw_3Rm,
-                Mc_2m_default,
-                Mw_3Rm_default,
-                alpha_1m,
-                alpha_2m,
-                T0_1m,
-                P0_1m,
-                r_mean_i,
-                ang_vel,
-                gamma,
-                R,
-                Cp,
-                m_dot,
-                degR_m,
-                req_power
+            vt_hpt = hpt_res.multistage_velocity_triangles[0]
+            info_hpt = hpt_res.multistage_info[0]
+            r_hub_hpt, r_tip_hpt, _ = mag.annulus_adjust(
+                info_hpt.T0_3m, info_hpt.P0_3m, R, gamma,
+                m_dot, vt_hpt.z_3m, vt_hpt.Mc_3m, r_mean_HPT
             )
+            blade_len_hpt = r_tip_hpt - r_hub_hpt
 
-            num_stages_target = initial_pitchline_res.num_stages_target
+            # ======== Stress calculation ========
+            rpm_HPT_new = rpm_safety_factor * Stress.get_max_rpm_light(rho_mat,yield_stress_mpa, r_mean_HPT, blade_len_hpt)
+            rpm_derivative = abs(rpm_HPT_new - rpm_HPT) / rpm_HPT
 
-            if num_stages_target > 1:
-                while total_power_generated < req_power:
-                    pitchline_res = mag.pitchline_staging(
-                        False,   # initial
+            if rpm_derivative < rpm_derivative_lim:
+                print(f"HPT Converged at {rpm_HPT:.1f} RPM (1 stage)")
+                break
+
+            rpm_HPT = (1.0 - damping_factor) * rpm_HPT + damping_factor * rpm_HPT
+
+
+        # -----------------------------------------------------
+        #  PART 2: LOW-PRESSURE TURBINE (LPT)
+        # -----------------------------------------------------
+        T0_LPT_in = hpt_res.multistage_info[-1].T0_3m
+        P0_LPT_in = hpt_res.multistage_info[-1].P0_3m
+        alpha_LPT_in = hpt_res.multistage_velocity_triangles[-1].alpha_3m
+        r_mean_LPT_i = hpt_res.r_mean_vec[-1]
+        rpm_LPT = 8000.0  # Initial LPT RPM guess
+
+        for i in range(max_passes):
+            ang_vel_LPT = rpm_LPT * 2 * np.pi / 60  # Angular velocity, rad/s
+            degR_LPT = self.degR_m
+            r_mean_curr = r_mean_LPT_i
+            r_inc_factor = 0.0
+            total_power_LPT = 0.0
+
+            # initial
+            lpt_init_res = mag.pitchline_staging(
+                True,
+                Mc_2m_default, Mw_3Rm_default, Mc_2m_default, Mw_3Rm_default,
+                alpha_LPT_in, alpha_2m,
+                T0_LPT_in, P0_LPT_in, r_mean_curr, ang_vel_LPT,
+                gamma, R, Cp, m_dot, degR_LPT, req_power_LPT
+            )
+            num_stages_LPT = lpt_init_res.num_stages_target
+
+            if num_stages_LPT > 1:
+                while total_power_LPT < req_power_LPT:
+                    lpt_res = mag.pitchline_staging(
+                        False,  # initial
                         Mc_2m,
                         Mw_3Rm,
                         Mc_2m_default,
@@ -208,66 +224,77 @@ class AxialTurbine(Turbine):
                         alpha_2m,
                         T0_1m,
                         P0_1m,
-                        r_mean_i,
-                        ang_vel,
+                        r_mean_LPT_i,
+                        ang_vel_LPT,
                         gamma,
                         R,
                         Cp,
                         m_dot,
-                        degR_m,
-                        req_power,
-                        r_inc_factor = r_inc_factor,
-                        num_stages_target = num_stages_target
+                        degR_LPT,
+                        req_power_LPT,
+                        r_inc_factor=r_inc_factor,
+                        num_stages_target=num_stages_LPT
                     )
-                    total_power_generated = pitchline_res.total_power_generated
-                    r_mean_i += 0.01
+                    total_power_LPT = lpt_res.total_power_generated
+                    r_mean_curr += 0.01
                     r_inc_factor += 0.01
             else:
                 percent_error = 5
                 while percent_error > 2 or percent_error < 0:
-                    pitchline_res = mag.pitchline_staging(
-                        False,   # initial
+                    lpt_res = mag.pitchline_staging(
+                        False,  # initial
                         Mc_2m,
                         Mw_3Rm,
                         Mc_2m_default,
                         Mw_3Rm_default,
-                        alpha_1m,
+                        alpha_LPT_in,
                         alpha_2m,
-                        T0_1m,
-                        P0_1m,
-                        r_mean_i,
-                        ang_vel,
+                        T0_LPT_in,
+                        P0_LPT_in,
+                        r_mean_LPT_i,
+                        ang_vel_LPT,
                         gamma,
                         R,
                         Cp,
                         m_dot,
-                        degR_m,
-                        req_power,
-                        r_inc_factor = r_inc_factor,
-                        num_stages_target = num_stages_target
+                        degR_LPT,
+                        req_power_LPT,
+                        r_inc_factor=0.0,
+                        num_stages_target=1
                     )
-                    total_power_generated = pitchline_res.total_power_generated
-                    percent_error = (total_power_generated-req_power)/req_power * 100
-                    if percent_error < 0:
-                        degR_m += 0.005
-                    else:
-                        degR_m -= 0.005
 
-            # ======== Preliminary mean line blade coord generation========
-            meanline_slice = YELLOW
+                    total_power_LPT = lpt_res.total_power_generated
+                    percent_error = (total_power_LPT - req_power_LPT) / req_power_LPT * 100
+                    if percent_error < 0:
+                        degR_LPT += 0.005
+                    else:
+                        degR_LPT -= 0.005
+
+            vt_lpt = lpt_res.multistage_velocity_triangles[-1]
+            info_lpt = hpt_res.multistage_info[-1]
+            r_mean_last = lpt_res.r_mean_vec[-1]
+
+            r_hub_lpt, r_tip_lpt, _ = mag.annulus_adjust(
+                info_lpt.T0_3m, info_lpt.P0_3m, R, gamma,
+                m_dot, vt_lpt.z_3m, vt_lpt.Mc_3m, r_mean_last
+            )
+            blade_len_lpt = r_tip_lpt - r_hub_lpt
 
             # ======== Stress calculation ========
+            rpm_LPT_new = rpm_safety_factor * Stress.get_max_rpm_light(rho_mat, yield_stress_mpa, r_mean_last, blade_len_lpt)
+            rpm_derivative = abs(rpm_LPT_new - rpm_LPT) / rpm_LPT
 
-            rpm_safety_factor = 0.85 # this is just a guess, change as needed
-            rpm = rpm_safety_factor * Stress.get_max_rpm(meanline_slice, density, yield_stress, radius_hub, mfr, v_in, v_out, n_b, blade_length)
-            rpm_derivative = abs(rpm - rpm_i) / rpm_i
-            if rpm_derivative > rpm_safety_factor < rpm_derivative_lim:
-                print(f"Converged at {float(rpm):.1f} RPM!")
+            if rpm_derivative < rpm_derivative_lim:
+                print(f"LPT Converged at {rpm_HPT:.1f} RPM (1 stage)")
                 break
 
-            rpm_i = (1.0 - damping_factor) * rpm_i + damping_factor * rpm
+            rpm_HPT = (1.0 - damping_factor) * rpm_HPT + damping_factor * rpm_HPT
 
-        self.pitchline_res = pitchline_res
+        # -----------------------------------------------------
+        #  PART 3: LOW-PRESSURE TURBINE (LPT)
+        # -----------------------------------------------------
+
+        self.pitchline_res = lpt_res
         mag.Turbine_Annulus_Sizing(
             pitchline_res.multistage_velocity_triangles,
             pitchline_res.multistage_info,
@@ -286,6 +313,44 @@ class AxialTurbine(Turbine):
         :return: does note explicitly return anything but makes the whole 3D blade profile
         """
 
+        def rad_eq(theta, r_tip, r_hub, r_mega_tip, r_mega_hub, type, inorout):
+            theta = np.deg2rad(theta)
+
+            if type == "stator" or (type == "rotor" and inorout == "in"):
+                V_mag = 525
+                V_theta_M = V_mag * np.sin(theta)
+                r_mid = (r_hub + r_tip) / 2
+
+                K = V_theta_M * r_mid
+
+                V_theta_H = K / r_hub
+                V_theta_T = K / r_tip
+                V_theta_mH = K / r_mega_hub
+                V_theta_mT = K / r_mega_tip
+
+                beta_H = np.rad2deg(np.arctan(V_theta_H / (V_mag * np.cos(theta))))
+                beta_T = np.rad2deg(np.arctan(V_theta_T / (V_mag * np.cos(theta))))
+                beta_mH = np.rad2deg(np.arctan(V_theta_mH / (V_mag * np.cos(theta))))
+                beta_mT = np.rad2deg(np.arctan(V_theta_mT / (V_mag * np.cos(theta))))
+            elif (type == "rotor" and inorout == "out"):
+                V_mag = 277
+                V_theta_M = V_mag * np.sin(theta)
+                r_mid = (r_hub + r_tip) / 2
+
+                K = V_theta_M * r_mid
+
+                V_theta_H = K / r_hub
+                V_theta_T = K / r_tip
+                V_theta_mH = K / r_mega_hub
+                V_theta_mT = K / r_mega_tip
+
+                beta_H = np.rad2deg(np.arctan(V_theta_H / (V_mag * np.cos(theta))))
+                beta_T = np.rad2deg(np.arctan(V_theta_T / (V_mag * np.cos(theta))))
+                beta_mH = np.rad2deg(np.arctan(V_theta_mH / (V_mag * np.cos(theta))))
+                beta_mT = np.rad2deg(np.arctan(V_theta_mT / (V_mag * np.cos(theta))))
+
+            return beta_H, beta_T, beta_mH, beta_mT
+
         vel_triangles = self.pitchline_res.multistage_velocity_triangles
         stage_info = self.pitchline_res.multistage_info
         r_mean_vec = self.pitchline_res.r_mean_vec
@@ -298,8 +363,7 @@ class AxialTurbine(Turbine):
             vt = vel_triangles[i]
             info = stage_info[i]
 
-            R_stator = r_mean_vec[i]
-            R_rotor = r_mean_vec[i]
+            R_stator = R_rotor = r_mean_vec[i]
 
             stator_params = list([
                 R_stator,

@@ -219,7 +219,7 @@ def Turbine_Annulus_Sizing(triangles, info, m_dot_target, gamma, R, r_mean_vec):
     # Plotting the meanline
     r_mean_plot_stages =   [_*2 + 1 for _ in range(0, num_stages)]
     r_mean_plot_stages.append(r_mean_plot_stages[-1]+2)
-    r_mean_vec_plot = r_mean_vec
+    r_mean_vec_plot = r_mean_vec.copy()
     r_mean_vec_plot.append(r_mean_vec[-1])
     plt.plot(r_mean_plot_stages, r_mean_vec_plot, "--r")
 
