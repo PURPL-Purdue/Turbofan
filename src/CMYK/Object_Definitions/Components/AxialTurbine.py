@@ -9,7 +9,13 @@ import numpy as np
 class AxialTurbine(Turbine):
 
     def __init__(self, name):
+        """
+
+        :param name: Either HPT or LPT
+        """
         super().__init__(name, 'FLOWPATH')
+
+        self.name = name
         #-----------------------------------------------------
         #            Flow Flow Inlets and Exits
         #-----------------------------------------------------
@@ -38,7 +44,9 @@ class AxialTurbine(Turbine):
         # -----------------------------------------------------
         self.pitchline_res = None
         self.blade_profiles = None
-        self.N_Blades = 29 # Don't know if number of blades should be hardcoded or not
+        self.N_Blades = 29
+        self.operating_rpm = None
+        self.num_stages = None
 
     def config(self) -> None:
         cfg = self.cfg[self.name]
@@ -54,7 +62,24 @@ class AxialTurbine(Turbine):
         self.Mc_2m_default   = cfg['Mc_2m_default']             
         self.Mw_3Rm_default  = cfg['Mw_3Rm_default']             
         self.degR_m          = cfg['degR_m']
+        self.N_Blades = int(cfg.get("N_Blades", self.N_Blades))
+        self.initial_rpm = float(
+            cfg.get("initial_rpm", 15000.0 if self.name == "HPT" else 8000.0)
+        )
+        self.r_mean_inlet = float(cfg.get("r_mean_inlet", 0.075))
+        self.num_stages_target = int(cfg.get("num_stages_target", 1))
+        self.max_rpm_passes = int(cfg.get("max_rpm_passes", 100))
+        self.max_power_passes = int(cfg.get("max_power_passes", 200))
+        self.max_radius_passes = int(cfg.get("max_radius_passes", 200))
+        self.rpm_derivative_lim = float(cfg.get("rpm_derivative_lim", 0.001))
+        self.power_tolerance_pct = float(cfg.get("power_tolerance_pct", 2.0))
+        self.damping_factor = float(cfg.get("damping_factor", 0.5))
+        self.rpm_safety_factor = float(cfg.get("rpm_safety_factor", 0.85))
+        self.degR_step = float(cfg.get("degR_step", 0.005))
+        self.mean_radius_step = float(cfg.get("mean_radius_step", 0.01))
 
+        self.rho_mat = float(cfg.get("rho_mat", 8190.0))
+        self.yield_stress_mpa = float(cfg.get("yield_stress_mpa", 800.0))
     #-----------------------------------------------------
     #                   CMYK Methods
     #-----------------------------------------------------
@@ -271,6 +296,7 @@ class AxialTurbine(Turbine):
                         degR_LPT -= 0.005
 
             vt_lpt = lpt_res.multistage_velocity_triangles[-1]
+
             info_lpt = hpt_res.multistage_info[-1]
             r_mean_last = lpt_res.r_mean_vec[-1]
 

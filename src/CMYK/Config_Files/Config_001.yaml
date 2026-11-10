@@ -74,7 +74,8 @@ HPT:
   Mw_3Rm_default: 0.85  # Subsequent rotor relative exit Mach number          | nondimensional
   degR_m: 0.5           # Stage degree of reaction                            | nondimensional                    
   Wstream: 'CORE'
-  num_stages: 1 # write comment
+  num_stages: 1         # write comment
+  num_blades: 29
 
 LPT:
   eta: 0.92             # Isentropic efficiency                               | nondim
@@ -87,6 +88,14 @@ LPT:
   degR_m: 0.5           # Stage degree of reaction                            | nondimensional  
   Wstream: 'CORE'
   num_stages: None #
+  num_blades: 29
+
+Turbine:
+  initial_rpm: 15000    #
+  num_blades: 29        #
+  r_mean_inlet: 0.075   # m
+  max_rpm_passes: 100   #
+  max_power_passes:     #
 
 NOZ_COR:
   eta: 0.98         # Isentropic efficiency                     | nondim
