@@ -4,6 +4,7 @@ from CoolProp.CoolProp import PropsSI
 from CMYK.Object_Definitions.Base_Objects import ComponentBase
 from Object_Definitions.Supplemental.Combustor import MAGENTA as mag
 import cea
+from pathlib import Path
 
 class Burner(ComponentBase):
 
@@ -24,7 +25,7 @@ class Burner(ComponentBase):
         self.FAR = None
         self.T04 = None
         self.pr = None
-        self.turbine_diameter = None # Diameter of the turbine for sizing purposes (m)
+        self.turbine_diameter = None #TODO:Implement diameter of the turbine for sizing purposes (m)
 
         self.Wfactor = None
         self.Wstream = None
@@ -71,15 +72,16 @@ class Burner(ComponentBase):
         )
 
     def MAGENTA(self):
-
+        #Defining relevant values
         T3 = self.FlowIn.T
         P3 = self.FlowIn.P
         m = self.FlowIn.W
         turbine_size = self.turbine_diameter
-
+        #Using outside values to solve for parameters
         dp34 = (0.06 * P3) * 101325
         qref = dp34 / 20
 
+        #Calculating sizing parameters using helper functions
         reference_area = mag.mm_aref_equation_1(T3, P3,dp34, qref,m)
         reference_diameter = mag.mm_dref_equation(reference_area)
         axial_length_ann = mag.mm_length_calculation(reference_diameter)
@@ -90,8 +92,14 @@ class Burner(ComponentBase):
         outer_diameter_casing = mag.outer_diameter_reverse_flow(turbine_size, reference_area)
         outer_diameter_flame_tube = mag.outer_diameter_reverse_flow(turbine_size, combustor_area)
 
-        with open ("combustor_geo_outputs", "w") as f:
+
+        # Code for writing to Output_001... could be dubious
+        OUTPUT_DIR = Path(__file__).resolve().parents[2] / "Output"
+        OUTPUT_DIR.mkdir(exist_ok=True)  # creates it if missing
+
+        with open(OUTPUT_DIR / "Output_001.txt", "a") as f:
             f.write(mag.format_values(outer_diameter_casing,axial_length_ann,reference_area))
+
 
 
 

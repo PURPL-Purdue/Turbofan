@@ -76,7 +76,7 @@ def outer_diameter_reverse_flow(turbine_diameter, reference_area):
 
 def format_values(outer_diameter, axial_length, reference_area):
     """
-    Format the output values ( TEMP )
+    Format the output values ( TEMP ) #TODO: MAKE UNIVERSAL FOR OUTPUTS
     :param outer_diameter: Outer diameter of the combustor (m)
     :param axial_length: Length of the combustor (m)
     :param reference_area: Reference Area (m^2)
@@ -87,6 +87,6 @@ def format_values(outer_diameter, axial_length, reference_area):
     reference_area = str(f'{reference_area:.2f}')
     bar = "----------------------------------------------------------"
 
-    end_string = bar + "\n" + "Axial Length: " + axial_length + "\n" + "Reference Area: " + reference_area + "\n" + "Outer Diameter: " + outer_diameter + "\n" + bar
+    end_string = "COMBUSTOR SIZING" + bar + "\n" + "Axial Length: " + axial_length + "\n" + "Reference Area: " + reference_area + "\n" + "Outer Diameter: " + outer_diameter + "\n" + bar
 
     return end_string
