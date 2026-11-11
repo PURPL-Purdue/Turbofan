@@ -113,7 +113,7 @@ def thermoCalcs(params):
         tLP = Cp_tLP
     )
 
-    thrust_target = thrust*4.44822          # lbf to N
+    thrust_target = thrust * 4.44822          # lbf to N
 
     m_dot_core = thrust_target/ST
     m_dot_bypass = m_dot_core*bypass

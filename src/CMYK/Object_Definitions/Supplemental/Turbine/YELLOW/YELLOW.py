@@ -1,11 +1,11 @@
 from dataclasses import dataclass
 from scipy.optimize import minimize_scalar
-import Pritchard_Parameters
+from Pritchard_Parameters import get_pritchard_params
 
 from Object_Definitions.Supplemental.Turbine.YELLOW.Curve import *
 
 def YELLOW(R, beta_in, beta_out, N_B, mach_out):
-    params_dictionary, extra_params = Pritchard_Parameters.get_pritchard_params(beta_in, beta_out, N_B, R, mach_out)
+    params_dictionary, extra_params = get_pritchard_params(beta_in, beta_out, N_B, R, mach_out)
     params_values = list(params_dictionary.values())
     params = getPritchardParams(*params_values, eps_out=None)
 

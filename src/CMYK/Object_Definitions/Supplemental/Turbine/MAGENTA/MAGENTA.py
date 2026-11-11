@@ -1,5 +1,5 @@
-from Object_Definitions.Base_Objects import Flow, VelocityTriangle
-import Turbine_REF_structs
+from CMYK.Object_Definitions.Base_Objects import Flow, VelocityTriangle
+# from CMYK.Object_Definitions.Base_Objects import Turbine_REF_structs
 from Run import helper_functions as hf
 import numpy as np
 import matplotlib as plt

@@ -33,6 +33,7 @@ FAN:
   Mz_1m: 0.45       # Inlet axial mach number                   | nondim
   Mu_1t_max: 0.95   # Inlet tip maximum tangential mach number  | nondim
   Wstream: 'FULL'
+  constantRad: 'mean'   # Which radius we want to keep constant
 
 NOZ_BYP:
   eta: 0.98         # Isentropic efficiency                     | nondim

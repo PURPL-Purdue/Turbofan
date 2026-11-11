@@ -89,12 +89,28 @@ Turbofan.interface(  "HPT.Shaft", "HPS",  "HPT_ShaftLink" )
 #                             CYCLE ANALYSIS
 #----------------------------------------------------------------------------
 
+bypass_ratio = 0
+calc_br = 0
+
 Turbofan.CYAN()
 
+# while bypass_ratio < 5 and abs(bypass_ratio - calc_br) > 0.01:
+#     bypass_ratio += 0.01
+#     Turbofan.FAN.bypass = bypass_ratio
+#     Turbofan.CYAN()
+#     amb_temp = 288.15
+#
+#     tau_f = Fan.T02 / amb_temp
+#     tau_gamma = AxialTurbine.T0_1m / amb_temp
+#     tau_c = AxialCompressor.Tr_total_actual * (RadialCompressor.T02 / AxialCompressor.T0_stages[-1])
+#
+#     calc_br = 1 / (tau_f - 1) * (tau_gamma - tau_c + 1 - tau_gamma / tau_c - 0.25 * (tau_f - 1))
+#
+# print(bypass_ratio)
 #----------------------------------------------------------------------------
 #                                 OUTPUT
 #----------------------------------------------------------------------------
-Disp = Display(Turbofan)
-Disp.textOutput(OUTPUT_PATH, verbose=True)
+# Disp = Display(Turbofan)
+# Disp.textOutput(OUTPUT_PATH, verbose=True)
 
-pass
+# pass

@@ -318,9 +318,9 @@ class AxialCompressor(Compressor):
             if row == 'R':
                 pass
 
-    def 2D_geometry_MCA(self) -> None:
-        pass
-        """Mario and Josie, do your MCA code here"""
+    # def 2D_geometry_MCA(self) -> None:
+    #     pass
+    #     """Mario and Josie, do your MCA code here"""
 
     @staticmethod
     def D_factor(W1, W2, Ctheta_1, Ctheta_2, sigma):

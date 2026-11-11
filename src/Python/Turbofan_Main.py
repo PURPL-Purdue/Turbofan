@@ -39,9 +39,9 @@ TF.cycle.IN.gamma = REF_structs.ByComponent(
     n   = 1.34  # Nozzle
 )
 TF.cycle.IN.Pr = REF_structs.ByComponent(
-    f   = 1.7,          # Fan
-    cLP = 2.6,          # LP Compressor
-    cHP = 5,            # HP Compressor
+    f   = 1.81,          # Fan
+    cLP = 3,            # LP Compressor
+    cHP = 3,            # HP Compressor
     b   = 1,            # Burner
 )
 
@@ -54,14 +54,14 @@ TF.cycle.IN = REF_structs.Cycle_IN(
     TF.cycle.IN.eta,    # eta               Efficiencies                       | nondimensional
     TF.cycle.IN.gamma,  # gamma_avg             Specific heat ratios               | nondimensional
     TF.cycle.IN.Pr,     # pr                Design pressure ratios             | nondimensional
-    298,                # T_0               Freestream/ambient temperature     | K
+    288.15,             # T_0               Freestream/ambient temperature     | K
     101300,             # P_0               Freestream pressure                | Pa
     0.0,                # M_f               Freestream/flight Mach number      | nondimensional
     287,                # Ra                Air gas constant                   | TODO
     287,                # Rp                Combustion product gas constsant   | TODO
     45000000,           # QR                Heat of reaction of fuel           | TODO
-    2.89,               # Bypass            Bypass Ratio                       | nondimensional
-    2500,               # thrust            Target total thrust                | lbf
+    3.275,               # Bypass            Bypass Ratio                       | nondimensional
+    1200,               # thrust            Target total thrust                | lbf
     1300                # combustion_temp   T0_4, turbine inlet temp           | K
 )
 TF.cycle.OUT = Station_Thermo.thermoCalcs(TF.cycle.IN)
@@ -217,7 +217,8 @@ TF.nozzle.IN = REF_structs.Nozzle_IN(
     TF.cycle.IN.eta.fn,             # eta_fn            Fan nozzle efficiency                               | nondimensional
 )
 
-TF.nozzle.OUT = Component_Sizing.Nozzle_Sizing(TF.nozzle.IN)
+#TF.nozzle.OUT = Component_Sizing.Nozzle_Sizing(TF.nozzle.IN)
+TF.nozzle.OUT = Component_Sizing.Axial_Compressor.Nozzle_Sizing(TF.nozzle.IN)
 
 # TF.turbine.LP.OUT = Component_Sizing.Turbine.Sizing(TF.turbine.LP.IN)
 

@@ -266,8 +266,8 @@ def Sizing(params):
         - If you're ever stuck, try asking the other people working on this for help first, and if this doesn't work out, please don't hesitate to talk to me so that we can figure something out
         - AI should not be generating code that ends up in this repository. Please don't do it, or I'll just give your task to someone else who actually wants to learn.
     '''
-    some_output = HELP_Axial_Compressor.Blade_Root_Stress()
-    some_output = HELP_Axial_Compressor.Blade_Bending_Stress()
+    #some_output = HELP_Axial_Compressor.Blade_Root_Stress()
+    #some_output = HELP_Axial_Compressor.Blade_Bending_Stress()
 
     # Supersonic rotor design
     ttc_m = 0.065 # PLEASE DON'T TOUCH
@@ -517,6 +517,8 @@ def Nozzle_Sizing(params):
         # until nozzle is perfectly expanded
         M_guess1 = 2
         M_guess2 = 1.2
+        M_new = M_guess1
+        M_diff = M_guess2 - M_guess1
         while abs(M_diff) > 0.001:
             P_guess1 = P0_5 * REF_AEQ.P_P0(gamma_n, M_guess1) - P_a
             P_guess2 = P0_5 * REF_AEQ.P_P0(gamma_n, M_guess2) - P_a

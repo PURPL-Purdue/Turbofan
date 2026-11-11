@@ -1,9 +1,9 @@
 from CoolProp.CoolProp import PropsSI
-from Object_Definitions.Base_Objects import Turbine
-from Object_Definitions.Supplemental.Turbine.MAGENTA import MAGENTA as mag
-from Object_Definitions.Supplemental.Turbine.YELLOW import YELLOW as yel
-from Object_Definitions.Base_Objects import BladeCoords
-from Object_Definitions.Supplemental.Turbine.MAGENTA import Stress
+from CMYK.Object_Definitions.Base_Objects import Turbine
+from CMYK.Object_Definitions.Supplemental.Turbine.MAGENTA import MAGENTA as mag
+from CMYK.Object_Definitions.Supplemental.Turbine.YELLOW import YELLOW as yel
+from CMYK.Object_Definitions.Base_Objects import BladeCoords
+from CMYK.Object_Definitions.Supplemental.Turbine.MAGENTA import Stress
 import numpy as np
 
 class AxialTurbine(Turbine):
