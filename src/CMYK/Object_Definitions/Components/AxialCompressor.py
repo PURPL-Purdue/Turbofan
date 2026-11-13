@@ -60,8 +60,8 @@ class AxialCompressor(Compressor):
         self.alpha_1m           = np.radians(cfg['alpha_1m'])
         self.Mz_1m              = cfg['Mz_1m']
         self.Mu_1t_max          = cfg['Mu_1t_max']
-        # self.solidity_rotor     = cfg['solidity_R']
-        # self.solidity_stator    = cfg['solidity_S']
+        self.solidity_rotor     = cfg['solidity_R']
+        self.solidity_stator    = cfg['solidity_S']
 
     #=====================================================
     #                   CMYK Methods
