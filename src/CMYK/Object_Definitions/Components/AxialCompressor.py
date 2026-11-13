@@ -39,7 +39,7 @@ class AxialCompressor(Compressor):
         self.mu_kin             = None
         self.alpha_1m           = None
         self.Mz_1m              = None
-        self.Mu_1t_max        = None
+        self.Mu_1t_max          = None
         self.m_dot              = None
         self.solidity_rotor     = None
         self.solidity_stator    = None

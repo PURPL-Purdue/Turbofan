@@ -58,10 +58,10 @@ TF.cycle.IN = REF_structs.Cycle_IN(
     101300,             # P_0               Freestream pressure                | Pa
     0.0,                # M_f               Freestream/flight Mach number      | nondimensional
     287,                # Ra                Air gas constant                   | TODO
-    287,                # Rp                Combustion product gas constsant   | TODO
+    287,                # Rp                Combustion product gas constant   | TODO
     45000000,           # QR                Heat of reaction of fuel           | TODO
-    3.275,               # Bypass            Bypass Ratio                       | nondimensional
-    1200,               # thrust            Target total thrust                | lbf
+    4,               # Bypass            Bypass Ratio                       | nondimensional
+    1250,               # thrust            Target total thrust                | lbf
     1300                # combustion_temp   T0_4, turbine inlet temp           | K
 )
 TF.cycle.OUT = Station_Thermo.thermoCalcs(TF.cycle.IN)
