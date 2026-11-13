@@ -117,18 +117,39 @@ class AxialTurbine(Turbine):
         - Might want to consider using an iterative approach to switch to having a constant hub radius model for the annulus geometry
         - Finish annulus sizing/spanwise analysis of the turbine by implementing radial equilibrium.
         '''
+
+        # exception handling before initialization
+        if self.FlowIn is None or self.FlowOut is None:
+            raise RuntimeError(f"{self.name}: flow interfaces are not connected")
+
+        if self.GeoIn is None or self.GeoOut is None:
+            raise RuntimeError(f"{self.name}: geometry interfaces are not connected")
+
+        if self.Shaft is None:
+            raise RuntimeError(f"{self.name}: shaft is not connected")
         # First stage stater is chosen by us based on previus stuff
         # Max rpm will be based on first stage, where it is the hottest
         gamma   = self.FlowIn.gamma0
         Cp      = self.FlowIn.Cp0
         R       = self.FlowIn.R
-        T0_1m   = self.FlowIn.T0        # HPT inlet total temperature, K
-        P0_1m   = self.FlowIn.P0        # HPT inlet total pressure,    Pa
+        T0_in   = self.FlowIn.T0        # HPT inlet total temperature, K
+        P0_in   = self.FlowIn.P0        # HPT inlet total pressure,    Pa
         m_dot   = self.FlowIn.W         # Turbine total mass flow, kg/s, air plus fuel
 
-        # TODO: Get actual required power by HPC and LPC
-        req_power_HPT = self.Shaft.required_power
-        req_power_LPT = self.Shaft.required_power
+        self.Wfactor = self.FlowIn.Wfactor
+
+        req_power = self.Shaft.required_power
+        if req_power is None or req_power <= 0:
+            raise RuntimeError(
+                f"{self.name}: shaft required_power must be positive and an integer"
+            )
+
+        if hasattr(self.GeoIn, "alpha_out"):
+            alpha_in = self.GeoIn.alpha_out
+            r_mean_inlet = self.GeoIn.r_mean_out
+        else:
+            alpha_in = self.alpha_1m
+            r_mean_inlet = self.r_mean_inlet
 
         # First stage design decisions
         alpha_1m        = self.alpha_1m
@@ -152,7 +173,7 @@ class AxialTurbine(Turbine):
         # yield_stress_mpa = 800.0  # Inconel yield stress, MPa
 
         # -----------------------------------------------------
-        #  PART 1: HIGH-PRESSURE TURBINE (HPT) - 1-Stage Loop
+        #  PART 1:
         # -----------------------------------------------------
         # rpm_HPT = 15000  # Initial RPM for HPT
         # implement
@@ -161,20 +182,21 @@ class AxialTurbine(Turbine):
             ang_vel = self.initial_rpm * 2 * np.pi / 60 # Angular velocity, rad/s
             degR_m = self.degR_m
             r_mean_inlet = self.r_mean_inlet
+            r_inc_factor = 0
 
-            percent_error = 5
-            if self.num_stages_target == 1 or self.num_stages_target :
+            if self.name.upper() == "HPT" or (self.name.upper() == "LPT" and self.num_stages_target is None):
+                percent_error = 5
                 while percent_error > 2 or percent_error < 0:
-                    hpt_res = mag.pitchline_staging(
+                    pitchline_res  = mag.pitchline_staging(
                         False,  # initial
                         Mc_2m,
                         Mw_3Rm,
                         Mc_2m_default,
                         Mw_3Rm_default,
-                        alpha_1m,
+                        alpha_in,
                         alpha_2m,
-                        T0_1m,
-                        P0_1m,
+                        T0_in,
+                        P0_in,
                         r_mean_inlet,
                         ang_vel,
                         gamma,
@@ -182,65 +204,19 @@ class AxialTurbine(Turbine):
                         Cp,
                         m_dot,
                         degR_m,
-                        req_power_HPT,
+                        req_power,
                         r_inc_factor=0.0,
-                        num_stages_target=1 # HPT has 1 stage per the design decision
+                        num_stages_target=1
                     )
-                    total_power_HPT = hpt_res.total_power_generated
-                    percent_error = (total_power_HPT - req_power_HPT) / req_power_HPT * 100
+                    total_power = pitchline_res .total_power_generated
+                    percent_error = (total_power - req_power) / req_power * 100
                     if percent_error < 0:
-                        degR_HPT += 0.005
+                        degR_m += 0.005
                     else:
-                        degR_HPT -= 0.005
-
-                vt_hpt = hpt_res.multistage_velocity_triangles[0]
-                info_hpt = hpt_res.multistage_info[0]
-                r_hub_hpt, r_tip_hpt, _ = mag.annulus_adjust(
-                    info_hpt.T0_3m, info_hpt.P0_3m, R, gamma,
-                    m_dot, vt_hpt.z_3m, vt_hpt.Mc_3m, r_mean_HPT
-                )
-                blade_len_hpt = r_tip_hpt - r_hub_hpt
-
-                # ======== Stress calculation ========
-                rpm_HPT_new = rpm_safety_factor * Stress.get_max_rpm_light(rho_mat,yield_stress_mpa, r_mean_HPT, blade_len_hpt)
-                rpm_derivative = abs(rpm_HPT_new - rpm_HPT) / rpm_HPT
-
-                if rpm_derivative < rpm_derivative_lim:
-                    print(f"HPT Converged at {rpm_HPT:.1f} RPM (1 stage)")
-                    break
-
-                rpm_HPT = (1.0 - damping_factor) * rpm_HPT + damping_factor * rpm_HPT
-
-
-        # -----------------------------------------------------
-        #  PART 2: LOW-PRESSURE TURBINE (LPT)
-        # -----------------------------------------------------
-        T0_LPT_in = hpt_res.multistage_info[-1].T0_3m
-        P0_LPT_in = hpt_res.multistage_info[-1].P0_3m
-        alpha_LPT_in = hpt_res.multistage_velocity_triangles[-1].alpha_3m
-        r_mean_LPT_i = hpt_res.r_mean_vec[-1]
-        rpm_LPT = 8000.0  # Initial LPT RPM guess
-
-        for i in range(max_passes):
-            ang_vel_LPT = rpm_LPT * 2 * np.pi / 60  # Angular velocity, rad/s
-            degR_LPT = self.degR_m
-            r_mean_curr = r_mean_LPT_i
-            r_inc_factor = 0.0
-            total_power_LPT = 0.0
-
-            # initial
-            lpt_init_res = mag.pitchline_staging(
-                True,
-                Mc_2m_default, Mw_3Rm_default, Mc_2m_default, Mw_3Rm_default,
-                alpha_LPT_in, alpha_2m,
-                T0_LPT_in, P0_LPT_in, r_mean_curr, ang_vel_LPT,
-                gamma, R, Cp, m_dot, degR_LPT, req_power_LPT
-            )
-            num_stages_LPT = lpt_init_res.num_stages_target
-
-            if num_stages_LPT > 1:
-                while total_power_LPT < req_power_LPT:
-                    lpt_res = mag.pitchline_staging(
+                        degR_m -= 0.005
+            elif self.name.upper() == "LPT" and self.num_stages_target is not None:
+                while total_power < req_power:
+                    pitchline_res = mag.pitchline_staging(
                         False,  # initial
                         Mc_2m,
                         Mw_3Rm,
@@ -248,80 +224,64 @@ class AxialTurbine(Turbine):
                         Mw_3Rm_default,
                         alpha_1m,
                         alpha_2m,
-                        T0_1m,
-                        P0_1m,
-                        r_mean_LPT_i,
-                        ang_vel_LPT,
+                        T0_in,
+                        P0_in,
+                        r_mean_inlet,
+                        ang_vel,
                         gamma,
                         R,
                         Cp,
                         m_dot,
-                        degR_LPT,
-                        req_power_LPT,
+                        degR_m,
+                        req_power,
                         r_inc_factor=r_inc_factor,
-                        num_stages_target=num_stages_LPT
+                        num_stages_target=self.num_stages_target
                     )
-                    total_power_LPT = lpt_res.total_power_generated
+                    total_power = pitchline_res.total_power_generated
                     r_mean_curr += 0.01
                     r_inc_factor += 0.01
             else:
-                percent_error = 5
-                while percent_error > 2 or percent_error < 0:
-                    lpt_res = mag.pitchline_staging(
-                        False,  # initial
-                        Mc_2m,
-                        Mw_3Rm,
-                        Mc_2m_default,
-                        Mw_3Rm_default,
-                        alpha_LPT_in,
-                        alpha_2m,
-                        T0_LPT_in,
-                        P0_LPT_in,
-                        r_mean_LPT_i,
-                        ang_vel_LPT,
-                        gamma,
-                        R,
-                        Cp,
-                        m_dot,
-                        degR_LPT,
-                        req_power_LPT,
-                        r_inc_factor=0.0,
-                        num_stages_target=1
-                    )
+                raise ValueError("Assign correct name to Turbine object ('HPT' or 'LPT') and initialize num_stages_target")
 
-                    total_power_LPT = lpt_res.total_power_generated
-                    percent_error = (total_power_LPT - req_power_LPT) / req_power_LPT * 100
-                    if percent_error < 0:
-                        degR_LPT += 0.005
-                    else:
-                        degR_LPT -= 0.005
-
-            vt_lpt = lpt_res.multistage_velocity_triangles[-1]
-
-            info_lpt = hpt_res.multistage_info[-1]
-            r_mean_last = lpt_res.r_mean_vec[-1]
-
-            r_hub_lpt, r_tip_lpt, _ = mag.annulus_adjust(
-                info_lpt.T0_3m, info_lpt.P0_3m, R, gamma,
-                m_dot, vt_lpt.z_3m, vt_lpt.Mc_3m, r_mean_last
+            vt = pitchline_res.multistage_velocity_triangles[0]
+            info = pitchline_res.multistage_info[0]
+            r_hub, r_tip, _ = mag.annulus_adjust(
+                info.T0_3m, info.P0_3m, R, gamma,
+                m_dot, vt.z_3m, vt.Mc_3m, r_mean_inlet
             )
-            blade_len_lpt = r_tip_lpt - r_hub_lpt
+            blade_length = r_tip - r_hub
 
             # ======== Stress calculation ========
-            rpm_LPT_new = rpm_safety_factor * Stress.get_max_rpm_light(rho_mat, yield_stress_mpa, r_mean_last, blade_len_lpt)
-            rpm_derivative = abs(rpm_LPT_new - rpm_LPT) / rpm_LPT
+            rpm_HPT_new = self.rpm_safety_factor * Stress.get_max_rpm_light(self.rho_mat, self.yield_stress_mpa,
+                                                                            r_mean_inlet, blade_length)
 
-            if rpm_derivative < rpm_derivative_lim:
-                print(f"LPT Converged at {rpm_HPT:.1f} RPM (1 stage)")
+            rpm_derivative = abs(rpm_HPT_new - rpm_HPT) / rpm_HPT
+
+            if rpm_derivative < self.rpm_safety_factor:
+                print(f"HPT Converged at {rpm_HPT:.1f} RPM (1 stage)")
                 break
 
-            rpm_HPT = (1.0 - damping_factor) * rpm_HPT + damping_factor * rpm_HPT
+            rpm_HPT = (1.0 - self.damping_factor) * rpm_HPT + self.damping_factor * rpm_HPT
+
 
         # -----------------------------------------------------
-        #  PART 3: LOW-PRESSURE TURBINE (LPT)
+        #  PART 3:
         # -----------------------------------------------------
+        vt_last = self.pitchline_res.multistage_velocity_triangles[-1]
+        info_last = self.pitchline_res.multistage_info[-1]
+        r_mean_last = self.pitchline_res.r_mean_vec[-1]
 
-        self.pitchline_res = lpt_res
+        self.FlowOut.setFlow(
+            T0=info_last.T0_3m,
+            P0=info_last.P0_3m,
+            FAR=self.FlowIn.FAR,
+            Wfactor=self.Wfactor,
+            Wstream=self.Wstream
+        )
+        self.GeoOut.alpha_out = vt_last.alpha_3m
+        self.GeoOut.r_mean_out = r_mean_last
+
+        self.pitchline_res = pitchline_res
         mag.Turbine_Annulus_Sizing(
             pitchline_res.multistage_velocity_triangles,
             pitchline_res.multistage_info,
