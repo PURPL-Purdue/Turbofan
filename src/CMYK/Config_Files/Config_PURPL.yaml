@@ -53,7 +53,7 @@ HPCA:
 
   # MAGENTA
   e_c: 0.79         # Polytropic efficiency                     | nondim
-  httrr: 0.2        # Hub-to-tip radius ratio                   | nondim
+  httrr: 0.6        # Hub-to-tip radius ratio                   | nondim
   deHaller: 0.72    # deHaller's criterion value                | nondim
   min_Re: 300000    # Minimum blade Reynold's number            | nondim
   alpha_1m: 30      # Inlet absolute flow angle                 | deg

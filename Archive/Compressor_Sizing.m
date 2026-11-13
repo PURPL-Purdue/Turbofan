@@ -14,8 +14,8 @@ P0_1m = 162080.0; %101000;   % Inlet total pressure        | Pascals       (abso
 
 
 % Design choices
-Pr_total = 12; %20;  % Overall pressure ratio        |
-e_c = 0.9;      % Polytropic efficiency         |
+Pr_total = 3;  % Overall pressure ratio        |
+e_c = 0.79;      % Polytropic efficiency         |
 % m_dot = Turbofan.Specs.Info.core_mass_flow_air; %100;    % Mass flow rate                | kg/s
 htt_rr = 0.6;   % Hub to tip radius ratio       |
 deHaller = 0.72;            % typical value
