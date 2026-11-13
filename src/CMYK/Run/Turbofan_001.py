@@ -14,6 +14,8 @@ from CMYK.Object_Definitions.Components import (
 
 from CMYK.Object_Definitions.Base_Objects import Display
 
+# from Object_Definitions.Components import Burner
+
 CONFIG_PATH = Path(__file__).resolve().parent.parent/'Config_Files'/'Config_001.yaml'
 OUTPUT_PATH = Path(__file__).resolve().parent.parent/'Output'/'Output_001.txt'
 
@@ -90,6 +92,8 @@ Turbofan.interface( "HPT.Shaft", "HPS", "HPT_ShaftLink" )
 #----------------------------------------------------------------------------
 
 Turbofan.CYAN()
+# Turbofan.MAGENTA() runs all the sizings for all components
+Turbofan.BURNER.MAGENTA()
 
 #----------------------------------------------------------------------------
 #                                 OUTPUT
