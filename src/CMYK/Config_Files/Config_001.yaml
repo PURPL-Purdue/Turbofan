@@ -74,7 +74,7 @@ HPT:
   Mw_3Rm_default: 0.85  # Subsequent rotor relative exit Mach number          | nondimensional
   degR_m: 0.5           # Stage degree of reaction                            | nondimensional                    
   Wstream: 'CORE'
-  num_stages: 1         # write comment
+  num_stages_target: 1         # write comment
   num_blades: 29
 
 LPT:
@@ -87,7 +87,7 @@ LPT:
   Mw_3Rm_default: 0.85  # Subsequent rotor relative exit Mach number          | nondimensional
   degR_m: 0.5           # Stage degree of reaction                            | nondimensional  
   Wstream: 'CORE'
-  num_stages: None #
+  num_stages_target: None #
   num_blades: 29
 
 Turbine:

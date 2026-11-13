@@ -67,7 +67,7 @@ class AxialTurbine(Turbine):
             cfg.get("initial_rpm", 15000.0 if self.name == "HPT" else 8000.0)
         )
         self.r_mean_inlet = float(cfg.get("r_mean_inlet", 0.075))
-        self.num_stages_target = int(cfg.get("num_stages_target", 1))
+        self.num_stages_target = cfg.get("num_stages_target")
         self.max_rpm_passes = int(cfg.get("max_rpm_passes", 100))
         self.max_power_passes = int(cfg.get("max_power_passes", 200))
         self.max_radius_passes = int(cfg.get("max_radius_passes", 200))
@@ -142,73 +142,74 @@ class AxialTurbine(Turbine):
 
 
         # ================= VARIABLES FOR ITERATION =================
-        max_passes = 100
-        rpm_derivative_lim = 0.001  # 0.1% relative convergence tolerance
-        damping_factor = 0.5
-        rpm_safety_factor = 0.85  # Operating RPM = 85% of max structural RPM
-        # ======== Stress variables ========
-        r_mean_inlet = 0.075  # HPT inlet mean radius, m
-        rho_mat = 8190.0  # Inconel density, kg/m^3
-        yield_stress_mpa = 800.0  # Inconel yield stress, MPa
+        # max_passes = 100
+        # rpm_derivative_lim = 0.001  # 0.1% relative convergence tolerance
+        # damping_factor = 0.5
+        # rpm_safety_factor = 0.85  # Operating RPM = 85% of max structural RPM
+        # # ======== Stress variables ========
+        # r_mean_inlet = 0.075  # HPT inlet mean radius, m
+        # rho_mat = 8190.0  # Inconel density, kg/m^3
+        # yield_stress_mpa = 800.0  # Inconel yield stress, MPa
 
         # -----------------------------------------------------
         #  PART 1: HIGH-PRESSURE TURBINE (HPT) - 1-Stage Loop
         # -----------------------------------------------------
-        rpm_HPT = 15000  # Initial RPM for HPT
+        # rpm_HPT = 15000  # Initial RPM for HPT
         # implement
-        for i in range(max_passes):
+        for i in range(self.max_rpm_passes):
             # These variables need to be reinitialized between every pass TODO: Figure out if degreeR_m needs to changed after the initial pass
-            ang_vel_HPT = rpm_HPT * 2 * np.pi / 60 # Angular velocity, rad/s
-            degR_HPT = self.degR_m
-            r_mean_HPT = r_mean_inlet
+            ang_vel = self.initial_rpm * 2 * np.pi / 60 # Angular velocity, rad/s
+            degR_m = self.degR_m
+            r_mean_inlet = self.r_mean_inlet
 
             percent_error = 5
-            while percent_error > 2 or percent_error < 0:
-                hpt_res = mag.pitchline_staging(
-                    False,  # initial
-                    Mc_2m,
-                    Mw_3Rm,
-                    Mc_2m_default,
-                    Mw_3Rm_default,
-                    alpha_1m,
-                    alpha_2m,
-                    T0_1m,
-                    P0_1m,
-                    r_mean_HPT,
-                    ang_vel_HPT,
-                    gamma,
-                    R,
-                    Cp,
-                    m_dot,
-                    degR_HPT,
-                    req_power_HPT,
-                    r_inc_factor=0.0,
-                    num_stages_target=1 # HPT has 1 stage per the design decision
+            if self.num_stages_target == 1 or self.num_stages_target :
+                while percent_error > 2 or percent_error < 0:
+                    hpt_res = mag.pitchline_staging(
+                        False,  # initial
+                        Mc_2m,
+                        Mw_3Rm,
+                        Mc_2m_default,
+                        Mw_3Rm_default,
+                        alpha_1m,
+                        alpha_2m,
+                        T0_1m,
+                        P0_1m,
+                        r_mean_inlet,
+                        ang_vel,
+                        gamma,
+                        R,
+                        Cp,
+                        m_dot,
+                        degR_m,
+                        req_power_HPT,
+                        r_inc_factor=0.0,
+                        num_stages_target=1 # HPT has 1 stage per the design decision
+                    )
+                    total_power_HPT = hpt_res.total_power_generated
+                    percent_error = (total_power_HPT - req_power_HPT) / req_power_HPT * 100
+                    if percent_error < 0:
+                        degR_HPT += 0.005
+                    else:
+                        degR_HPT -= 0.005
+
+                vt_hpt = hpt_res.multistage_velocity_triangles[0]
+                info_hpt = hpt_res.multistage_info[0]
+                r_hub_hpt, r_tip_hpt, _ = mag.annulus_adjust(
+                    info_hpt.T0_3m, info_hpt.P0_3m, R, gamma,
+                    m_dot, vt_hpt.z_3m, vt_hpt.Mc_3m, r_mean_HPT
                 )
-                total_power_HPT = hpt_res.total_power_generated
-                percent_error = (total_power_HPT - req_power_HPT) / req_power_HPT * 100
-                if percent_error < 0:
-                    degR_HPT += 0.005
-                else:
-                    degR_HPT -= 0.005
+                blade_len_hpt = r_tip_hpt - r_hub_hpt
 
-            vt_hpt = hpt_res.multistage_velocity_triangles[0]
-            info_hpt = hpt_res.multistage_info[0]
-            r_hub_hpt, r_tip_hpt, _ = mag.annulus_adjust(
-                info_hpt.T0_3m, info_hpt.P0_3m, R, gamma,
-                m_dot, vt_hpt.z_3m, vt_hpt.Mc_3m, r_mean_HPT
-            )
-            blade_len_hpt = r_tip_hpt - r_hub_hpt
+                # ======== Stress calculation ========
+                rpm_HPT_new = rpm_safety_factor * Stress.get_max_rpm_light(rho_mat,yield_stress_mpa, r_mean_HPT, blade_len_hpt)
+                rpm_derivative = abs(rpm_HPT_new - rpm_HPT) / rpm_HPT
 
-            # ======== Stress calculation ========
-            rpm_HPT_new = rpm_safety_factor * Stress.get_max_rpm_light(rho_mat,yield_stress_mpa, r_mean_HPT, blade_len_hpt)
-            rpm_derivative = abs(rpm_HPT_new - rpm_HPT) / rpm_HPT
+                if rpm_derivative < rpm_derivative_lim:
+                    print(f"HPT Converged at {rpm_HPT:.1f} RPM (1 stage)")
+                    break
 
-            if rpm_derivative < rpm_derivative_lim:
-                print(f"HPT Converged at {rpm_HPT:.1f} RPM (1 stage)")
-                break
-
-            rpm_HPT = (1.0 - damping_factor) * rpm_HPT + damping_factor * rpm_HPT
+                rpm_HPT = (1.0 - damping_factor) * rpm_HPT + damping_factor * rpm_HPT
 
 
         # -----------------------------------------------------
