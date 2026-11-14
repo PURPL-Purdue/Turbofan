@@ -165,6 +165,106 @@ def throat_radius_error(R, Cx, Ct, zeta, beta_in, eps, R_LE, beta_out, R_TE, N_B
 
     return throat_radius_error
 
+
+
+def rad_eq(r_span, r_mean, Ctheta_mean, z_mean, frame="absolute", omega=None):
+    """
+    Calculate spanwise velocity components and flow angles
+    using a free-vortex tangential velocity distribution.
+
+    Assumptions:
+        - r * Ctheta = constant (free vortex).
+        - Axial velocity is constant across the span.
+        - Rotor blade speed is U = omega * r.
+
+    Inputs:
+        r_span       : Array of radial positions (m).
+        r_mean       : Meanline radius (m).
+        Ctheta_mean  : Meanline absolute tangential velocity (m/s).
+        z_mean       : Meanline axial velocity (m/s).
+        frame        : "absolute" for stator, "relative" for rotor.
+        omega        : Rotor angular velocity (rad/s).
+
+    All returned flow angles are in radians.
+    """
+
+    # -----------------------------------------------------
+    #                  INPUT VALIDATION
+    # -----------------------------------------------------
+
+    r_span = np.atleast_1d(np.asarray(r_span, dtype=float))
+
+    if r_span.ndim != 1 or len(r_span) < 2:
+        raise ValueError("r_span must contain at least two radial positions.")
+
+    values = np.asarray([r_mean, Ctheta_mean, z_mean],dtype=float)
+
+    if not np.all(np.isfinite(values)) or not np.all(np.isfinite(r_span)):
+        raise ValueError("Non-finite input to rad_eq.")
+
+    if np.any(r_span <= 0) or r_mean <= 0:
+        raise ValueError("All radial positions must be positive.")
+
+    if z_mean <= 0:
+        raise ValueError("Meanline axial velocity must be positive.")
+
+    frame = frame.lower()
+
+    if frame not in ("absolute", "relative"):
+        raise ValueError("frame must be 'absolute' or 'relative'.")
+
+    # -----------------------------------------------------
+    #              ABSOLUTE VELOCITY DISTRIBUTION
+    # -----------------------------------------------------
+
+    # Free-vortex assumption:
+    #
+    # Ctheta(r) * r = Ctheta_mean * r_mean
+    #
+    # Therefore:
+    #
+    # Ctheta(r) = Ctheta_mean * r_mean / r
+
+    Ctheta = Ctheta_mean * r_mean / r_span
+
+    # Constant axial velocity assumption.
+    Cz = np.full_like(r_span, z_mean)
+
+    # Absolute velocity magnitude at every radius
+    C = np.hypot(Cz, Ctheta)
+
+    # Absolute flow angle
+    alpha = np.arctan2(Ctheta, Cz)
+
+    # -----------------------------------------------------
+    #                 STATOR CALCULATION
+    # -----------------------------------------------------
+
+    if frame == "absolute":
+        return {"r": r_span, "Ctheta": Ctheta, "Cz": Cz, "C": C, "alpha": alpha, "angle": alpha}
+
+    # -----------------------------------------------------
+    #                 ROTOR CALCULATION
+    # -----------------------------------------------------
+
+    if omega is None or not np.isfinite(omega):
+        raise ValueError("A valid angular velocity is required for rotor calculations.")
+
+    # Blade speed at every radius.
+    U = omega * r_span
+
+    # Relative tangential velocity.
+    Wtheta = Ctheta - U
+
+    # Relative velocity magnitude.
+    W = np.hypot(Cz, Wtheta)
+
+    # Relative flow angle.
+    beta = np.arctan2(Wtheta, Cz)
+
+    return {"r": r_span, "Ctheta": Ctheta, "Cz": Cz, "C": C, "alpha": alpha, "U": U, "Wtheta": Wtheta, "W": W, "beta": beta, "angle": beta}
+
+
 @dataclass
 class PritchardParams:
     R: float # radius

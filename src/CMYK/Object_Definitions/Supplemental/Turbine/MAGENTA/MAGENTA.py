@@ -2,11 +2,28 @@ from Object_Definitions.Base_Objects import Flow, VelocityTriangle
 import Turbine_REF_structs
 from Run import helper_functions as hf
 import numpy as np
-import matplotlib as plt
+import matplotlib.pyplot as plt
 
 # HELPER FUNCTIONS
 def Turbine_Stage_Pitchline(initial, Mc_2m, Mw_3Rm, alpha_1m, schrodinkler, T0_1m, P0_1m, r_mean, ang_vel, gamma_t, R_t, Cp_t, m_dot_t, degR_m, current_power, target_power):
-    # ======== INPUTS ======== 
+    """
+    Calculate one turbine stage at the meanline.
+
+    All flow angles are in radians.
+
+    If initial:
+        schrodinkler is the specified stator exit angle alpha_2m.
+
+    Otherwise:
+        schrodinkler is the axial velocity z_3m from the
+        preceding stage, which becomes this stage's inlet
+        and stator-exit axial velocity.
+
+    degR_m is prescribed. Consequently, the actual rotor
+    exit relative Mach number is calculated rather than
+    forced to equal Mw_3Rm.
+    """
+    # ======== INPUTS ========
     # initial       | Whether or not this function call is for the first turbine stage
     # Mc_2m         | Target stator exit Mach number
     # Mw_3Rm        | Target rotor exit relative Mach number
@@ -23,143 +40,209 @@ def Turbine_Stage_Pitchline(initial, Mc_2m, Mw_3Rm, alpha_1m, schrodinkler, T0_1
     # degR_m        | Stage degree of reaction
     # current_power | Power generation currently before adding on the present stage
     # target_power  | Power generation target
-    
-    # ======== Pitchline Calcs (turbine-specific station numbers) ========
-    # Stator stuff
-    T0_2m = T0_1m   # No total temp drop over stator, assume adiabatic
-    T_2m = hf.T_T0(gamma_t, Mc_2m)*T0_2m  
+
+    # -----------------------------------------------------
+    #                  INPUT VALIDATION
+    # -----------------------------------------------------
+
+    values = np.asarray([
+        Mc_2m, Mw_3Rm, alpha_1m, schrodinkler,
+        T0_1m, P0_1m, r_mean, ang_vel,
+        gamma_t, R_t, Cp_t, m_dot_t,
+        degR_m, current_power, target_power
+    ], dtype=float)
+
+    if not np.all(np.isfinite(values)):
+        raise ValueError("Non-finite input to Turbine_Stage_Pitchline.")
+
+    if Mc_2m <= 0 or Mw_3Rm <= 0:
+        raise ValueError("Mach numbers must be positive.")
+
+    if T0_1m <= 0 or P0_1m <= 0:
+        raise ValueError("Inlet total temperature and pressure must be positive.")
+
+    if r_mean <= 0 or m_dot_t <= 0:
+        raise ValueError("Mean radius and mass flow must be positive.")
+
+    if gamma_t <= 1 or R_t <= 0 or Cp_t <= 0:
+        raise ValueError("Invalid gas properties.")
+
+    if target_power <= 0:
+        raise ValueError("Target turbine power must be positive.")
+
+    # -----------------------------------------------------
+    #                  STATOR CALCULATIONS
+    # -----------------------------------------------------
+
+    T0_2m = T0_1m
+
+    T_2m = T0_2m * hf.T_T0(gamma_t, Mc_2m)
     a_2m = hf.a(gamma_t, R_t, T_2m)
 
-    C_2m = Mc_2m*a_2m
-    
+    C_2m = Mc_2m * a_2m
+
     if initial:
-        alpha_2m = schrodinkler
-        Ctheta_2m = C_2m*np.sin(alpha_2m)
-        z_1m = z_2m = z_3m = C_2m*np.cos(alpha_2m)
+        # First-stage stator exit angle is prescribed.
+        alpha_2m = float(schrodinkler)
+        z_2m = C_2m * np.cos(alpha_2m)
+        Ctheta_2m = C_2m * np.sin(alpha_2m)
     else:
-        z_1m = z_2m = z_3m = schrodinkler
-        alpha_2m = np.acos(z_2m/C_2m)
-        Ctheta_2m = C_2m*np.sin(alpha_2m)
+        # Subsequent-stage axial velocity is inherited from the preceding stage
+        z_2m = float(schrodinkler)
 
-    C_1m = z_1m/np.cos(alpha_1m)
-    Ctheta_1m = C_1m*np.sin(alpha_1m)
+        if z_2m <= 0 or z_2m > C_2m:
+            raise ValueError("Infeasible axial velocity for the specified stator exit Mach.")
 
-    T_1m = T0_1m - C_1m**2/(2*Cp_t)
+        Ctheta_2m = np.sqrt(max(C_2m**2 - z_2m**2, 0.0))
+        alpha_2m = np.arctan2(Ctheta_2m, z_2m)
+
+    if z_2m <= 0:
+        raise ValueError("Calculated axial velocity must be positive.")
+
+    # Constant axial velocity through this stage, matching the existing design assumption.
+
+    z_1m = z_2m
+    z_3m = z_2m
+
+    # Stator inlet velocity.
+    cos_alpha_1m = np.cos(alpha_1m)
+    if cos_alpha_1m <= 0:
+        raise ValueError("Invalid stator inlet flow angle.")
+
+    C_1m = z_1m / cos_alpha_1m
+    Ctheta_1m = C_1m * np.sin(alpha_1m)
+
+    T_1m = T0_1m - C_1m**2 / (2.0 * Cp_t)
+    if T_1m <= 0:
+        raise ValueError("Calculated stator inlet static temperature is nonpositive.")
+
     a_1m = hf.a(gamma_t, R_t, T_1m)
-    Mc_1m = C_1m/a_1m
-    
-    # Stator Solidity
-    optimal_zweifel = 1
-    fake_optimal_stator_solidity = hf.sigXzweif(alpha_1m, alpha_2m) / optimal_zweifel
-    Ctheta_mean = (Ctheta_1m + Ctheta_2m)/2
-    alpha_2_stagger = np.atan(Ctheta_mean/z_2m)
-    real_optimal_stator_solidity = fake_optimal_stator_solidity/np.cos(alpha_2_stagger)
+    Mc_1m = C_1m / a_1m
 
-    # Stator deviation angle and throat/spacing ratio
-    if Mc_2m <= 1:
-        stator_dev = (alpha_2m - alpha_1m) / (8 * real_optimal_stator_solidity)
-        o_s = np.cos(alpha_2m)
-    else:
-        stator_dev = 0
-        o_s = np.cos(alpha_2m) / hf.A_Astar(gamma_t, Mc_2m)
-
-    # ======== Have you tried spinning? It's a great trick ========
-    # Calculating pitchline reference frame tangential velocity U
+    # -----------------------------------------------------
+    #                  ROTOR CALCULATIONS
+    # -----------------------------------------------------
+    # Meanline blade speed. The existing model assumes a constant mean radius throughout each stage.
     U_1m = U_2m = U_3m = ang_vel * r_mean
-    
-    # Converting to rotating reference frame
-    Wtheta_2m = Ctheta_2m - U_2m
+
     Wtheta_1m = Ctheta_1m - U_1m
-    
-    # Rotor exit relative and absolute tangential speed
+    Wtheta_2m = Ctheta_2m - U_2m
 
-    # This section below is for if we want to have degree of reaction be an ouput
-    # Wtheta_3m = -np.sqrt( (Mw_3Rm**2*(a_2m**2+(gamma_t-1)*Wtheta_2m**2/2)-z_2m**2) / (1+(gamma_t-1)*Mw_3Rm**2/2) )
-    # Ctheta_3m = U_2m + Wtheta_3m
+    # Degree of reaction determines rotor exit swirl.
+    Ctheta_3m = (2.0 * (1.0 - degR_m) * U_2m - Ctheta_2m)
 
-    # This section below is for when we specify degree of reaction as a design variable
-    Ctheta_3m = (1 - degR_m)*2*U_2m - Ctheta_2m
-    Wtheta_3m = Ctheta_3m-U_3m
+    Wtheta_3m = Ctheta_3m - U_3m
 
-    # Calculating miscellaneous velocities and angles
-    # Pythagoreas
-    W_2m = np.sqrt(z_2m**2 + Wtheta_2m**2)
-    W_3m = np.sqrt(z_3m**2 + Wtheta_3m**2)
-    C_3m = np.sqrt(z_3m**2 + Ctheta_3m**2)
-    W_1m = np.sqrt(z_1m**2 + Wtheta_1m**2)
-    
-    # Trig
-    beta_1m = -np.acos(z_1m/W_1m)
-    beta_2m = np.acos(z_2m/W_2m)
-    beta_3m = -np.acos(z_3m/W_3m)
-    alpha_3m = np.atan(Ctheta_3m/z_3m)
+    # Absolute and relative velocity magnitudes.
+    C_3m = np.hypot(z_3m, Ctheta_3m)
 
-    # Miscellaneous temps n' stuff
-    a_3m = W_3m/Mw_3Rm                  # Station 3 (rotor exit) speed of sound
-    Mw_2m = W_2m/a_2m                   # Station 2 (rotor inlet) relative mach number
-    Mw_1m = W_1m/a_1m                   # Station 1 (stator inlet) relative mach number
-    T0_2Rm = T_2m + W_2m**2/(2*Cp_t)    # Station 2 (Rotor inlet) relative total temperature 
+    W_1m = np.hypot(z_1m, Wtheta_1m)
+    W_2m = np.hypot(z_2m, Wtheta_2m)
+    W_3m = np.hypot(z_3m, Wtheta_3m)
 
-    Mz_1m = z_1m/a_1m                   # Station 1 axial mach number
-    Mz_2m = z_2m/a_2m                   # Station 2 axial mach number
-    Mz_3m = z_3m/a_3m                   # Station 3 axial mach number
-    
-    profileLoss_s = 0.06                # Assumed stator pressure loss coefficient
-    
-    # A lot of random temperatures and pressures, have fun reading through them lol
-    P_1m = P0_1m * hf.P_P0(gamma_t, Mc_1m)
-    P0_2m = -profileLoss_s*(P0_1m - P_1m)+P0_1m
-    P_2m = P0_2m * hf.P_P0(gamma_t, Mc_2m)
-    P0_2Rm = P_2m / hf.P_P0(gamma_t, Mw_2m)
-    T0_3m = T0_2m + U_2m*(Ctheta_3m-Ctheta_2m)/Cp_t
-    T_3m = T0_3m - C_3m**2/(2*Cp_t)
-    T0_3Rm = T_3m + W_3m**2/(2*Cp_t)
+    # -----------------------------------------------------
+    #                  VELOCITY ANGLES
+    # -----------------------------------------------------
+    # Use arctan2 to preserve the correct signs and quadrants.
+    beta_1m = np.arctan2(Wtheta_1m, z_1m)
+    beta_2m = np.arctan2(Wtheta_2m, z_2m)
+    beta_3m = np.arctan2(Wtheta_3m, z_3m)
+
+    alpha_3m = np.arctan2(Ctheta_3m, z_3m)
+
+    # -----------------------------------------------------
+    #                  TEMPERATURES
+    # -----------------------------------------------------
+
+    # Euler turbine work equation.
+    T0_3m = (T0_2m + U_2m * (Ctheta_3m - Ctheta_2m) / Cp_t)
+
+    T_3m = T0_3m - C_3m**2 / (2.0 * Cp_t)
+    if T0_3m <= 0 or T_3m <= 0:
+        raise ValueError("Calculated rotor exit temperature is nonpositive.")
+
     a_3m = hf.a(gamma_t, R_t, T_3m)
-    Mc_3m = C_3m/a_3m
-    
-    profileLoss_r = 0.08                # Assumed rotor pressure loss coefficient
-    P0_3Rm = -profileLoss_r*(P0_2Rm - P_2m)+P0_2Rm
-    P_3m = P0_3Rm * hf.P_P0(gamma_t, Mw_3Rm)
+
+    # -----------------------------------------------------
+    #                  MACH NUMBERS
+    # -----------------------------------------------------
+
+    # Relative and absolute rotor exit Mach numbers
+    # must be calculated from the same physical state.
+
+    Mc_2m_actual = Mc_2m
+    Mc_3m = C_3m / a_3m
+
+    Mw_1m = W_1m / a_1m
+    Mw_2m = W_2m / a_2m
+    Mw_3m_actual = W_3m / a_3m
+
+    Mz_1m = z_1m / a_1m
+    Mz_2m = z_2m / a_2m
+    Mz_3m = z_3m / a_3m
+
+    # -----------------------------------------------------
+    #                  PRESSURE CALCULATIONS
+    # -----------------------------------------------------
+
+    # Stator pressure loss.
+    profileLoss_s = 0.06
+
+    P_1m = P0_1m * hf.P_P0(gamma_t, Mc_1m)
+
+    P0_2m = (P0_1m - profileLoss_s * (P0_1m - P_1m))
+    P_2m = P0_2m * hf.P_P0(gamma_t, Mc_2m)
+
+    # Rotor inlet relative total pressure.
+    P0_2Rm = P_2m / hf.P_P0(gamma_t, Mw_2m)
+
+    # Rotor pressure loss.
+    profileLoss_r = 0.08
+
+    P0_3Rm = (P0_2Rm - profileLoss_r * (P0_2Rm - P_2m))
+
+    # Use the ACTUAL rotor exit relative Mach number.
+    # Mw_3Rm is a target input, but degree of reaction is the active design variable in this formulation.
+    P_3m = P0_3Rm * hf.P_P0(gamma_t, Mw_3m_actual)
+
+    # Convert back to absolute total pressure.
     P0_3m = P_3m / hf.P_P0(gamma_t, Mc_3m)
-    
-    # Rotor solidity
-    optimal_zweifel = 1
-    fake_optimal_rotor_solidity = hf.sigXzweif(beta_2m, beta_3m) / optimal_zweifel     # "Optimal" solidity based on Zweifel
-    Wtheta_mean = (Wtheta_2m + Wtheta_3m)/2                                             # Average relative swirl
-    beta_stagger = np.atan(Wtheta_mean/z_3m)                                            # Stagger angle
-    real_optimal_stator_solidity = fake_optimal_rotor_solidity/np.cos(beta_stagger)     # Actual optimal solidity
 
-    # Rotor deviation angle
-    rotor_dev = (beta_3m - beta_2m)/(8*real_optimal_stator_solidity)                    # Rotor blade deviatino angle
-    
-    # Power
-    w_spec = U_2m*(Ctheta_2m-Ctheta_3m)     # Euler's
-    power = w_spec * m_dot_t                # Calculating stage power generation
+    if min(P0_2m, P_2m, P0_2Rm, P0_3Rm, P_3m, P0_3m) <= 0:
+        raise ValueError("Calculated turbine pressure is nonpositive.")
 
-    last = False
-    if power + current_power > target_power:
-        last = True
+    # -----------------------------------------------------
+    #                  POWER CALCULATION
+    # -----------------------------------------------------
+    w_spec = U_2m * (Ctheta_2m - Ctheta_3m)
 
-    # degR_m = 1 - (Ctheta_2m + Ctheta_3m)/(2*U_2m)     # Stage degree of reaction
+    power = w_spec * m_dot_t
+    if power <= 0:
+        raise ValueError("Calculated turbine stage power is nonpositive. ", "Check reaction, velocity angles and rotation direction.")
 
-    # ======== OUTPUT ========
+    last = (current_power + power >= target_power)
+
+    # -----------------------------------------------------
+    #                  OUTPUT STRUCTURES
+    # -----------------------------------------------------
+
     velocityTriangle = Turbine_REF_structs.FullVelTriInfo(
         C_1m, C_2m, C_3m,
         W_1m, W_2m, W_3m,
         U_1m, U_2m, U_3m,
         z_1m, z_2m, z_3m,
-                                    
-        Mc_1m, Mc_2m, Mc_3m,
-        Mw_1m, Mw_2m, Mw_3Rm,
+
+        Mc_1m, Mc_2m_actual, Mc_3m,
+        Mw_1m, Mw_2m, Mw_3m_actual,
         Mz_1m, Mz_2m, Mz_3m,
-                                    
+
         Ctheta_1m, Ctheta_2m, Ctheta_3m,
         Wtheta_1m, Wtheta_2m, Wtheta_3m,
-                                    
+
         alpha_1m, alpha_2m, alpha_3m,
-        beta_1m,  beta_2m,  beta_3m
-        )
-    
+        beta_1m, beta_2m, beta_3m
+    )
+
     turbineStageInfo = Turbine_REF_structs.Turbine_Stage_Info(
         degR_m,
         power,
@@ -171,80 +254,127 @@ def Turbine_Stage_Pitchline(initial, Mc_2m, Mw_3Rm, alpha_1m, schrodinkler, T0_1
         P0_3m
     )
 
-    return [velocityTriangle, turbineStageInfo, last]
+    return velocityTriangle, turbineStageInfo, last
 
-def Turbine_Annulus_Sizing(triangles, info, m_dot_target, gamma, R, r_mean_vec):
-    # Setup for multi-stage shennanigans
+
+def Turbine_Annulus_Sizing(triangles,info,m_dot_target,gamma,R, r_mean_vec, num_streamlines=51):
+    """
+    Calculate the initial annulus geometry at all three
+    stations of every turbine stage.
+
+    Each stage has:
+        1m: Stator inlet
+        2m: Stator exit / rotor inlet
+        3m: Rotor exit
+
+    Three stations are retained per stage so that
+    stage-to-stage mean-radius changes are represented.
+
+    This calculates initial annulus geometry only.
+    """
+
+    # -----------------------------------------------------
+    #                  INPUT VALIDATION
+    # -----------------------------------------------------
+
     num_stages = len(info)
-    num_stations = num_stages*2+1
-    num_streamlines = 51 # how very odd (this number MUST be odd to ensure we actually have an integer middle index)
 
-    # Calculations for initial annulus sizing without radial equilibrium effects
-    r_hub_stations = [1 for _ in range(num_stations)]
-    r_tip_stations = [1 for _ in range(num_stations)]
-    rho_m_stations = [1 for _ in range(num_stations)]
+    if num_stages < 1:
+        raise ValueError("No turbine stages supplied.")
 
-    counter = 0
-    for i in range(len(info)):
-        r_hub_stations[counter], r_tip_stations[counter], rho_m_stations[counter] = annulus_adjust(
-            info[i].T0_1m,
-            info[i].P0_1m,
-            R,
-            gamma,
-            m_dot_target,
-            triangles[i].z_1m,
-            triangles[i].Mc_1m,
-            r_mean_vec[i]
+    if len(triangles) != num_stages:
+        raise ValueError("Velocity triangle count does not match stage count.")
+
+    r_mean_vec = np.asarray(r_mean_vec, dtype=float)
+
+    if len(r_mean_vec) != num_stages:
+        raise ValueError("Mean radius vector does not match stage count.")
+
+    if not np.all(np.isfinite(r_mean_vec)) or np.any(r_mean_vec <= 0):
+        raise ValueError("Mean radii must be finite and positive.")
+
+    if not isinstance(num_streamlines, (int, np.integer)):
+        raise TypeError("num_streamlines must be an integer.")
+
+    if num_streamlines < 3 or num_streamlines % 2 == 0:
+        raise ValueError(
+            "num_streamlines must be an odd integer of at least 3."
         )
-        r_hub_stations[counter+1], r_tip_stations[counter+1], rho_m_stations[counter+1] = annulus_adjust(
-            info[i].T0_2m,
-            info[i].P0_2m,
-            R,
-            gamma,
-            m_dot_target,
-            triangles[i].z_2m,
-            triangles[i].Mc_2m,
-            r_mean_vec[i]
-        )
-        counter = counter + 2
-    r_hub_stations[num_stations-1], r_tip_stations[num_stations-1], rho_m_stations[num_stations-1] = annulus_adjust(info[-1].T0_3m, info[-1].P0_3m, R, gamma, m_dot_target, triangles[-1].z_3m, triangles[-1].Mc_3m, r_mean_vec[-1])
 
+    # -----------------------------------------------------
+    #                  STATION SETUP
+    # -----------------------------------------------------
 
-    stations = [_ for _ in range(1, num_stations+1)]
+    num_stations = 3 * num_stages
 
-    # Plotting the hub and tip radii
-    plt.plot(stations, r_tip_stations, 'k')
-    plt.plot(stations, r_hub_stations, 'k')
+    r_hub_stations = np.empty(num_stations)
+    r_tip_stations = np.empty(num_stations)
+    rho_m_stations = np.empty(num_stations)
+    r_mean_stations = np.empty(num_stations)
 
-    # Plotting the meanline
-    r_mean_plot_stages =   [_*2 + 1 for _ in range(0, num_stages)]
-    r_mean_plot_stages.append(r_mean_plot_stages[-1]+2)
-    r_mean_vec_plot = r_mean_vec.copy()
-    r_mean_vec_plot.append(r_mean_vec[-1])
-    plt.plot(r_mean_plot_stages, r_mean_vec_plot, "--r")
+    stage_station_indices = []
 
-    # Plotting the horizontal inlet radius line (to make the real meanline easier to see)
-    plt.hlines(r_mean_vec[0], 1, stations[-1], linestyles='--', colors='gray')
+    # -----------------------------------------------------
+    #               ANNULUS SIZING
+    # -----------------------------------------------------
 
-    # Mirrored
-    plt.plot(stations, [-_ for _ in r_tip_stations], 'k')
-    plt.plot(stations, [-_ for _ in r_hub_stations], 'k')
-    plt.plot(r_mean_plot_stages, [-_ for _ in r_mean_vec_plot], "--r")
-    plt.hlines(-r_mean_vec[0], 1, stations[-1], linestyles='--', colors='gray')
+    for i in range(num_stages):
 
-    # print(rho_m_stations)
-    
+        # The three stations belonging to this stage.
 
+        stage_stations = [
+            (info[i].T0_1m, info[i].P0_1m, triangles[i].z_1m, triangles[i].Mc_1m),
+            (info[i].T0_2m, info[i].P0_2m, triangles[i].z_2m, triangles[i].Mc_2m),
+            (info[i].T0_3m, info[i].P0_3m, triangles[i].z_3m, triangles[i].Mc_3m)
+        ]
 
-    ## ======== Vector Creation and Initialization ========
-    r_spans      = [[] for _ in range(num_stations)]
-    Ctheta_spans = [[] for _ in range(num_stations)]
-    z_spans      = [[] for _ in range(num_stations)]
-    rho_spans    = [[] for _ in range(num_stations)]
-    T_spans      = [[] for _ in range(num_stations)]
-    r_spans      = [[] for _ in range(num_stations)]
+        # Mean radius used for this stage.
+        r_mean = r_mean_vec[i]
 
-    # for i in range(len())
+        first_station = 3 * i
+
+        # Calculate all three annulus stations.
+        for j, station_data in enumerate(stage_stations):
+            T0, P0, z, Mc = station_data
+            station_index = first_station + j
+
+            (r_hub_stations[station_index], r_tip_stations[station_index], rho_m_stations[station_index]
+             ) = annulus_adjust(T0, P0, R, gamma, m_dot_target, z, Mc, r_mean)
+
+            r_mean_stations[station_index] = r_mean
+
+        # Save the indices for later use in YELLOW.
+        stage_station_indices.append({"inlet": first_station, "stator_exit": first_station + 1, "rotor_exit": first_station + 2})
+
+    # -----------------------------------------------------
+    #                GEOMETRY VALIDATION
+    # -----------------------------------------------------
+    if not (np.all(np.isfinite(r_hub_stations)) and np.all(np.isfinite(r_tip_stations)) and np.all(np.isfinite(rho_m_stations))):
+        raise RuntimeError("Non-finite annulus sizing result.")
+
+    if np.any(r_hub_stations <= 0):
+        raise RuntimeError("A calculated hub radius is nonpositive.")
+
+    if np.any(r_tip_stations <= r_hub_stations):
+        raise RuntimeError("Invalid hub/tip radius relationship.")
+
+    if np.any(rho_m_stations <= 0):
+        raise RuntimeError("Calculated density must be positive.")
+
+    r_spans = [np.linspace(r_hub_stations[i], r_tip_stations[i], num_streamlines) for i in range(num_stations)]
+
+    return {
+        "r_hub": r_hub_stations,
+        "r_tip": r_tip_stations,
+        "r_mean": r_mean_stations,
+        "rho_mean": rho_m_stations,
+        "r_spans": r_spans,
+        "stage_station_indices": stage_station_indices,
+        "num_stages": num_stages,
+        "num_stations": num_stations,
+        "num_streamlines": num_streamlines
+    }
+
 
 def annulus_adjust(T0, P0, R, gamma, m_dot, z, Mc, r_mean):
         T = T0 * hf.T_T0(gamma, Mc) # | spanwise constant (design choice i think)
@@ -360,7 +490,8 @@ def pitchline_staging(initial, Mc_2m, Mw_3Rm, Mc_2m_default, Mw_3Rm_default, alp
             stage_idx += 1
 
     num_stages = len(multistage_velocity_triangles)
-    num_stages_target = num_stages - 1 if num_stages != 1 else 1      # This will calculate a number for non-initial passes, but is meaningless unless it is the initial pass
+    # TODO: Verify if its actually num_stages
+    num_stages_target = num_stages #- 1 if num_stages != 1 else 1      # This will calculate a number for non-initial passes, but is meaningless unless it is the initial pass
 
     total_power_generated = sum([info.power for info in multistage_info])
     excess_power_margin = (total_power_generated - req_power_t)/req_power_t * 100
@@ -368,5 +499,4 @@ def pitchline_staging(initial, Mc_2m, Mw_3Rm, Mc_2m_default, Mw_3Rm_default, alp
     if initial:
         r_mean_vec = [r_mean_i for _ in range(0, num_stages)]
 
-    # TODO replace REF_structs, velocity triangle data already known, store the rest in AxialTurbine
     return Turbine_REF_structs.Turbine_Pitchline_Results(multistage_velocity_triangles, multistage_info, r_mean_vec, total_power_generated, excess_power_margin, num_stages_target)

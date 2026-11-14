@@ -17,7 +17,7 @@ class AxialTurbine(Turbine):
 
         self.name = name
         #-----------------------------------------------------
-        #            Flow Flow Inlets and Exits
+        #            Flow Inlets and Exits
         #-----------------------------------------------------
         self.FlowIn = None
         self.FlowOut = None
@@ -38,9 +38,10 @@ class AxialTurbine(Turbine):
 
         self.Wfactor = None
         self.Wstream = None
+        self.annulus_res = None
 
         # -----------------------------------------------------
-        #          Used in YELLOW
+        #          USED IN YELLOW
         # -----------------------------------------------------
         self.pitchline_res = None
         self.blade_profiles = None
@@ -80,10 +81,10 @@ class AxialTurbine(Turbine):
 
         self.rho_mat = float(cfg.get("rho_mat", 8190.0))
         self.yield_stress_mpa = float(cfg.get("yield_stress_mpa", 800.0))
+
     #-----------------------------------------------------
     #                   CMYK Methods
     #-----------------------------------------------------
-
     def CYAN(self) -> None:
         # PREPARING REQUIRED VALUES ---------------------
         self.Wfactor = Wfactor = self.FlowIn.Wfactor
@@ -110,15 +111,28 @@ class AxialTurbine(Turbine):
         )
 
     def MAGENTA(self) -> None:
-        '''
-        Notes/TODO
-        - For power matching, the final decision as to whether we increase meanline radius for all stages at once, linearly per stage, or both, is still to be decided.
-        Right now it does both, leading to the kind of wacky geometry that is output.
-        - Might want to consider using an iterative approach to switch to having a constant hub radius model for the annulus geometry
-        - Finish annulus sizing/spanwise analysis of the turbine by implementing radial equilibrium.
-        '''
+        """
+        Size the axial turbine using pitchline staging, power matching,
+        and structural RPM constraints.
 
-        # exception handling before initialization
+        Supports both single-stage and multistage turbines.
+
+        Stage selection:
+            - If num_stages_target is specified, use that stage count.
+            - If num_stages_target is None, estimate the required stage count.
+
+        Power matching:
+            - Single stage: adjust degree of reaction.
+            - Multiple stages: adjust mean radius and radial increment.
+
+        The method only operates on this turbine instance. Upstream and
+        downstream components communicate through Flow and GeometryInterface.
+        """
+
+        # -----------------------------------------------------
+        #                  INPUT DATA VALIDATION
+        # -----------------------------------------------------
+
         if self.FlowIn is None or self.FlowOut is None:
             raise RuntimeError(f"{self.name}: flow interfaces are not connected")
 
@@ -127,68 +141,105 @@ class AxialTurbine(Turbine):
 
         if self.Shaft is None:
             raise RuntimeError(f"{self.name}: shaft is not connected")
-        # First stage stater is chosen by us based on previus stuff
-        # Max rpm will be based on first stage, where it is the hottest
-        gamma   = self.FlowIn.gamma0
-        Cp      = self.FlowIn.Cp0
-        R       = self.FlowIn.R
-        T0_in   = self.FlowIn.T0        # HPT inlet total temperature, K
-        P0_in   = self.FlowIn.P0        # HPT inlet total pressure,    Pa
-        m_dot   = self.FlowIn.W         # Turbine total mass flow, kg/s, air plus fuel
+
+        # -----------------------------------------------------
+        #                  INLET CONDITIONS
+        # -----------------------------------------------------
+
+        gamma = self.FlowIn.gamma0
+        Cp = self.FlowIn.Cp0
+        R = self.FlowIn.R
+
+        T0_in = self.FlowIn.T0
+        P0_in = self.FlowIn.P0
+
+        m_dot = self.FlowIn.W
 
         self.Wfactor = self.FlowIn.Wfactor
 
+        # Required power is either determined by HPC or LPC through Shaft
         req_power = self.Shaft.required_power
+
         if req_power is None or req_power <= 0:
-            raise RuntimeError(
-                f"{self.name}: shaft required_power must be positive and an integer"
-            )
+            raise RuntimeError(f"{self.name}: shaft required_power must be positive")
 
-        if hasattr(self.GeoIn, "alpha_out"):
-            alpha_in = self.GeoIn.alpha_out
-            r_mean_inlet = self.GeoIn.r_mean_out
-        else:
+        # Use upstream geometry when available.
+        # Otherwise, use the configured initial design conditions.
+
+        alpha_in = getattr(self.GeoIn, "alpha_out", None)
+        r_mean_inlet = getattr(self.GeoIn, "r_mean_out", None)
+
+        if alpha_in is None:
             alpha_in = self.alpha_1m
+
+        if r_mean_inlet is None:
             r_mean_inlet = self.r_mean_inlet
 
-        # First stage design decisions
-        alpha_1m        = self.alpha_1m
-        alpha_2m        = self.alpha_2m
-        Mc_2m           = self.Mc_2m                      # Slightly supersonic stator nozzle exit
-        Mw_3Rm          = self.Mw_3Rm                     # TODO find justification for this
+        # -----------------------------------------------------
+        #                  DESIGN PARAMETERS
+        # -----------------------------------------------------
 
-        # Multistage design decisions
-        Mc_2m_default   = self.Mc_2m_default              # Just barely not choking the flow at stator nozzle exit
-        Mw_3Rm_default  = self.Mw_3Rm_default             # TODO find justification for this
+        alpha_2m = self.alpha_2m
 
+        Mc_2m = self.Mc_2m
+        Mw_3Rm = self.Mw_3Rm
 
-        # ================= VARIABLES FOR ITERATION =================
-        # max_passes = 100
-        # rpm_derivative_lim = 0.001  # 0.1% relative convergence tolerance
-        # damping_factor = 0.5
-        # rpm_safety_factor = 0.85  # Operating RPM = 85% of max structural RPM
-        # # ======== Stress variables ========
-        # r_mean_inlet = 0.075  # HPT inlet mean radius, m
-        # rho_mat = 8190.0  # Inconel density, kg/m^3
-        # yield_stress_mpa = 800.0  # Inconel yield stress, MPa
+        Mc_2m_default = self.Mc_2m_default
+        Mw_3Rm_default = self.Mw_3Rm_default
+
+        rpm = self.initial_rpm
 
         # -----------------------------------------------------
-        #  PART 1:
+        #                 MAIN RPM ITERATION
         # -----------------------------------------------------
-        # rpm_HPT = 15000  # Initial RPM for HPT
-        # implement
-        for i in range(self.max_rpm_passes):
-            # These variables need to be reinitialized between every pass TODO: Figure out if degreeR_m needs to changed after the initial pass
-            ang_vel = self.initial_rpm * 2 * np.pi / 60 # Angular velocity, rad/s
+        # note that for ... else loop runs the else if the loop finishes without hitting break
+        for rpm_pass in range(self.max_rpm_passes):
+            # Reset sizing variables for this RPM iteration.
+            ang_vel = rpm * 2.0 * np.pi / 60.0
             degR_m = self.degR_m
-            r_mean_inlet = self.r_mean_inlet
-            r_inc_factor = 0
+            r_mean_i = r_mean_inlet
+            r_inc_factor = 0.0
 
-            if self.name.upper() == "HPT" or (self.name.upper() == "LPT" and self.num_stages_target is None):
-                percent_error = 5
-                while percent_error > 2 or percent_error < 0:
-                    pitchline_res  = mag.pitchline_staging(
-                        False,  # initial
+            # determine number of stages
+            if self.num_stages_target is None:
+                initial_pitchline_res = mag.pitchline_staging(
+                    True,  # Initial
+                    Mc_2m,
+                    Mw_3Rm,
+                    Mc_2m_default,
+                    Mw_3Rm_default,
+                    alpha_in,
+                    alpha_2m,
+                    T0_in,
+                    P0_in,
+                    r_mean_i,
+                    ang_vel,
+                    gamma,
+                    R,
+                    Cp,
+                    m_dot,
+                    degR_m,
+                    req_power
+                )
+                num_stages_target = initial_pitchline_res.num_stages_target
+            else:
+                # Use the stage count specified in the configuration
+                num_stages_target = self.num_stages_target
+
+            if num_stages_target is None or num_stages_target < 1:
+                raise RuntimeError(f"{self.name}: invalid number of stages: {num_stages_target}")
+
+            # -------------------------------------------------
+            #                  POWER MATCHING
+            # -------------------------------------------------
+            if num_stages_target == 1:
+                # =============================================
+                #              SINGLE-STAGE TURBINE
+                # =============================================
+                # Match generated power by adjusting degree of reaction.
+                for power_pass in range(self.max_power_passes):
+                    pitchline_res = mag.pitchline_staging(
+                        False,
                         Mc_2m,
                         Mw_3Rm,
                         Mc_2m_default,
@@ -197,7 +248,7 @@ class AxialTurbine(Turbine):
                         alpha_2m,
                         T0_in,
                         P0_in,
-                        r_mean_inlet,
+                        r_mean_i,
                         ang_vel,
                         gamma,
                         R,
@@ -208,25 +259,41 @@ class AxialTurbine(Turbine):
                         r_inc_factor=0.0,
                         num_stages_target=1
                     )
-                    total_power = pitchline_res .total_power_generated
-                    percent_error = (total_power - req_power) / req_power * 100
-                    if percent_error < 0:
-                        degR_m += 0.005
+                    total_power_generated = pitchline_res.total_power_generated
+                    percent_error = ((total_power_generated - req_power) / req_power * 100.0)
+
+                    # Accept a solution with the required power and an oversizing error within tolerance
+                    if 0.0 <= percent_error <= self.power_tolerance_pct:
+                        break
+
+                    # Adjust reaction according to power error
+                    if percent_error < 0.0:
+                        degR_m += self.degR_step
                     else:
-                        degR_m -= 0.005
-            elif self.name.upper() == "LPT" and self.num_stages_target is not None:
-                while total_power < req_power:
+                        degR_m -= self.degR_step
+                else:
+                    raise RuntimeError(
+                        f"{self.name}: single-stage power matching "
+                        f"did not converge. Final error: {percent_error:.2f}%"
+                    )
+            else:
+
+                # =============================================
+                #             MULTISTAGE TURBINE
+                # =============================================
+                # Match generated power by adjusting the mean radius and radial increment
+                for radius_pass in range(self.max_radius_passes):
                     pitchline_res = mag.pitchline_staging(
-                        False,  # initial
+                        False,
                         Mc_2m,
                         Mw_3Rm,
                         Mc_2m_default,
                         Mw_3Rm_default,
-                        alpha_1m,
+                        alpha_in,
                         alpha_2m,
                         T0_in,
                         P0_in,
-                        r_mean_inlet,
+                        r_mean_i,
                         ang_vel,
                         gamma,
                         R,
@@ -235,42 +302,66 @@ class AxialTurbine(Turbine):
                         degR_m,
                         req_power,
                         r_inc_factor=r_inc_factor,
-                        num_stages_target=self.num_stages_target
+                        num_stages_target=num_stages_target
                     )
-                    total_power = pitchline_res.total_power_generated
-                    r_mean_curr += 0.01
-                    r_inc_factor += 0.01
+
+                    total_power_generated = pitchline_res.total_power_generated
+                    # The original multistage approach increases the radius until sufficient power is generated.
+                    if total_power_generated >= req_power:
+                        break
+
+                    r_mean_i += self.mean_radius_step
+                    r_inc_factor += self.mean_radius_step
+                else:
+                    raise RuntimeError(f"{self.name}: multistage power matching did not converge within {self.max_radius_passes} iterations")
+
+            # -------------------------------------------------
+            #              STRUCTURAL RPM CALCULATION
+            # -------------------------------------------------
+            # use first stage for HPT and last stage for LPT stress calculations
+            if self.name.upper() == "LPT":
+                vt = pitchline_res.multistage_velocity_triangles[-1]
+                info = pitchline_res.multistage_info[-1]
+                r_mean_stage = pitchline_res.r_mean_vec[-1]
             else:
-                raise ValueError("Assign correct name to Turbine object ('HPT' or 'LPT') and initialize num_stages_target")
+                vt = pitchline_res.multistage_velocity_triangles[0]
+                info = pitchline_res.multistage_info[0]
+                r_mean_stage = pitchline_res.r_mean_vec[0]
 
-            vt = pitchline_res.multistage_velocity_triangles[0]
-            info = pitchline_res.multistage_info[0]
             r_hub, r_tip, _ = mag.annulus_adjust(
-                info.T0_3m, info.P0_3m, R, gamma,
-                m_dot, vt.z_3m, vt.Mc_3m, r_mean_inlet
+                info.T0_3m,
+                info.P0_3m,
+                R,
+                gamma,
+                m_dot,
+                vt.z_3m,
+                vt.Mc_3m,
+                r_mean_stage
             )
+
             blade_length = r_tip - r_hub
+            rpm_max = self.rpm_safety_factor * Stress.get_max_rpm_light(self.rho_mat, self.yield_stress_mpa, r_mean_stage, blade_length)
+            rpm_derivative = abs(rpm_max - rpm) / rpm
 
-            # ======== Stress calculation ========
-            rpm_HPT_new = self.rpm_safety_factor * Stress.get_max_rpm_light(self.rho_mat, self.yield_stress_mpa,
-                                                                            r_mean_inlet, blade_length)
-
-            rpm_derivative = abs(rpm_HPT_new - rpm_HPT) / rpm_HPT
-
-            if rpm_derivative < self.rpm_safety_factor:
-                print(f"HPT Converged at {rpm_HPT:.1f} RPM (1 stage)")
+            if rpm_derivative < self.rpm_derivative_lim:
+                self.operating_rpm = rpm
+                print(f"{self.name} converged at {rpm:.1f} RPM ({num_stages_target} stages)")
                 break
-
-            rpm_HPT = (1.0 - self.damping_factor) * rpm_HPT + self.damping_factor * rpm_HPT
-
+            # damped update to prevent RPM oscillation
+            rpm = ((1.0 - self.damping_factor) * rpm + self.damping_factor * rpm_max)
+        else:
+            raise RuntimeError(f"{self.name}: RPM iteration did not converge within {self.max_rpm_passes} passes")
 
         # -----------------------------------------------------
-        #  PART 3:
+        #                  STORE FINAL RESULTS
         # -----------------------------------------------------
-        vt_last = self.pitchline_res.multistage_velocity_triangles[-1]
-        info_last = self.pitchline_res.multistage_info[-1]
-        r_mean_last = self.pitchline_res.r_mean_vec[-1]
+        self.num_stages = num_stages_target
 
+        vt_last = pitchline_res.multistage_velocity_triangles[-1]
+        info_last = pitchline_res.multistage_info[-1]
+        r_mean_last = pitchline_res.r_mean_vec[-1]
+
+        # update exit parameters
         self.FlowOut.setFlow(
             T0=info_last.T0_3m,
             P0=info_last.P0_3m,
@@ -281,8 +372,10 @@ class AxialTurbine(Turbine):
         self.GeoOut.alpha_out = vt_last.alpha_3m
         self.GeoOut.r_mean_out = r_mean_last
 
+        # output values for annulus sizing
         self.pitchline_res = pitchline_res
-        mag.Turbine_Annulus_Sizing(
+        self.operating_rpm = rpm
+        self.annulus_res = mag.Turbine_Annulus_Sizing(
             pitchline_res.multistage_velocity_triangles,
             pitchline_res.multistage_info,
             m_dot,
@@ -291,52 +384,12 @@ class AxialTurbine(Turbine):
             pitchline_res.r_mean_vec
         )
 
-        return
 
-    # TODO: Add comments and improve on OOP practices
     def YELLOW(self) -> None:
         """
         After getting the final mean line velocity triangles from MAGENTA, use radial equilibrium function to get spanwise velocity triangles
         :return: does note explicitly return anything but makes the whole 3D blade profile
         """
-
-        def rad_eq(theta, r_tip, r_hub, r_mega_tip, r_mega_hub, type, inorout):
-            theta = np.deg2rad(theta)
-
-            if type == "stator" or (type == "rotor" and inorout == "in"):
-                V_mag = 525
-                V_theta_M = V_mag * np.sin(theta)
-                r_mid = (r_hub + r_tip) / 2
-
-                K = V_theta_M * r_mid
-
-                V_theta_H = K / r_hub
-                V_theta_T = K / r_tip
-                V_theta_mH = K / r_mega_hub
-                V_theta_mT = K / r_mega_tip
-
-                beta_H = np.rad2deg(np.arctan(V_theta_H / (V_mag * np.cos(theta))))
-                beta_T = np.rad2deg(np.arctan(V_theta_T / (V_mag * np.cos(theta))))
-                beta_mH = np.rad2deg(np.arctan(V_theta_mH / (V_mag * np.cos(theta))))
-                beta_mT = np.rad2deg(np.arctan(V_theta_mT / (V_mag * np.cos(theta))))
-            elif (type == "rotor" and inorout == "out"):
-                V_mag = 277
-                V_theta_M = V_mag * np.sin(theta)
-                r_mid = (r_hub + r_tip) / 2
-
-                K = V_theta_M * r_mid
-
-                V_theta_H = K / r_hub
-                V_theta_T = K / r_tip
-                V_theta_mH = K / r_mega_hub
-                V_theta_mT = K / r_mega_tip
-
-                beta_H = np.rad2deg(np.arctan(V_theta_H / (V_mag * np.cos(theta))))
-                beta_T = np.rad2deg(np.arctan(V_theta_T / (V_mag * np.cos(theta))))
-                beta_mH = np.rad2deg(np.arctan(V_theta_mH / (V_mag * np.cos(theta))))
-                beta_mT = np.rad2deg(np.arctan(V_theta_mT / (V_mag * np.cos(theta))))
-
-            return beta_H, beta_T, beta_mH, beta_mT
 
         vel_triangles = self.pitchline_res.multistage_velocity_triangles
         stage_info = self.pitchline_res.multistage_info
@@ -376,5 +429,3 @@ class AxialTurbine(Turbine):
                 'stator': stator_geom,
                 'rotor': rotor_geom
             })
-
-        return
