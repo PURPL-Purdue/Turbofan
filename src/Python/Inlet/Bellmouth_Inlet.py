@@ -11,14 +11,12 @@ def bellmouth_inlet(m_dot, rho, V_i):
     A_e = m_dot / (rho * V_i)
     D_e = m.sqrt(4 * A_e / m.pi)
 
-    D_i = 2.13 * D_e
     r_c = 0.08 * D_i
     r_e = D_e / 2
-    r_i = D_i / 2
     l = D_e
 
-    r_c_theta = np.linspace(m.pi/2, m.pi, 200)
-    ellipse_theta = np.linspace(0, m.pi / 2, 200)
+    r_c_theta = np.linspace(m.pi/2, m.pi, 50)
+    ellipse_theta = np.linspace(0, m.pi / 2, 50)
     z_ellipse = l * (1 - np.sin(ellipse_theta))
     R_ellipse_upper = r_e * (1 - np.cos(ellipse_theta)) + r_e
     z_r_c = r_c * (1 - np.sin(r_c_theta))
@@ -27,6 +25,7 @@ def bellmouth_inlet(m_dot, rho, V_i):
     R_ellipse_lower = -R_ellipse_upper
     R_r_c_lower = -R_r_c_upper
 
+    D_i = 2 * (max(R_ellipse_upper) - min(R_ellipse_upper)) + D_e
     print("Mouth Diameter: ", f"{D_i:.2f}")
     print("Exit Diameter: ", f"{D_e:.2f}")
     print("Corner Radius ", f"{r_c:.2f}")
