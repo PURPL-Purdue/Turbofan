@@ -155,9 +155,9 @@ def Turbine_Stage_Pitchline(initial, Mc_2m, Mw_3Rm, alpha_1m, schrodinkler, T0_1
     # -----------------------------------------------------
 
     # Euler turbine work equation.
-    T0_3m = (T0_2m + U_2m * (Ctheta_3m - Ctheta_2m) / Cp_t)
+    T0_3m = T0_2m + U_2m*(Ctheta_3m-Ctheta_2m)/Cp_t
+    T_3m = T0_3m - C_3m**2/(2*Cp_t)
 
-    T_3m = T0_3m - C_3m**2 / (2.0 * Cp_t)
     if T0_3m <= 0 or T_3m <= 0:
         raise ValueError("Calculated rotor exit temperature is nonpositive.")
 

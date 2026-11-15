@@ -1,5 +1,5 @@
 from CoolProp.CoolProp import PropsSI
-from CMYK.Object_Definitions.Base_Objects import Compressor
+from Object_Definitions.Base_Objects import Compressor
 
 class RadialCompressor(Compressor):
 

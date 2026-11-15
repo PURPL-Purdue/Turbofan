@@ -6,10 +6,10 @@ import tomllib
 from pint import UnitRegistry, Quantity, UndefinedUnitError, DimensionalityError
 from .Flow import Flow
 
-from CMYK.Object_Definitions.Components.Shaft import Shaft
-from CMYK.Object_Definitions.Components.Start import Start
-from CMYK.Object_Definitions.Components.End import End
-from CMYK.Object_Definitions.Components.Burner import Burner
+from Object_Definitions.Components.Shaft import Shaft
+from Object_Definitions.Components.Start import Start
+from Object_Definitions.Components.End import End
+from Object_Definitions.Components.Burner import Burner
 from .Compressor import Compressor
 from .ComponentBase import ComponentBase
 

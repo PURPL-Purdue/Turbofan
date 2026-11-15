@@ -6,13 +6,12 @@ Engine Architecture
 
 from pathlib import Path
 
-from CMYK.Object_Definitions.Components import (
+from Object_Definitions.Components import (
     Turbofan, Start, Inlet, Fan, AxialCompressor,
     RadialCompressor, Burner, AxialTurbine,
     Nozzle, End, Shaft
 )
-
-from CMYK.Object_Definitions.Base_Objects import Display
+from Object_Definitions.Base_Objects import Display
 
 # from Object_Definitions.Components import Burner
 

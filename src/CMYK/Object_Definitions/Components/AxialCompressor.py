@@ -1,7 +1,7 @@
 from CoolProp.CoolProp import PropsSI
-from CMYK.Object_Definitions.Base_Objects import Compressor
+from Object_Definitions.Base_Objects import Compressor
 import numpy as np
-from CMYK.Run import helper_functions as hf
+from Run import helper_functions as hf
 
 class AxialCompressor(Compressor):
 
@@ -184,7 +184,7 @@ class AxialCompressor(Compressor):
             z_2m = z_1m  # Design choice
 
             W_2m = W_1m * deHaller  # De Haller
-            beta_2m = np.acos(z_2m / W_2m)
+            beta_2m = np.acos(z_2m / W_2m) if W_2m >= z_2m else np.acos(1)
             Wtheta_2m = z_2m * np.tan(beta_2m)
             Ctheta_2m = U_2m - Wtheta_2m
 

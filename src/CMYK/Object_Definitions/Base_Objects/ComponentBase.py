@@ -20,7 +20,7 @@ class ComponentBase(ABC):
         cls.cfg = yaml.safe_load(config_file.read_text())
 
     def __init__(self, name, component_type):
-        from CMYK.Object_Definitions.Components.Turbofan import Engine
+        from Object_Definitions.Components.Turbofan import Engine
         self.name : str = name
         self.type : str = component_type
         self.engine : Engine | None = None

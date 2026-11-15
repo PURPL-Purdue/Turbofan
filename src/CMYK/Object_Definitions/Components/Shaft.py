@@ -1,4 +1,4 @@
-from CMYK.Object_Definitions.Base_Objects import ComponentBase
+from Object_Definitions.Base_Objects import ComponentBase
 
 class Shaft(ComponentBase):
 

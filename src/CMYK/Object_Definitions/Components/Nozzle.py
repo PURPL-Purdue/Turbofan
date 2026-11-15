@@ -1,6 +1,6 @@
 from CoolProp.CoolProp import PropsSI
-from CMYK.Object_Definitions.Base_Objects import ComponentBase
-import CMYK.Run.helper_functions as hf
+from Object_Definitions.Base_Objects import ComponentBase
+import Run.helper_functions as hf
 import numpy as np
 
 class Nozzle(ComponentBase):

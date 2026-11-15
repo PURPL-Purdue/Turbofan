@@ -396,6 +396,7 @@ class AxialTurbine(Turbine):
                 # =============================================
                 #             MULTISTAGE TURBINE
                 # =============================================
+                # Match generated power by adjusting the mean radius and radial increment
                 for radius_pass in range(self.max_radius_passes):
                     pitchline_res = mag.pitchline_staging(
                         False,
@@ -420,124 +421,63 @@ class AxialTurbine(Turbine):
                     )
 
                     total_power_generated = pitchline_res.total_power_generated
+                    # The original multistage approach increases the radius until sufficient power is generated.
+                    # Accept a solution with the required power and an oversizing error within tolerance
 
                     percent_error = ((total_power_generated - req_power) / req_power * 100.0)
 
-                    # Stop once sufficient power is generated.
-                    # Any excessive oversizing will be corrected below.
-                    if percent_error >= 0.0:
+                    # Accept a solution with the required power and an oversizing error within tolerance
+                    if 0.0 <= percent_error <= self.power_tolerance_pct:
                         break
 
-                    # Increase radius if insufficient power is generated.
+                    if total_power_generated >= req_power:
+                        break
+
                     r_mean_i += self.mean_radius_step
                     r_inc_factor += self.mean_radius_step
                 else:
-                    raise RuntimeError(f"{self.name}: could not reach required power within {self.max_radius_passes} radius iterations.")
+                    raise RuntimeError(
+                        f"{self.name}: multistage power matching did not converge within {self.max_radius_passes} iterations")
 
                 # -------------------------------------------------
-                #           REACTION POWER CORRECTION
+                #              STRUCTURAL RPM CALCULATION
                 # -------------------------------------------------
+                # use first stage for HPT and last stage for LPT stress calculations
+            if self.name.upper() == "LPT":
+                vt = pitchline_res.multistage_velocity_triangles[-1]
+                info = pitchline_res.multistage_info[-1]
+                r_mean_stage = pitchline_res.r_mean_vec[-1]
+            else:
+                vt = pitchline_res.multistage_velocity_triangles[0]
+                info = pitchline_res.multistage_info[0]
+                r_mean_stage = pitchline_res.r_mean_vec[0]
 
-                # Check whether the current solution already
-                # satisfies the required power tolerance.
+            r_hub, r_tip, _ = mag.annulus_adjust(
+                info.T0_3m,
+                info.P0_3m,
+                R,
+                gamma,
+                m_dot,
+                vt.z_3m,
+                vt.Mc_3m,
+                r_mean_stage
+            )
 
-                if not (0.0 <= percent_error <= self.power_tolerance_pct):
-                    reaction_low = self.degR_min
-                    reaction_high = self.degR_max
+            blade_length = r_tip - r_hub
+            rpm_max = self.rpm_safety_factor * Stress.get_max_rpm_light(self.rho_mat, self.yield_stress_mpa,
+                                                                        r_mean_stage, blade_length)
+            rpm_derivative = abs(rpm_max - rpm) / rpm
 
-                    if not reaction_low < reaction_high:
-                        raise ValueError("Invalid degree-of-reaction bounds.")
+            if rpm_derivative < self.rpm_derivative_lim:
+                self.operating_rpm = rpm
+                print(f"{self.name} converged at {rpm:.1f} RPM ({num_stages_target} stages)")
+                break
+            # damped update to prevent RPM oscillation
+            rpm = ((1.0 - self.damping_factor) * rpm + self.damping_factor * rpm_max)
+        else:
+            raise RuntimeError(f"{self.name}: RPM iteration did not converge within {self.max_rpm_passes} passes")
 
-                    # Helper to recalculate the same multistage
-                    # turbine at a specified degree of reaction.
-                    def evaluate_reaction(reaction):
-                        return mag.pitchline_staging(
-                            False,
-                            Mc_2m,
-                            Mw_3Rm,
-                            Mc_2m_default,
-                            Mw_3Rm_default,
-                            alpha_in,
-                            alpha_2m,
-                            T0_in,
-                            P0_in,
-                            r_mean_i,
-                            ang_vel,
-                            gamma,
-                            R,
-                            Cp,
-                            m_dot,
-                            reaction,
-                            req_power,
-                            r_inc_factor=r_inc_factor,
-                            num_stages_target=num_stages_target
-                        )
 
-                    # Evaluate both reaction limits.
-                    result_low = evaluate_reaction(reaction_low)
-                    result_high = evaluate_reaction(reaction_high)
-
-                    error_low = ((result_low.total_power_generated - req_power) / req_power * 100.0)
-
-                    error_high = ((result_high.total_power_generated - req_power) / req_power * 100.0)
-
-                    # Check whether either bound already satisfies tolerance.
-                    if 0.0 <= error_low <= self.power_tolerance_pct:
-                        pitchline_res = result_low
-                        degR_m = reaction_low
-                        percent_error = error_low
-                    elif 0.0 <= error_high <= self.power_tolerance_pct:
-                        pitchline_res = result_high
-                        degR_m = reaction_high
-                        percent_error = error_high
-                    else:
-                        # Power should increase with reaction for
-                        # the current pitchline design formulation.
-
-                        if error_low > self.power_tolerance_pct:
-                            raise RuntimeError(f"{self.name}: even minimum reaction generates excessive power ({error_low:.2f}%). Reduce the radius or revise the turbine design.")
-
-                        if error_high < 0.0:
-                            raise RuntimeError(f"{self.name}: maximum reaction cannot generate the required power ({error_high:.2f}%). Increase the available stage work or revise the design.")
-
-                        if error_high < error_low:
-                            raise RuntimeError(f"{self.name}: generated power is not monotonic with degree of reaction. Cannot safely apply bisection.")
-
-                        # Target the middle of the permitted power band.
-                        target_error = self.power_tolerance_pct / 2.0
-
-                        # -------------------------------------------------
-                        #                  BISECTION
-                        # -------------------------------------------------
-
-                        for power_pass in range(self.max_power_passes):
-
-                            degR_trial = (reaction_low + reaction_high) / 2.0
-
-                            trial_res = evaluate_reaction(degR_trial)
-                            trial_error = ((trial_res.total_power_generated - req_power) / req_power * 100.0)
-
-                            # Accept only a solution within tolerance.
-                            if 0.0 <= trial_error <= self.power_tolerance_pct:
-
-                                pitchline_res = trial_res
-                                degR_m = degR_trial
-                                percent_error = trial_error
-
-                                break
-
-                            # Underpowered: increase reaction.
-                            elif trial_error < target_error:
-                                reaction_low = degR_trial
-
-                            # Overpowered: decrease reaction.
-                            else:
-                                reaction_high = degR_trial
-                        else:
-                            raise RuntimeError(f"{self.name}: multistage reaction matching did not converge. Final error: {trial_error:.3f}%")
-
-                if not (0.0 <= percent_error <= self.power_tolerance_pct):
-                    raise RuntimeError(f"{self.name}: power tolerance not satisfied. Final error: {percent_error:.3f}%")
 
         # -----------------------------------------------------
         #                  STORE FINAL RESULTS

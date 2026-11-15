@@ -1,11 +1,11 @@
 from pathlib import Path
 from pint import UnitRegistry
 
-from CMYK.Object_Definitions.Base_Objects import Engine, Compressor, Flow
+from Object_Definitions.Base_Objects import Engine, Compressor, Flow
 from .Start import Start
 from .Burner import Burner
 from .End import End
-from CMYK.Object_Definitions.Components.Shaft import Shaft
+from Object_Definitions.Components.Shaft import Shaft
 
 DEBUG_PATH = Path(__file__).resolve().parent.parent.parent /'Output'/'Debug.txt'
 UR = UnitRegistry()

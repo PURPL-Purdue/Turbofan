@@ -73,6 +73,7 @@ BURNER:
   num_injectors: 7
 
 HPT:
+  standalone: true
   eta: 0.92             # Isentropic efficiency                               | nondim
   alpha_1m: 0.0         # alpha_1m                                            | radians
   alpha_2m: 60          # alpha_2                                             | radians
@@ -80,12 +81,24 @@ HPT:
   Mw_3Rm: 0.8           # First rotor relative exit Mach number               | nondimensional
   Mc_2m_default: 0.964  # Subsequent stator nozzle Mach number, keep <1       | nondimensional
   Mw_3Rm_default: 0.85  # Subsequent rotor relative exit Mach number          | nondimensional
-  degR_m: 0.5           # Stage degree of reaction                            | nondimensional                    
+  degR_m: 0.5           # Stage degree of reaction                            | nondimensional
   Wstream: 'CORE'
   num_stages_target: 1         # write comment
   num_blades: 29
 
+  standalone_inputs:
+    T0_in: 1300.0
+    P0_in_Pa: 2238730.0
+    m_dot: 4.424
+    gamma: 1.319
+    Cp: 1189.0
+    R: 287.6
+    shaft_load_MW: 1.452
+    eta_mech: 0.98
+    apply_mech_efficiency: true
+
 LPT:
+  standalone: true
   eta: 0.92             # Isentropic efficiency                               | nondim
   alpha_1m: 0.0         # alpha_1m                                            | radians
   alpha_2m: 60          # alpha_2                                             | radians
@@ -93,10 +106,21 @@ LPT:
   Mw_3Rm: 0.8           # First rotor relative exit Mach number               | nondimensional
   Mc_2m_default: 0.964  # Subsequent stator nozzle Mach number, keep <1       | nondimensional
   Mw_3Rm_default: 0.85  # Subsequent rotor relative exit Mach number          | nondimensional
-  degR_m: 0.5           # Stage degree of reaction                            | nondimensional  
+  degR_m: 0.5           # Stage degree of reaction                            | nondimensional
   Wstream: 'CORE'
-  num_stages_target: None #
+  num_stages_target:
   num_blades: 29
+
+  standalone_inputs:
+    T0_in: 1014.198
+    P0_in_Pa: 737967.0
+    m_dot: 4.424
+    gamma: 1.336
+    Cp: 1144.0
+    R: 287.7
+    shaft_load_MW: 1.552
+    eta_mech: 0.98
+    apply_mech_efficiency: true
 
 Turbine:
   initial_rpm: 15000    #
