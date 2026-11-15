@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from scipy.optimize import minimize_scalar
-import Pritchard_Parameters
+from Object_Definitions.Supplemental.Turbine.YELLOW import Pritchard_Parameters
 
 from Object_Definitions.Supplemental.Turbine.YELLOW.Curve import *
 
@@ -280,4 +280,4 @@ class PritchardParams:
     o: float # throat
     eps_out: float # exit wedge angle, NOT an independent parameter
 
-YELLOW(R=45, beta_in=64.4869, beta_out=-23.6712, N_B=29, mach_out=0.7)
+# YELLOW(R=45, beta_in=64.4869, beta_out=-23.6712, N_B=29, mach_out=0.7)

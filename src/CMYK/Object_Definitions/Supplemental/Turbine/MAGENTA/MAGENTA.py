@@ -1,5 +1,5 @@
 from Object_Definitions.Base_Objects import Flow, VelocityTriangle
-import Turbine_REF_structs
+from Object_Definitions.Supplemental.Turbine.MAGENTA import Turbine_REF_structs
 from Run import helper_functions as hf
 import numpy as np
 import matplotlib.pyplot as plt

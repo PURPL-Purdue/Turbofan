@@ -82,6 +82,9 @@ class AxialTurbine(Turbine):
         self.rho_mat = float(cfg.get("rho_mat", 8190.0))
         self.yield_stress_mpa = float(cfg.get("yield_stress_mpa", 800.0))
 
+        # place holder
+        self.specific_req_power = 333056.1494585277 if self.name == "HPT" else 356048.321850784
+
     #-----------------------------------------------------
     #                   CMYK Methods
     #-----------------------------------------------------
@@ -93,8 +96,8 @@ class AxialTurbine(Turbine):
         h01 = self.FlowIn.h0
         s1 = self.FlowIn.s
         # POWER BALANCE ----------------------------------
-        self.Shaft.calc_consumer_specific_required_power()
-        specific_req_power = self.Shaft.specific_required_power
+        #self.Shaft.calc_consumer_specific_required_power()
+        specific_req_power = self.specific_req_power #self.Shaft.specific_required_power
 
         h02 = specific_req_power/(-Wfactor*eta_mech) + h01
         h02s = (h02-h01)/eta + h01
@@ -158,7 +161,7 @@ class AxialTurbine(Turbine):
         self.Wfactor = self.FlowIn.Wfactor
 
         # Required power is either determined by HPC or LPC through Shaft
-        req_power = self.Shaft.required_power
+        req_power = self.specific_req_power #self.Shaft.required_power
 
         if req_power is None or req_power <= 0:
             raise RuntimeError(f"{self.name}: shaft required_power must be positive")
@@ -383,6 +386,8 @@ class AxialTurbine(Turbine):
             R,
             pitchline_res.r_mean_vec
         )
+
+        print(self.annulus_res)
 
 
     def YELLOW(self) -> None:

@@ -53,7 +53,14 @@ LPC:
 
 HPC:
   eta: 0.85         # Isentropic efficiency                     | nondim
-  pr_des: 5         # Design pressure ratio                     | nondim
+  pr_des: 5      # Design pressure ratio                     | nondim
+  e_c: 0.99         # Polytropic efficiency                     | nondim
+  httrr: 0.2        # Hub-to-tip radius ratio                   | nondim
+  deHaller: 0.72    # deHaller's criterion value                | nondim
+  min_Re: 300000    # Minimum blade Reynold's number            | nondim
+  alpha_1m: 30      # Inlet absolute flow angle                 | deg
+  Mz_1m: 0.45       # Inlet axial mach number                   | nondim
+  Mu_1t_max: 0.95   # Inlet tip maximum tangential mach number  | nondim
   Wstream: 'CORE'
 
 BURNER:
