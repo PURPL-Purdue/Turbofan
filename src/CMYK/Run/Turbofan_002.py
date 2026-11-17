@@ -13,6 +13,7 @@ from CMYK.Object_Definitions.Components import (
 )
 
 from CMYK.Object_Definitions.Base_Objects import Display
+from CMYK.Object_Definitions.Base_Objects import Display
 
 CONFIG_PATH = Path(__file__).resolve().parent.parent/'Config_Files'/'Config_002.yaml'
 OUTPUT_PATH = Path(__file__).resolve().parent.parent/'Output'/'Output_002.txt'
@@ -89,11 +90,9 @@ Turbofan.interface(  "HPT.Shaft", "HPS",  "HPT_ShaftLink" )
 #                             CYCLE ANALYSIS
 #----------------------------------------------------------------------------
 
-bypass_ratio = 0
-calc_br = 0
-
-Turbofan.CYAN()
-
+# bypass_ratio = 0
+# calc_br = 0
+# Turbofan.CYAN()
 # while bypass_ratio < 5 and abs(bypass_ratio - calc_br) > 0.01:
 #     bypass_ratio += 0.01
 #     Turbofan.FAN.bypass = bypass_ratio
@@ -110,7 +109,7 @@ Turbofan.CYAN()
 #----------------------------------------------------------------------------
 #                                 OUTPUT
 #----------------------------------------------------------------------------
-# Disp = Display(Turbofan)
-# Disp.textOutput(OUTPUT_PATH, verbose=True)
+Disp = Display(Turbofan)
+Disp.textOutput(OUTPUT_PATH, verbose=True)
 
 # pass

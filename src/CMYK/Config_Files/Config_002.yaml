@@ -24,7 +24,7 @@ INLET:
 FAN:
   eta: 0.85         # Isentropic efficiency                     | nondim
   pr_des: 1.7       # Design pressure ratio                     | nondim
-  bypass: 2.89      # Bypass ratio                              | nondim
+  bypass: 4      # Bypass ratio                              | nondim
   e_c: 0.99         # Polytropic efficiency                     | nondim
   httrr: 0.2        # Hub-to-tip radius ratio                   | nondim
   deHaller: 0.72    # deHaller's criterion value                | nondim
@@ -51,6 +51,8 @@ HPCA:
   Mz_1m: 0.45       # Inlet axial mach number                   | nondim
   Mu_1t_max: 0.95   # Inlet tip maximum tangential mach number  | nondim
   Wstream: 'CORE'
+  solidity_R: 1.0   # Rotor solidity for axial compressor        | nondim
+  solidity_S: 1.25  # Stator solidity for axial compressor       | nondim
 
 HPCR:
   eta: 0.85         # Isentropic efficiency                     | nondim
@@ -67,10 +69,24 @@ BURNER:
 HPT:
   eta: 0.92         # Isentropic efficiency                     | nondim
   Wstream: 'CORE'
+  alpha_1m: 0.0           # degrees
+  alpha_2m: 60            # degrees
+  Mc_2m: 1.1
+  Mw_3Rm: 0.8
+  Mc_2m_default: 0.964
+  Mw_3Rm_default: 0.85
+  degR_m: 0.5
 
 LPT:
   eta: 0.92         # Isentropic efficiency                     | nondim
   Wstream: 'CORE'
+  alpha_1m: 0.0          # degrees
+  alpha_2m: 60           # degrees
+  Mc_2m: 1.1
+  Mw_3Rm: 0.8
+  Mc_2m_default: 0.964
+  Mw_3Rm_default: 0.85
+  degR_m: 0.5
 
 NOZ_COR:
   eta: 0.98         # Isentropic efficiency                     | nondim

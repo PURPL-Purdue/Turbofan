@@ -1,8 +1,6 @@
+from CMYK.Object_Definitions.Supplemental.Turbine.YELLOW.Pritchard_Parameters import get_pritchard_params
 from dataclasses import dataclass
 from scipy.optimize import minimize_scalar
-from Pritchard_Parameters import get_pritchard_params
-
-from Object_Definitions.Supplemental.Turbine.YELLOW.Curve import *
 
 def YELLOW(R, beta_in, beta_out, N_B, mach_out):
     params_dictionary, extra_params = get_pritchard_params(beta_in, beta_out, N_B, R, mach_out)
@@ -180,4 +178,4 @@ class PritchardParams:
     o: float # throat
     eps_out: float # exit wedge angle, NOT an independent parameter
 
-YELLOW(R=45, beta_in=64.4869, beta_out=-23.6712, N_B=29, mach_out=0.7)
+#YELLOW(R=45, beta_in=64.4869, beta_out=-23.6712, N_B=29, mach_out=0.7)
